@@ -1,0 +1,16 @@
+@font-face {
+    font-family: "SFUFutura";
+    src: url("../assets/fonts/SFU-Futura-Regular.ttf") format("truetype");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+body {
+    color: #4a4a4a;
+    font-family: "SFUFutura", Arial, sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.42857143;
+    font-size: 1.3rem;
+}
