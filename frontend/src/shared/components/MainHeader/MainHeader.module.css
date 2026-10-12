@@ -1,0 +1,160 @@
+.header {
+    padding: 0 50px;
+    background: #fff;
+    color: #284e70;
+}
+
+.inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 24px;
+    min-height: 100px;
+    border-bottom: 1px solid #d5d5d5;
+}
+
+.search {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 330px;
+    height: 36px;
+    border-radius: 5px;
+    background: #f0f0f0;
+}
+
+.search input {
+    flex: 1;
+    width: 0;
+    min-width: 0;
+    padding: 0 0 0 16px;
+    border: 0;
+    background: transparent;
+    color: #4a4a4a;
+    font: inherit;
+    font-size: 14px;
+}
+
+.search input::placeholder {
+    color: #8b8b8b;
+    opacity: 1;
+}
+
+.search input:focus {
+    outline: none;
+}
+
+.search:focus-within {
+    outline: 2px solid #284e70;
+    outline-offset: 2px;
+}
+
+.search button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+.brand {
+    color: inherit;
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.cart {
+    display: flex;
+    align-items: center;
+    justify-self: end;
+    gap: 12px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.cartIcon {
+    display: block;
+    flex-shrink: 0;
+    width: 27px;
+    height: 33px;
+}
+
+.cartText {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.cartText strong {
+    font-size: 16px;
+}
+
+.cartText > span {
+    color: #8b8b8b;
+}
+
+.brand:hover,
+.cart:hover {
+    color: inherit;
+}
+
+.brand:focus-visible,
+.cart:focus-visible,
+.search button:focus-visible {
+    outline: 2px solid #284e70;
+    outline-offset: 4px;
+}
+
+@media (max-width: 900px) {
+    .inner {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 16px;
+        padding: 20px 0;
+    }
+
+    .brand {
+        grid-column: 1;
+        grid-row: 1;
+        font-size: 30px;
+    }
+
+    .cart {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .search {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        max-width: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .header {
+        padding: 0 16px;
+    }
+
+    .brand {
+        font-size: 26px;
+    }
+
+    .cartText > span {
+        display: none;
+    }
+
+    .cart {
+        gap: 8px;
+    }
+}
