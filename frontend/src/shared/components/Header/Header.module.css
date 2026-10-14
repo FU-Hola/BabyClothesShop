@@ -1,5 +1,5 @@
 .header {
-    padding: 0 50px;
+    padding: 0 var(--page-gutter);
     background-color: #fff;
     color: #284e70;
     font-size: 12px;
@@ -68,10 +68,6 @@
 }
 
 @media (max-width: 640px) {
-    .header {
-        padding: 0 16px;
-    }
-
     .inner {
         flex-wrap: wrap;
         gap: 8px 16px;

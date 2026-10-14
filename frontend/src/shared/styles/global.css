@@ -6,6 +6,10 @@
     font-display: swap;
 }
 
+:root {
+    --page-gutter: clamp(12px, 3.5vw, 68px);
+}
+
 body {
     color: #4a4a4a;
     font-family: "SFUFutura", Arial, sans-serif;

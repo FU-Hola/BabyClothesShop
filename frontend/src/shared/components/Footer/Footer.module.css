@@ -1,0 +1,154 @@
+.footer {
+    width: 100%;
+    background: #efefef;
+    color: #4a4a4a;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+.inner {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 36px 50px 18px;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: clamp(32px, 6vw, 96px);
+}
+
+.heading {
+    margin: 0 0 18px;
+    color: #34546b;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    color: #34546b;
+}
+
+.logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 44px;
+    height: 44px;
+    border: 1px solid #b8c4cc;
+}
+
+.projectName {
+    font-size: 18px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.description {
+    max-width: 320px;
+    margin: 0 0 14px;
+}
+
+.details {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+}
+
+.details > div {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.details dt {
+    flex-shrink: 0;
+    font-weight: 400;
+}
+
+.details dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.links {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.links a,
+.source {
+    color: inherit;
+    text-decoration: none;
+}
+
+.links a:hover,
+.source:hover {
+    color: #34546b;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.source {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    color: #34546b;
+}
+
+.links a:focus-visible,
+.source:focus-visible {
+    outline: 2px solid #34546b;
+    outline-offset: 4px;
+}
+
+.bottomBar {
+    margin-top: 28px;
+    padding-top: 17px;
+    border-top: 1px solid #b8c4cc;
+    text-align: center;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.bottomBar p {
+    margin: 0;
+}
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (max-width: 767px) {
+    .inner {
+        padding: 28px 20px 18px;
+    }
+
+    .columns {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 28px;
+    }
+
+    .heading {
+        margin-bottom: 14px;
+    }
+}

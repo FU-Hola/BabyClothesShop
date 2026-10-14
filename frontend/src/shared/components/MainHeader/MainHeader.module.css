@@ -1,5 +1,5 @@
 .header {
-    padding: 0 50px;
+    padding: 0 var(--page-gutter);
     background: #fff;
     color: #284e70;
 }
@@ -142,10 +142,6 @@
 }
 
 @media (max-width: 640px) {
-    .header {
-        padding: 0 16px;
-    }
-
     .brand {
         font-size: 26px;
     }
