@@ -1,0 +1,8 @@
+.page {
+    min-height: calc(100vh - 220px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #f9fbfd 0%, #f1f5f8 100%);
+    padding: 24px 16px;
+}
