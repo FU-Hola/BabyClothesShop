@@ -1,35 +1,12 @@
 .card {
-    display: flex;
     width: 100%;
     max-width: 920px;
     margin: 40px auto;
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 12px 36px rgba(40, 78, 112, 0.1);
-    border: 1px solid #f0f0f0;
-    overflow: hidden;
+    --bs-primary-rgb: 40, 78, 112;
 }
 
-/* Cột bên trái: Banner hình ảnh */
 .bannerSide {
-    position: relative;
-    flex: 1;
-    min-width: 340px;
-    background: #284e70;
-    overflow: hidden;
-    display: flex;
-}
-
-.bannerImg {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.5s ease;
-}
-
-.card:hover .bannerImg {
-    transform: scale(1.03);
+    min-height: 480px;
 }
 
 .bannerOverlay {
@@ -41,305 +18,33 @@
         rgba(31, 61, 89, 0.85) 75%,
         rgba(22, 46, 68, 0.95) 100%
     );
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 36px 28px;
-    color: #ffffff;
-}
-
-.bannerContent {
-    position: relative;
     z-index: 2;
 }
 
-.bannerTag {
-    display: inline-block;
-    padding: 4px 12px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 20px;
-    margin-bottom: 12px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
+.memberBadge {
+    background-color: #eef4f8 !important;
+    color: #284e70 !important;
 }
 
-.bannerHeading {
-    font-size: 24px;
-    font-weight: 700;
-    line-height: 1.35;
-    margin: 0 0 10px 0;
-    color: #ffffff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+.submitButton {
+    --bs-btn-bg: #284e70;
+    --bs-btn-border-color: #284e70;
+    --bs-btn-hover-bg: #1f3d59;
+    --bs-btn-hover-border-color: #1f3d59;
+    --bs-btn-active-bg: #162e44;
+    --bs-btn-active-border-color: #162e44;
+    --bs-btn-focus-shadow-rgb: 40, 78, 112;
 }
 
-.bannerDesc {
-    font-size: 13.5px;
-    line-height: 1.55;
-    color: rgba(255, 255, 255, 0.88);
-    margin: 0;
-}
-
-/* Cột bên phải: Form đăng nhập */
-.formSide {
-    flex: 1.2;
-    padding: 48px 40px;
-    background: #ffffff;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.header {
-    text-align: center;
-    margin-bottom: 26px;
-}
-
-.badge {
-    display: inline-block;
-    padding: 4px 12px;
-    background: #eef4f8;
-    color: #284e70;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 20px;
-    margin-bottom: 8px;
-}
-
-.title {
-    color: #284e70;
-    font-size: 26px;
-    font-weight: 700;
-    margin: 0 0 6px 0;
-}
-
-.subtitle {
-    color: #8b8b8b;
-    font-size: 13.5px;
-    margin: 0;
-}
-
-.form {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-}
-
-.field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.labelRow {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.label {
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #284e70;
-}
-
-.forgotLink {
-    font-size: 12.5px;
-    color: #284e70;
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.forgotLink:hover {
-    text-decoration: underline;
-    color: #1f3d59;
-}
-
-.inputWrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    background: #f8fafb;
-    border: 1px solid #d5dce2;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-}
-
-.inputWrapper:focus-within {
+.card :global(.form-control:focus) {
     border-color: #284e70;
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(40, 78, 112, 0.12);
+    box-shadow: 0 0 0 0.25rem rgba(40, 78, 112, 0.15);
 }
 
-.inputWrapperError {
-    border-color: #e74c3c !important;
-    background: #fff8f8;
-}
-
-.inputIcon {
-    margin-left: 14px;
-    color: #7b8588;
-    flex-shrink: 0;
-}
-
-.input {
-    flex: 1;
-    width: 100%;
-    padding: 12px 14px;
-    border: none;
-    background: transparent;
-    font-size: 14px;
-    color: #4a4a4a;
-    outline: none;
-}
-
-.input::placeholder {
-    color: #a0aab0;
-}
-
-.toggleBtn {
-    padding: 0 14px;
-    background: transparent;
-    border: none;
-    color: #7b8588;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.2s;
-}
-
-.toggleBtn:hover {
-    color: #284e70;
-}
-
-.errorText {
-    font-size: 12px;
-    color: #e74c3c;
-    margin: 2px 0 0 2px;
-}
-
-.alertError {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 11px 14px;
-    background: #fef0ef;
-    border: 1px solid #fbd6d3;
-    border-radius: 8px;
-    color: #c0392b;
-    font-size: 13px;
-    margin-bottom: 12px;
-}
-
-.alertSuccess {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 11px 14px;
-    background: #eafaf1;
-    border: 1px solid #d4efdf;
-    border-radius: 8px;
-    color: #27ae60;
-    font-size: 13px;
-    margin-bottom: 12px;
-}
-
-.submitBtn {
-    width: 100%;
-    padding: 13px;
-    margin-top: 8px;
-    background: #284e70;
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.submitBtn:hover:not(:disabled) {
-    background: #1f3d59;
-    box-shadow: 0 4px 12px rgba(40, 78, 112, 0.25);
-    transform: translateY(-1px);
-}
-
-.submitBtn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-.footer {
-    text-align: center;
-    margin-top: 24px;
-    font-size: 13.5px;
-    color: #4a4a4a;
-}
-
-.footerLink {
-    color: #284e70;
-    font-weight: 600;
-    text-decoration: none;
-    margin-left: 6px;
-    transition: text-decoration 0.2s;
-}
-
-.footerLink:hover {
-    text-decoration: underline;
-    color: #1f3d59;
-}
-
-/* Responsive */
-@media (max-width: 860px) {
-    .card {
-        flex-direction: column;
-        max-width: 500px;
-        margin: 24px auto;
-    }
-
-    .bannerSide {
-        min-width: 100%;
-        height: 180px;
-    }
-
-    .bannerOverlay {
-        padding: 20px 24px;
-    }
-
-    .bannerHeading {
-        font-size: 18px;
-        margin-bottom: 4px;
-    }
-
-    .bannerDesc {
-        display: none;
-    }
-
-    .formSide {
-        padding: 28px 24px;
-    }
-}
-
-@media (max-width: 520px) {
-    .card {
-        margin: 16px 12px;
-        border-radius: 12px;
-    }
-
-    .bannerSide {
-        height: 130px;
-    }
-
-    .title {
-        font-size: 22px;
-    }
+.brandBadge {
+    background: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+    letter-spacing: 0.5px;
 }

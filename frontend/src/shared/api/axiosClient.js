@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_BASE_URL } from '../constants/api';
+import { API_BASE_URL, AUTH_ENDPOINTS } from '../constants/api';
 
 const axiosClient = axios.create({
     baseURL: API_BASE_URL,
@@ -24,7 +24,11 @@ axiosClient.interceptors.request.use(
 axiosClient.interceptors.response.use(
     (response) => response.data,
     (error) => {
-        if (error.response?.status === 401) {
+        const isPublicAuthRequest = [AUTH_ENDPOINTS.LOGIN, AUTH_ENDPOINTS.REGISTER].includes(
+            error.config?.url
+        );
+
+        if (error.response?.status === 401 && !isPublicAuthRequest) {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('user');
             window.location.href = '/login';
