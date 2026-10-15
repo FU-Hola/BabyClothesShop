@@ -6,6 +6,13 @@
       "email": "demo@example.com",
       "password": "password123",
       "createdAt": "2026-10-15T00:00:00.000Z"
+    },
+    {
+      "id": "1792084818947",
+      "fullName": "Nguyễn Thị Lý",
+      "email": "ly141@gmail.com",
+      "password": "123456",
+      "createdAt": "2026-10-15T17:20:18.947Z"
     }
   ]
 }
