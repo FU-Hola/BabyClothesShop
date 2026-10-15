@@ -1,19 +1,8 @@
-import Header from "./shared/components/Header/Header";
-import MainHeader from "./shared/components/MainHeader/MainHeader";
-import CategoryMenu from "./shared/components/CategoryMenu/CategoryMenu";
-
+import AppRoutes from "./app/routes/AppRoutes";
 
 const App = () => {
-    return (
-        <>
-            <Header></Header>
-            <MainHeader />
-            <CategoryMenu />
-            <main>
+    return <AppRoutes />;
+};
 
-            </main>
-        </>
-    )
-
-}
 export default App;
+
