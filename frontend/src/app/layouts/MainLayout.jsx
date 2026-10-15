@@ -8,7 +8,6 @@ const MainLayout = () => {
         <>
             <Header />
             <MainHeader />
-            <CategoryMenu />
             <main>
                 <Outlet />
             </main>

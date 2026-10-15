@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import authApi from '../../api/authApi';
+import authBanner from '../../../../shared/assets/auth-banner.png';
 import styles from './RegisterForm.module.css';
 
 const RegisterForm = () => {
@@ -97,163 +98,180 @@ const RegisterForm = () => {
 
     return (
         <div className={styles.card}>
-            <div className={styles.header}>
-                <span className={styles.badge}>Thành viên mới</span>
-                <h1 className={styles.title}>Đăng Ký Tài Khoản</h1>
-                <p className={styles.subtitle}>Tạo tài khoản để mua sắm trang phục bé yêu dễ dàng hơn</p>
+            {/* Cột trái: Ảnh banner thời trang bé yêu */}
+            <div className={styles.bannerSide}>
+                <img
+                    src={authBanner}
+                    alt="BaBy Clothes Shop - Thời trang bé yêu"
+                    className={styles.bannerImg}
+                />
+                <div className={styles.bannerOverlay}>
+                    <div className={styles.bannerContent}>
+                        <span className={styles.bannerTag}>BaBy Clothes Shop</span>
+                        <h2 className={styles.bannerHeading}>Nâng niu từng khoảnh khắc bé yêu</h2>
+                        <p className={styles.bannerDesc}>
+                            Trang phục mềm mại, an toàn từ sợi bông tự nhiên cho nụ cười rạng rỡ của bé.
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            {serverError && (
-                <div className={styles.alertError} role="alert">
-                    <AlertCircle size={18} />
-                    <span>{serverError}</span>
+            {/* Cột phải: Form đăng ký */}
+            <div className={styles.formSide}>
+                <div className={styles.header}>
+                    <span className={styles.badge}>Thành viên mới</span>
+                    <h1 className={styles.title}>Đăng Ký Tài Khoản</h1>
+                    <p className={styles.subtitle}>Tạo tài khoản để nhận nhiều ưu đãi khi mua sắm cho bé yêu</p>
                 </div>
-            )}
 
-            {successMessage && (
-                <div className={styles.alertSuccess} role="status">
-                    <CheckCircle2 size={18} />
-                    <span>{successMessage}</span>
-                </div>
-            )}
-
-            <form className={styles.form} onSubmit={handleSubmit} noValidate>
-                {/* Họ và tên */}
-                <div className={styles.field}>
-                    <label htmlFor="fullName" className={styles.label}>
-                        Họ và tên *
-                    </label>
-                    <div
-                        className={`${styles.inputWrapper} ${
-                            errors.fullName ? styles.inputWrapperError : ''
-                        }`}
-                    >
-                        <User size={18} className={styles.inputIcon} aria-hidden="true" />
-                        <input
-                            id="fullName"
-                            name="fullName"
-                            type="text"
-                            placeholder="Nguyễn Văn A"
-                            value={formData.fullName}
-                            onChange={handleChange}
-                            className={styles.input}
-                            disabled={loading}
-                        />
+                {serverError && (
+                    <div className={styles.alertError} role="alert">
+                        <AlertCircle size={18} />
+                        <span>{serverError}</span>
                     </div>
-                    {errors.fullName && <span className={styles.errorText}>{errors.fullName}</span>}
-                </div>
+                )}
 
-                {/* Email */}
-                <div className={styles.field}>
-                    <label htmlFor="email" className={styles.label}>
-                        Email *
-                    </label>
-                    <div
-                        className={`${styles.inputWrapper} ${
-                            errors.email ? styles.inputWrapperError : ''
-                        }`}
-                    >
-                        <Mail size={18} className={styles.inputIcon} aria-hidden="true" />
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            placeholder="example@gmail.com"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className={styles.input}
-                            disabled={loading}
-                        />
+                {successMessage && (
+                    <div className={styles.alertSuccess} role="status">
+                        <CheckCircle2 size={18} />
+                        <span>{successMessage}</span>
                     </div>
-                    {errors.email && <span className={styles.errorText}>{errors.email}</span>}
-                </div>
+                )}
 
-                {/* Mật khẩu */}
-                <div className={styles.field}>
-                    <label htmlFor="password" className={styles.label}>
-                        Mật khẩu *
-                    </label>
-                    <div
-                        className={`${styles.inputWrapper} ${
-                            errors.password ? styles.inputWrapperError : ''
-                        }`}
-                    >
-                        <Lock size={18} className={styles.inputIcon} aria-hidden="true" />
-                        <input
-                            id="password"
-                            name="password"
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder="Tối thiểu 6 ký tự"
-                            value={formData.password}
-                            onChange={handleChange}
-                            className={styles.input}
-                            disabled={loading}
-                        />
-                        <button
-                            type="button"
-                            className={styles.toggleBtn}
-                            onClick={() => setShowPassword((prev) => !prev)}
-                            aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                <form className={styles.form} onSubmit={handleSubmit} noValidate>
+                    {/* Họ và tên */}
+                    <div className={styles.field}>
+                        <label htmlFor="fullName" className={styles.label}>
+                            Họ và tên *
+                        </label>
+                        <div
+                            className={`${styles.inputWrapper} ${errors.fullName ? styles.inputWrapperError : ''
+                                }`}
                         >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
+                            <User size={18} className={styles.inputIcon} aria-hidden="true" />
+                            <input
+                                id="fullName"
+                                name="fullName"
+                                type="text"
+                                placeholder="Nguyễn Văn A"
+                                value={formData.fullName}
+                                onChange={handleChange}
+                                className={styles.input}
+                                disabled={loading}
+                            />
+                        </div>
+                        {errors.fullName && <span className={styles.errorText}>{errors.fullName}</span>}
                     </div>
-                    {errors.password && <span className={styles.errorText}>{errors.password}</span>}
-                </div>
 
-                {/* Xác nhận mật khẩu */}
-                <div className={styles.field}>
-                    <label htmlFor="confirmPassword" className={styles.label}>
-                        Xác nhận mật khẩu *
-                    </label>
-                    <div
-                        className={`${styles.inputWrapper} ${
-                            errors.confirmPassword ? styles.inputWrapperError : ''
-                        }`}
-                    >
-                        <Lock size={18} className={styles.inputIcon} aria-hidden="true" />
-                        <input
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            type={showConfirmPassword ? 'text' : 'password'}
-                            placeholder="Nhập lại mật khẩu"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            className={styles.input}
-                            disabled={loading}
-                        />
-                        <button
-                            type="button"
-                            className={styles.toggleBtn}
-                            onClick={() => setShowConfirmPassword((prev) => !prev)}
-                            aria-label={showConfirmPassword ? 'Ẩn mật khẩu xác nhận' : 'Hiện mật khẩu xác nhận'}
+                    {/* Email */}
+                    <div className={styles.field}>
+                        <label htmlFor="email" className={styles.label}>
+                            Email *
+                        </label>
+                        <div
+                            className={`${styles.inputWrapper} ${errors.email ? styles.inputWrapperError : ''
+                                }`}
                         >
-                            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
+                            <Mail size={18} className={styles.inputIcon} aria-hidden="true" />
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                placeholder="example@gmail.com"
+                                value={formData.email}
+                                onChange={handleChange}
+                                className={styles.input}
+                                disabled={loading}
+                            />
+                        </div>
+                        {errors.email && <span className={styles.errorText}>{errors.email}</span>}
                     </div>
-                    {errors.confirmPassword && (
-                        <span className={styles.errorText}>{errors.confirmPassword}</span>
-                    )}
+
+                    {/* Mật khẩu */}
+                    <div className={styles.field}>
+                        <label htmlFor="password" className={styles.label}>
+                            Mật khẩu *
+                        </label>
+                        <div
+                            className={`${styles.inputWrapper} ${errors.password ? styles.inputWrapperError : ''
+                                }`}
+                        >
+                            <Lock size={18} className={styles.inputIcon} aria-hidden="true" />
+                            <input
+                                id="password"
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="Tối thiểu 6 ký tự"
+                                value={formData.password}
+                                onChange={handleChange}
+                                className={styles.input}
+                                disabled={loading}
+                            />
+                            <button
+                                type="button"
+                                className={styles.toggleBtn}
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+                        {errors.password && <span className={styles.errorText}>{errors.password}</span>}
+                    </div>
+
+                    {/* Xác nhận mật khẩu */}
+                    <div className={styles.field}>
+                        <label htmlFor="confirmPassword" className={styles.label}>
+                            Xác nhận mật khẩu *
+                        </label>
+                        <div
+                            className={`${styles.inputWrapper} ${errors.confirmPassword ? styles.inputWrapperError : ''
+                                }`}
+                        >
+                            <Lock size={18} className={styles.inputIcon} aria-hidden="true" />
+                            <input
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                placeholder="Nhập lại mật khẩu"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                                className={styles.input}
+                                disabled={loading}
+                            />
+                            <button
+                                type="button"
+                                className={styles.toggleBtn}
+                                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                aria-label={showConfirmPassword ? 'Ẩn mật khẩu xác nhận' : 'Hiện mật khẩu xác nhận'}
+                            >
+                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+                        {errors.confirmPassword && (
+                            <span className={styles.errorText}>{errors.confirmPassword}</span>
+                        )}
+                    </div>
+
+                    {/* Submit button */}
+                    <button type="submit" className={styles.submitBtn} disabled={loading}>
+                        {loading ? (
+                            <>
+                                <Loader2 size={18} className="spinner-border spinner-border-sm" />
+                                <span>Đang xử lý...</span>
+                            </>
+                        ) : (
+                            'Đăng Ký'
+                        )}
+                    </button>
+                </form>
+
+                <div className={styles.footer}>
+                    <span>Đã có tài khoản?</span>
+                    <Link to="/login" className={styles.footerLink}>
+                        Đăng nhập ngay
+                    </Link>
                 </div>
-
-                {/* Submit button */}
-                <button type="submit" className={styles.submitBtn} disabled={loading}>
-                    {loading ? (
-                        <>
-                            <Loader2 size={18} className="spinner-border spinner-border-sm" />
-                            <span>Đang xử lý...</span>
-                        </>
-                    ) : (
-                        'Đăng Ký'
-                    )}
-                </button>
-            </form>
-
-            <div className={styles.footer}>
-                <span>Đã có tài khoản?</span>
-                <Link to="/login" className={styles.footerLink}>
-                    Đăng nhập ngay
-                </Link>
             </div>
         </div>
     );
