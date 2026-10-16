@@ -1,0 +1,302 @@
+.shell {
+    --admin-primary: #284e70;
+    --admin-primary-dark: #1b3954;
+    --admin-accent: #e5a96b;
+    display: flex;
+    min-height: 100vh;
+    background: #f4f7fa;
+    color: #243746;
+    font-size: 1rem;
+}
+
+.sidebar {
+    position: fixed;
+    z-index: 1040;
+    inset: 0 auto 0 0;
+    display: flex;
+    flex-direction: column;
+    width: 280px;
+    padding: 24px 18px;
+    overflow-y: auto;
+    background: linear-gradient(180deg, var(--admin-primary-dark) 0%, #132b40 100%);
+    color: #fff;
+}
+
+.brandRow,
+.brand,
+.navItem,
+.sidebarFooter a,
+.sidebarFooter button,
+.topbar,
+.adminProfile {
+    display: flex;
+    align-items: center;
+}
+
+.brandRow {
+    justify-content: space-between;
+    padding: 0 6px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.brand {
+    gap: 12px;
+    color: #fff;
+    text-decoration: none;
+}
+
+.brand:hover {
+    color: #fff;
+}
+
+.brandIcon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.brand strong,
+.brand small,
+.profileText strong,
+.profileText small {
+    display: block;
+}
+
+.brand strong {
+    font-size: 1.08rem;
+    letter-spacing: 0.02em;
+}
+
+.brand small {
+    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.closeButton,
+.menuButton {
+    display: none;
+    padding: 8px;
+    border: 0;
+    background: transparent;
+}
+
+.closeButton {
+    color: #fff;
+}
+
+.navigation {
+    flex: 1;
+    padding-top: 24px;
+}
+
+.navLabel {
+    margin: 20px 12px 9px;
+    color: rgba(255, 255, 255, 0.46);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.navLabel:first-child {
+    margin-top: 0;
+}
+
+.navItem {
+    gap: 12px;
+    min-height: 48px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.91rem;
+    text-decoration: none;
+    transition: background 160ms ease, color 160ms ease;
+}
+
+.navItem:hover,
+.active {
+    background: rgba(255, 255, 255, 0.11);
+    color: #fff;
+}
+
+.active {
+    box-shadow: inset 3px 0 var(--admin-accent);
+}
+
+.navArrow {
+    margin-left: auto;
+}
+
+.disabledItem {
+    cursor: default;
+    opacity: 0.46;
+}
+
+.disabledItem small {
+    margin-left: auto;
+    font-size: 0.67rem;
+}
+
+.sidebarFooter {
+    display: grid;
+    gap: 5px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebarFooter a,
+.sidebarFooter button {
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.72);
+    font: inherit;
+    font-size: 0.88rem;
+    text-decoration: none;
+}
+
+.sidebarFooter a:hover,
+.sidebarFooter button:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.mainArea {
+    width: calc(100% - 280px);
+    min-width: 0;
+    margin-left: 280px;
+}
+
+.topbar {
+    position: sticky;
+    z-index: 1020;
+    top: 0;
+    min-height: 82px;
+    padding: 14px 32px;
+    border-bottom: 1px solid #e4eaf0;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(10px);
+}
+
+.eyebrow {
+    margin: 0 0 2px;
+    color: #8a99a7;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.topbar h1 {
+    margin: 0;
+    color: var(--admin-primary-dark);
+    font-size: 1.22rem;
+    font-weight: 700;
+}
+
+.adminProfile {
+    gap: 10px;
+    margin-left: auto;
+}
+
+.avatar {
+    display: grid;
+    width: 39px;
+    height: 39px;
+    place-items: center;
+    border-radius: 12px;
+    background: #eaf0f5;
+    color: var(--admin-primary);
+    font-weight: 700;
+}
+
+.profileText strong {
+    color: #2e4353;
+    font-size: 0.86rem;
+}
+
+.profileText small {
+    color: #8897a5;
+    font-size: 0.72rem;
+}
+
+.content {
+    padding: 30px 32px 48px;
+}
+
+.backdrop {
+    display: none;
+}
+
+@media (max-width: 991px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 180ms ease;
+    }
+
+    .sidebarOpen {
+        transform: translateX(0);
+    }
+
+    .closeButton,
+    .menuButton {
+        display: inline-flex;
+    }
+
+    .backdrop {
+        position: fixed;
+        z-index: 1030;
+        inset: 0;
+        display: block;
+        border: 0;
+        background: rgba(10, 24, 37, 0.5);
+    }
+
+    .mainArea {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .topbar {
+        gap: 12px;
+        padding-inline: 20px;
+    }
+
+    .menuButton {
+        color: var(--admin-primary);
+    }
+}
+
+@media (max-width: 575px) {
+    .sidebar {
+        width: min(88vw, 300px);
+    }
+
+    .content {
+        padding: 22px 16px 36px;
+    }
+
+    .topbar {
+        min-height: 72px;
+        padding-inline: 14px;
+    }
+
+    .eyebrow,
+    .profileText {
+        display: none;
+    }
+
+    .topbar h1 {
+        font-size: 1.05rem;
+    }
+}

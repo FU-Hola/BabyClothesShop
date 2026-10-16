@@ -5,3 +5,7 @@ export const AUTH_ENDPOINTS = {
     REGISTER: '/auth/register',
     ME: '/auth/me',
 };
+
+export const ADMIN_ENDPOINTS = {
+    ACCOUNTS: '/admin/accounts',
+};
