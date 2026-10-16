@@ -1,8 +1,10 @@
 import { Alert, Button, Col, Form, Modal, Row, Spinner } from 'react-bootstrap';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { CircleCheck, Info, LockKeyhole, Mail, Pencil, Plus, Save, ShieldCheck, User } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import accountApi from '../../api/accountApi';
 import accountSchema from '../../schemas/accountSchema';
+import styles from './AccountFormModal.module.css';
 
 const AccountFormModal = ({ account, onClose, onSaved }) => {
     const isEditing = Boolean(account);
@@ -39,95 +41,152 @@ const AccountFormModal = ({ account, onClose, onSaved }) => {
     };
 
     return (
-        <Modal show onHide={onClose} centered size="lg" backdrop={isSubmitting ? 'static' : true}>
-            <Form onSubmit={handleSubmit(onSubmit)} noValidate>
-                <Modal.Header closeButton={!isSubmitting}>
-                    <div>
-                        <Modal.Title>{isEditing ? 'Chỉnh sửa tài khoản' : 'Thêm tài khoản mới'}</Modal.Title>
-                        <p className="text-muted small mb-0 mt-1">
+        <Modal
+            show
+            onHide={onClose}
+            centered
+            backdrop={isSubmitting ? 'static' : true}
+            dialogClassName={styles.dialog}
+            contentClassName={styles.modalContent}
+        >
+            <Form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+                <Modal.Header className={styles.header} closeButton={!isSubmitting}>
+                    <div className={styles.headerContent}>
+                        <span className={styles.headerIcon}>
+                            {isEditing ? <Pencil size={22} aria-hidden="true" /> : <Plus size={24} aria-hidden="true" />}
+                        </span>
+                        <div>
+                            <Modal.Title className={styles.title}>
+                                {isEditing ? 'Chỉnh sửa tài khoản' : 'Thêm tài khoản mới'}
+                            </Modal.Title>
+                            <p className={styles.subtitle}>
                             {isEditing ? 'Cập nhật thông tin và quyền truy cập.' : 'Tạo tài khoản cho khách hàng hoặc quản trị viên.'}
-                        </p>
+                            </p>
+                        </div>
                     </div>
                 </Modal.Header>
-                <Modal.Body className="p-4">
-                    {errors.root?.server && <Alert variant="danger">{errors.root.server.message}</Alert>}
-                    <Row className="g-3">
-                        <Col md={6}>
+                <Modal.Body className={styles.body}>
+                    {errors.root?.server && (
+                        <Alert className={styles.errorAlert} variant="danger">
+                            {errors.root.server.message}
+                        </Alert>
+                    )}
+
+                    <section className={styles.section}>
+                        <div className={styles.sectionHeading}>
+                            <User size={18} aria-hidden="true" />
+                            <span>Thông tin tài khoản</span>
+                        </div>
+                        <Row className="g-3">
+                            <Col md={6}>
                             <Form.Group controlId="accountFullName">
-                                <Form.Label>Họ và tên</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    placeholder="Nguyễn Văn A"
-                                    autoComplete="name"
-                                    isInvalid={!!errors.fullName}
-                                    disabled={isSubmitting}
-                                    {...register('fullName')}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {errors.fullName?.message}
-                                </Form.Control.Feedback>
+                                <Form.Label className={styles.label}>Họ và tên <span>*</span></Form.Label>
+                                <div className={styles.controlWrap}>
+                                    <User className={styles.fieldIcon} size={17} aria-hidden="true" />
+                                    <Form.Control
+                                        className={styles.iconControl}
+                                        type="text"
+                                        placeholder="Nguyễn Văn A"
+                                        autoComplete="name"
+                                        isInvalid={!!errors.fullName}
+                                        disabled={isSubmitting}
+                                        {...register('fullName')}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.fullName?.message}
+                                    </Form.Control.Feedback>
+                                </div>
                             </Form.Group>
-                        </Col>
-                        <Col md={6}>
+                            </Col>
+                            <Col md={6}>
                             <Form.Group controlId="accountEmail">
-                                <Form.Label>Email</Form.Label>
-                                <Form.Control
-                                    type="email"
-                                    placeholder="account@example.com"
-                                    autoComplete="email"
-                                    isInvalid={!!errors.email}
-                                    disabled={isSubmitting}
-                                    {...register('email')}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {errors.email?.message}
-                                </Form.Control.Feedback>
+                                <Form.Label className={styles.label}>Email <span>*</span></Form.Label>
+                                <div className={styles.controlWrap}>
+                                    <Mail className={styles.fieldIcon} size={17} aria-hidden="true" />
+                                    <Form.Control
+                                        className={styles.iconControl}
+                                        type="email"
+                                        placeholder="account@example.com"
+                                        autoComplete="email"
+                                        isInvalid={!!errors.email}
+                                        disabled={isSubmitting}
+                                        {...register('email')}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.email?.message}
+                                    </Form.Control.Feedback>
+                                </div>
                             </Form.Group>
-                        </Col>
-                        <Col md={6}>
+                            </Col>
+                            <Col xs={12}>
                             <Form.Group controlId="accountPassword">
-                                <Form.Label>
-                                    Mật khẩu {isEditing && <span className="text-muted fw-normal">(không đổi nếu để trống)</span>}
+                                <Form.Label className={styles.label}>
+                                    Mật khẩu {!isEditing && <span>*</span>}
                                 </Form.Label>
-                                <Form.Control
-                                    type="password"
-                                    placeholder={isEditing ? 'Để trống nếu không thay đổi' : 'Tối thiểu 6 ký tự'}
-                                    autoComplete="new-password"
-                                    isInvalid={!!errors.password}
-                                    disabled={isSubmitting}
-                                    {...register('password')}
-                                />
-                                <Form.Control.Feedback type="invalid">
-                                    {errors.password?.message}
-                                </Form.Control.Feedback>
+                                <div className={styles.controlWrap}>
+                                    <LockKeyhole className={styles.fieldIcon} size={17} aria-hidden="true" />
+                                    <Form.Control
+                                        className={styles.iconControl}
+                                        type="password"
+                                        placeholder={isEditing ? 'Để trống nếu không thay đổi mật khẩu' : 'Tối thiểu 6 ký tự'}
+                                        autoComplete="new-password"
+                                        isInvalid={!!errors.password}
+                                        disabled={isSubmitting}
+                                        {...register('password')}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {errors.password?.message}
+                                    </Form.Control.Feedback>
+                                </div>
+                                {isEditing && (
+                                    <p className={styles.fieldHint}>
+                                        <Info size={14} aria-hidden="true" />
+                                        Chỉ nhập khi bạn muốn đặt mật khẩu mới cho tài khoản này.
+                                    </p>
+                                )}
                             </Form.Group>
-                        </Col>
-                        <Col md={3}>
+                            </Col>
+                        </Row>
+                    </section>
+
+                    <section className={`${styles.section} ${styles.accessSection}`}>
+                        <div className={styles.sectionHeading}>
+                            <ShieldCheck size={18} aria-hidden="true" />
+                            <span>Phân quyền và trạng thái</span>
+                        </div>
+                        <Row className="g-3">
+                            <Col md={6}>
                             <Form.Group controlId="accountRole">
-                                <Form.Label>Vai trò</Form.Label>
-                                <Form.Select disabled={isSubmitting} {...register('role')}>
+                                <Form.Label className={styles.label}>Vai trò</Form.Label>
+                                <Form.Select className={styles.select} disabled={isSubmitting} {...register('role')}>
                                     <option value="customer">Khách hàng</option>
                                     <option value="admin">Quản trị viên</option>
                                 </Form.Select>
                             </Form.Group>
-                        </Col>
-                        <Col md={3}>
+                            </Col>
+                            <Col md={6}>
                             <Form.Group controlId="accountStatus">
-                                <Form.Label>Trạng thái</Form.Label>
-                                <Form.Select disabled={isSubmitting} {...register('status')}>
+                                <Form.Label className={styles.label}>Trạng thái</Form.Label>
+                                <Form.Select className={styles.select} disabled={isSubmitting} {...register('status')}>
                                     <option value="active">Đang hoạt động</option>
                                     <option value="blocked">Đã khóa</option>
                                 </Form.Select>
                             </Form.Group>
-                        </Col>
-                    </Row>
+                            </Col>
+                        </Row>
+                        <p className={styles.accessHint}>
+                            <CircleCheck size={15} aria-hidden="true" />
+                            Quản trị viên có quyền truy cập trung tâm quản trị và quản lý tài khoản.
+                        </p>
+                    </section>
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="light" type="button" onClick={onClose} disabled={isSubmitting}>
+                <Modal.Footer className={styles.footer}>
+                    <Button className={styles.cancelButton} variant="light" type="button" onClick={onClose} disabled={isSubmitting}>
                         Hủy
                     </Button>
-                    <Button variant="primary" type="submit" disabled={isSubmitting}>
+                    <Button className={styles.submitButton} variant="primary" type="submit" disabled={isSubmitting}>
                         {isSubmitting && <Spinner animation="border" size="sm" className="me-2" />}
+                        {!isSubmitting && <Save size={17} className="me-2" aria-hidden="true" />}
                         {isEditing ? 'Lưu thay đổi' : 'Tạo tài khoản'}
                     </Button>
                 </Modal.Footer>

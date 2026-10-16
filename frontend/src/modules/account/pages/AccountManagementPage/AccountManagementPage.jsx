@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Badge, Button, Form, Modal, Spinner, Table } from 'react-bootstrap';
 import {
+    AlertTriangle,
     LockKeyhole,
     Pencil,
     Plus,
@@ -161,6 +162,7 @@ const AccountManagementPage = () => {
         { label: 'Đang hoạt động', value: stats.active, icon: UserCheck, tone: 'green' },
         { label: 'Đã khóa', value: stats.blocked, icon: UserX, tone: 'orange' },
     ];
+    const deleting = Boolean(accountToDelete && actionLoadingId === accountToDelete.id);
 
     return (
         <section className={styles.page}>
@@ -338,18 +340,49 @@ const AccountManagementPage = () => {
                 />
             )}
 
-            <Modal show={Boolean(accountToDelete)} onHide={() => setAccountToDelete(null)} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>Xóa tài khoản</Modal.Title>
+            <Modal
+                show={Boolean(accountToDelete)}
+                onHide={() => {
+                    if (!deleting) setAccountToDelete(null);
+                }}
+                centered
+                backdrop={deleting ? 'static' : true}
+                keyboard={!deleting}
+                dialogClassName={styles.deleteDialog}
+                contentClassName={styles.deleteModal}
+            >
+                <Modal.Header className={styles.deleteHeader} closeButton={!deleting}>
+                    <Modal.Title className="visually-hidden">Xóa tài khoản</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
-                    Bạn chắc chắn muốn xóa tài khoản <strong>{accountToDelete?.fullName}</strong>? Thao tác này không thể hoàn tác.
+                <Modal.Body className={styles.deleteBody}>
+                    <span className={styles.deleteIcon}>
+                        <Trash2 size={27} aria-hidden="true" />
+                    </span>
+                    <h3>Xóa tài khoản?</h3>
+                    <p>Bạn đang chuẩn bị xóa vĩnh viễn tài khoản sau:</p>
+
+                    {accountToDelete && (
+                        <div className={styles.deleteAccountPreview}>
+                            <span className={styles.deleteAvatar}>{getInitials(accountToDelete.fullName)}</span>
+                            <span>
+                                <strong>{accountToDelete.fullName}</strong>
+                                <small>{accountToDelete.email}</small>
+                            </span>
+                        </div>
+                    )}
+
+                    <div className={styles.deleteWarning}>
+                        <AlertTriangle size={17} aria-hidden="true" />
+                        <span>Hành động này không thể hoàn tác.</span>
+                    </div>
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="light" onClick={() => setAccountToDelete(null)}>Hủy</Button>
-                    <Button variant="danger" onClick={() => void handleDelete()} disabled={Boolean(actionLoadingId)}>
-                        {actionLoadingId && <Spinner animation="border" size="sm" className="me-2" />}
-                        Xóa tài khoản
+                <Modal.Footer className={styles.deleteFooter}>
+                    <Button className={styles.deleteCancelButton} variant="light" onClick={() => setAccountToDelete(null)} disabled={deleting}>
+                        Giữ tài khoản
+                    </Button>
+                    <Button className={styles.deleteConfirmButton} variant="danger" onClick={() => void handleDelete()} disabled={deleting}>
+                        {deleting ? <Spinner animation="border" size="sm" className="me-2" /> : <Trash2 size={16} className="me-2" />}
+                        Xác nhận xóa
                     </Button>
                 </Modal.Footer>
             </Modal>
