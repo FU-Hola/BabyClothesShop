@@ -1,11 +1,11 @@
 import { Breadcrumb, Button, Card, Col, Row } from 'react-bootstrap';
-import { Plus } from 'lucide-react';
+import { ArrowUpRight, Plus } from 'lucide-react';
 import styles from './AccountSummary.module.css';
 
 const AccountSummary = ({ config, stats, onAdd }) => (
     <>
-        <header className="d-flex flex-column flex-sm-row align-items-sm-end justify-content-between gap-3 mb-4">
-            <div>
+        <header className={styles.header}>
+            <div className={styles.heading}>
                 <Breadcrumb className={styles.breadcrumb}>
                     <Breadcrumb.Item>Quản trị</Breadcrumb.Item>
                     <Breadcrumb.Item active>{config.section}</Breadcrumb.Item>
@@ -14,30 +14,40 @@ const AccountSummary = ({ config, stats, onAdd }) => (
                 <p className={styles.description}>{config.description}</p>
             </div>
             {config.canCreate && (
-                <Button className={`${styles.addButton} d-inline-flex align-items-center justify-content-center gap-2`} onClick={onAdd}>
+                <Button className={styles.addButton} onClick={onAdd}>
                     <Plus size={18} aria-hidden="true" />
                     Thêm nhân viên
                 </Button>
             )}
         </header>
 
-        <Row xs={1} sm={2} xl={4} className="g-3 mb-4">
+        <section aria-labelledby="account-overview-title" className={styles.overview}>
+            <div className={styles.overviewHeader}>
+                <div>
+                    <h2 id="account-overview-title">Tổng quan tài khoản</h2>
+                    <p>Số liệu theo trạng thái hiện tại</p>
+                </div>
+                <ArrowUpRight size={19} aria-hidden="true" />
+            </div>
+            <Row xs={1} sm={2} xl={4} className="g-3">
             {config.statItems.map(({ key, label, icon: Icon, tone }) => (
                 <Col key={key}>
-                    <Card className={`${styles.card} h-100`}>
-                        <Card.Body className="d-flex align-items-center gap-3">
-                            <span className={`${styles.icon} ${styles[tone]}`}>
-                                <Icon size={21} aria-hidden="true" />
-                            </span>
-                            <div className="overflow-hidden">
+                    <Card className={`${styles.card} ${styles[tone]} h-100`}>
+                        <Card.Body>
+                            <div className={styles.cardTop}>
                                 <Card.Subtitle className={styles.label}>{label}</Card.Subtitle>
-                                <Card.Text className={styles.value}>{stats[key]}</Card.Text>
+                                <span className={styles.icon}>
+                                    <Icon size={20} strokeWidth={1.8} aria-hidden="true" />
+                                </span>
                             </div>
+                            <Card.Text className={styles.value}>{stats[key] ?? 0}</Card.Text>
+                            <span className={styles.caption}>Tài khoản</span>
                         </Card.Body>
                     </Card>
                 </Col>
             ))}
-        </Row>
+            </Row>
+        </section>
     </>
 );
 
