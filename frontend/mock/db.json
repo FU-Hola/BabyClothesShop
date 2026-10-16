@@ -2,9 +2,9 @@
   "users": [
     {
       "id": "1",
-      "fullName": "Nguyễn Văn A",
-      "email": "demo@example.com",
-      "password": "password123",
+      "fullName": "Nguyễn Văn Admin",
+      "email": "admin@example.com",
+      "password": "admin123",
       "role": "admin",
       "status": "active",
       "createdAt": "2026-10-15T00:00:00.000Z"

@@ -51,3 +51,6 @@ lerna-debug.log*
 
 # Operating system files
 .DS_Store
+
+# Local agent instructions
+/AGENTS.md

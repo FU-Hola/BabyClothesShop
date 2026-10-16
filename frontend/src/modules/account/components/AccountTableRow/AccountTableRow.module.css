@@ -1,0 +1,111 @@
+.identity {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 230px;
+}
+
+.avatar {
+    display: grid;
+    flex: 0 0 39px;
+    width: 39px;
+    height: 39px;
+    place-items: center;
+    border-radius: 12px;
+    background: #edf3f7;
+    color: #315d80;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.identity strong,
+.identity small {
+    display: block;
+}
+
+.identity strong {
+    margin-bottom: 2px;
+    color: #2b4355;
+    font-size: 0.88rem;
+}
+
+.identity small {
+    color: #8997a3;
+    font-size: 0.75rem;
+}
+
+.adminBadge,
+.customerBadge {
+    padding: 6px 9px !important;
+    border-radius: 7px !important;
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+}
+
+.adminBadge {
+    background: #eeeaf8 !important;
+    color: #6b5192 !important;
+}
+
+.customerBadge {
+    background: #eaf2f8 !important;
+    color: #32658e !important;
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+}
+
+.status::before {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    content: '';
+}
+
+.activeStatus {
+    color: #287358;
+}
+
+.activeStatus::before {
+    background: #39a77d;
+    box-shadow: 0 0 0 3px #e4f5ee;
+}
+
+.blockedStatus {
+    color: #a75b38;
+}
+
+.blockedStatus::before {
+    background: #dd7a4b;
+    box-shadow: 0 0 0 3px #fcebe3;
+}
+
+.date {
+    white-space: nowrap;
+}
+
+.actionButton {
+    display: inline-grid !important;
+    width: 34px;
+    height: 34px;
+    padding: 0 !important;
+    place-items: center;
+    border: 1px solid #e3e8ed !important;
+    color: #5c7181 !important;
+}
+
+.actionButton:hover:not(:disabled) {
+    border-color: #b9c7d1 !important;
+    background: #f4f7f9 !important;
+    color: #284e70 !important;
+}
+
+.deleteButton:hover:not(:disabled) {
+    border-color: #f1c7c4 !important;
+    background: #fff2f1 !important;
+    color: #b64d46 !important;
+}

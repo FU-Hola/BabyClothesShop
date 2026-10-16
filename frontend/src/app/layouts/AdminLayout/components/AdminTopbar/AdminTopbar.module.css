@@ -1,0 +1,74 @@
+.topbar {
+    z-index: 1020;
+    min-height: 82px;
+    padding: 14px 32px !important;
+    border-bottom: 1px solid #e4eaf0;
+    background: rgba(255, 255, 255, 0.94) !important;
+    backdrop-filter: blur(10px);
+}
+
+.menuButton {
+    padding: 8px !important;
+    color: #284e70 !important;
+}
+
+.eyebrow {
+    margin: 0 0 2px;
+    color: #8a99a7;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.title {
+    color: #1b3954;
+    font-size: 1.22rem;
+    font-weight: 700;
+}
+
+.profile {
+    color: #2e4353;
+}
+
+.profile strong,
+.profile small {
+    display: block;
+}
+
+.profile strong {
+    font-size: 0.86rem;
+}
+
+.profile small {
+    color: #8897a5;
+    font-size: 0.72rem;
+}
+
+.avatar {
+    display: grid;
+    width: 39px;
+    height: 39px;
+    place-items: center;
+    border-radius: 12px;
+    background: #eaf0f5;
+    color: #284e70;
+    font-weight: 700;
+}
+
+@media (max-width: 991px) {
+    .topbar {
+        padding-inline: 20px !important;
+    }
+}
+
+@media (max-width: 575px) {
+    .topbar {
+        min-height: 72px;
+        padding-inline: 14px !important;
+    }
+
+    .title {
+        font-size: 1.05rem;
+    }
+}

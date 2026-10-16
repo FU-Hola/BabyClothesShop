@@ -1,21 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Badge, Button, Form, Modal, Spinner, Table } from 'react-bootstrap';
-import {
-    AlertTriangle,
-    LockKeyhole,
-    Pencil,
-    Plus,
-    RefreshCw,
-    Search,
-    ShieldCheck,
-    Trash2,
-    UnlockKeyhole,
-    UserCheck,
-    Users,
-    UserX,
-} from 'lucide-react';
+import { Alert, Card } from 'react-bootstrap';
 import accountApi from '../../api/accountApi';
+import AccountFilters from '../../components/AccountFilters/AccountFilters';
 import AccountFormModal from '../../components/AccountFormModal/AccountFormModal';
+import AccountManagementHeader from '../../components/AccountManagementHeader/AccountManagementHeader';
+import AccountPagination from '../../components/AccountPagination/AccountPagination';
+import AccountStats from '../../components/AccountStats/AccountStats';
+import AccountTable from '../../components/AccountTable/AccountTable';
+import DeleteAccountModal from '../../components/DeleteAccountModal/DeleteAccountModal';
 import styles from './AccountManagementPage.module.css';
 
 const initialStats = { total: 0, admins: 0, customers: 0, active: 0, blocked: 0 };
@@ -28,38 +20,23 @@ const getCurrentUserId = () => {
     }
 };
 
-const formatDate = (value) =>
-    new Intl.DateTimeFormat('vi-VN', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-    }).format(new Date(value));
-
-const getInitials = (name) =>
-    name
-        .split(' ')
-        .slice(-2)
-        .map((word) => word.charAt(0))
-        .join('')
-        .toUpperCase();
-
 const AccountManagementPage = () => {
-    const currentUserId = getCurrentUserId();
     const [accounts, setAccounts] = useState([]);
     const [stats, setStats] = useState(initialStats);
     const [pagination, setPagination] = useState({ page: 1, pageSize: 8, total: 0, totalPages: 1 });
     const [filters, setFilters] = useState({ search: '', role: 'all', status: 'all', page: 1 });
-    const [searchValue, setSearchValue] = useState('');
     const [loading, setLoading] = useState(true);
     const [actionLoadingId, setActionLoadingId] = useState(null);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [formAccount, setFormAccount] = useState(undefined);
     const [accountToDelete, setAccountToDelete] = useState(null);
+    const [currentUserId] = useState(getCurrentUserId);
 
     const loadAccounts = useCallback(async () => {
         setLoading(true);
         setError('');
+
         try {
             const response = await accountApi.getAccounts({ ...filters, pageSize: 8 });
             setAccounts(response.items);
@@ -107,11 +84,6 @@ const AccountManagementPage = () => {
         setFilters((current) => ({ ...current, page }));
     };
 
-    const handleSearch = (event) => {
-        event.preventDefault();
-        updateFilter('search', searchValue.trim());
-    };
-
     const handleSaved = (message) => {
         setFormAccount(undefined);
         setSuccess(message);
@@ -122,13 +94,13 @@ const AccountManagementPage = () => {
         setActionLoadingId(account.id);
         setError('');
         setSuccess('');
+
         try {
-            const nextStatus = account.status === 'active' ? 'blocked' : 'active';
             const response = await accountApi.updateAccount(account.id, {
                 fullName: account.fullName,
                 email: account.email,
                 role: account.role,
-                status: nextStatus,
+                status: account.status === 'active' ? 'blocked' : 'active',
             });
             setSuccess(response.message);
             await loadAccounts();
@@ -144,6 +116,7 @@ const AccountManagementPage = () => {
 
         setActionLoadingId(accountToDelete.id);
         setError('');
+
         try {
             const response = await accountApi.deleteAccount(accountToDelete.id);
             setAccountToDelete(null);
@@ -156,181 +129,47 @@ const AccountManagementPage = () => {
         }
     };
 
-    const statItems = [
-        { label: 'Tổng tài khoản', value: stats.total, icon: Users, tone: 'blue' },
-        { label: 'Quản trị viên', value: stats.admins, icon: ShieldCheck, tone: 'purple' },
-        { label: 'Đang hoạt động', value: stats.active, icon: UserCheck, tone: 'green' },
-        { label: 'Đã khóa', value: stats.blocked, icon: UserX, tone: 'orange' },
-    ];
     const deleting = Boolean(accountToDelete && actionLoadingId === accountToDelete.id);
 
     return (
         <section className={styles.page}>
-            <div className={styles.pageHeading}>
-                <div>
-                    <p className={styles.breadcrumb}>Quản trị / Tài khoản</p>
-                    <h2>Quản lý tài khoản</h2>
-                    <p>Theo dõi người dùng, phân quyền và kiểm soát trạng thái truy cập.</p>
-                </div>
-                <Button className={styles.addButton} onClick={() => setFormAccount(null)}>
-                    <Plus size={18} aria-hidden="true" />
-                    Thêm tài khoản
-                </Button>
-            </div>
+            <AccountManagementHeader onAddAccount={() => setFormAccount(null)} />
+            <AccountStats stats={stats} />
 
-            <div className={styles.statsGrid}>
-                {statItems.map(({ label, value, icon: Icon, tone }) => (
-                    <article className={styles.statCard} key={label}>
-                        <span className={`${styles.statIcon} ${styles[tone]}`}>
-                            <Icon size={21} aria-hidden="true" />
-                        </span>
-                        <span>
-                            <small>{label}</small>
-                            <strong>{value}</strong>
-                        </span>
-                    </article>
-                ))}
-            </div>
+            {error && (
+                <Alert variant="danger" dismissible onClose={() => setError('')}>
+                    {error}
+                </Alert>
+            )}
+            {success && (
+                <Alert variant="success" dismissible onClose={() => setSuccess('')}>
+                    {success}
+                </Alert>
+            )}
 
-            {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
-            {success && <Alert variant="success" dismissible onClose={() => setSuccess('')}>{success}</Alert>}
-
-            <div className={styles.panel}>
-                <div className={styles.toolbar}>
-                    <Form className={styles.searchForm} role="search" onSubmit={handleSearch}>
-                        <Search size={18} aria-hidden="true" />
-                        <Form.Control
-                            type="search"
-                            value={searchValue}
-                            onChange={(event) => setSearchValue(event.target.value)}
-                            placeholder="Tìm theo tên hoặc email..."
-                            aria-label="Tìm tài khoản"
-                        />
-                    </Form>
-                    <Form.Select
-                        value={filters.role}
-                        onChange={(event) => updateFilter('role', event.target.value)}
-                        aria-label="Lọc theo vai trò"
-                    >
-                        <option value="all">Tất cả vai trò</option>
-                        <option value="admin">Quản trị viên</option>
-                        <option value="customer">Khách hàng</option>
-                    </Form.Select>
-                    <Form.Select
-                        value={filters.status}
-                        onChange={(event) => updateFilter('status', event.target.value)}
-                        aria-label="Lọc theo trạng thái"
-                    >
-                        <option value="all">Tất cả trạng thái</option>
-                        <option value="active">Đang hoạt động</option>
-                        <option value="blocked">Đã khóa</option>
-                    </Form.Select>
-                    <Button variant="light" className={styles.refreshButton} onClick={() => void loadAccounts()} aria-label="Tải lại">
-                        <RefreshCw size={18} aria-hidden="true" />
-                    </Button>
-                </div>
-
-                <div className={styles.tableWrap}>
-                    <Table responsive hover className={styles.accountTable}>
-                        <thead>
-                            <tr>
-                                <th>Tài khoản</th>
-                                <th>Vai trò</th>
-                                <th>Trạng thái</th>
-                                <th>Ngày tạo</th>
-                                <th className="text-end">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {!loading && accounts.map((account) => {
-                                const isCurrentAccount = String(account.id) === String(currentUserId);
-                                const isActionLoading = actionLoadingId === account.id;
-                                return (
-                                    <tr key={account.id}>
-                                        <td>
-                                            <div className={styles.accountIdentity}>
-                                                <span className={styles.accountAvatar}>{getInitials(account.fullName)}</span>
-                                                <span>
-                                                    <strong>{account.fullName}</strong>
-                                                    <small>{account.email}</small>
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <Badge className={account.role === 'admin' ? styles.adminBadge : styles.customerBadge}>
-                                                {account.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}
-                                            </Badge>
-                                        </td>
-                                        <td>
-                                            <span className={`${styles.status} ${account.status === 'active' ? styles.activeStatus : styles.blockedStatus}`}>
-                                                {account.status === 'active' ? 'Hoạt động' : 'Đã khóa'}
-                                            </span>
-                                        </td>
-                                        <td className={styles.dateCell}>{formatDate(account.createdAt)}</td>
-                                        <td>
-                                            <div className={styles.actions}>
-                                                <Button variant="light" onClick={() => setFormAccount(account)} aria-label={`Sửa ${account.fullName}`} title="Chỉnh sửa">
-                                                    <Pencil size={16} />
-                                                </Button>
-                                                <Button
-                                                    variant="light"
-                                                    onClick={() => void handleToggleStatus(account)}
-                                                    disabled={isCurrentAccount || isActionLoading}
-                                                    aria-label={`${account.status === 'active' ? 'Khóa' : 'Mở khóa'} ${account.fullName}`}
-                                                    title={isCurrentAccount ? 'Không thể khóa tài khoản đang dùng' : account.status === 'active' ? 'Khóa' : 'Mở khóa'}
-                                                >
-                                                    {isActionLoading ? <Spinner animation="border" size="sm" /> : account.status === 'active' ? <LockKeyhole size={16} /> : <UnlockKeyhole size={16} />}
-                                                </Button>
-                                                <Button
-                                                    variant="light"
-                                                    className={styles.deleteButton}
-                                                    onClick={() => setAccountToDelete(account)}
-                                                    disabled={isCurrentAccount || isActionLoading}
-                                                    aria-label={`Xóa ${account.fullName}`}
-                                                    title={isCurrentAccount ? 'Không thể xóa tài khoản đang dùng' : 'Xóa'}
-                                                >
-                                                    <Trash2 size={16} />
-                                                </Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </Table>
-
-                    {loading && (
-                        <div className={styles.stateMessage}>
-                            <Spinner animation="border" size="sm" />
-                            <span>Đang tải danh sách tài khoản...</span>
-                        </div>
-                    )}
-                    {!loading && accounts.length === 0 && (
-                        <div className={styles.stateMessage}>Không tìm thấy tài khoản phù hợp.</div>
-                    )}
-                </div>
-
-                <div className={styles.paginationBar}>
-                    <span>Hiển thị {accounts.length} / {pagination.total} tài khoản</span>
-                    <div>
-                        <Button
-                            variant="light"
-                            disabled={pagination.page <= 1 || loading}
-                            onClick={() => changePage(pagination.page - 1)}
-                        >
-                            Trước
-                        </Button>
-                        <span>Trang {pagination.page} / {pagination.totalPages}</span>
-                        <Button
-                            variant="light"
-                            disabled={pagination.page >= pagination.totalPages || loading}
-                            onClick={() => changePage(pagination.page + 1)}
-                        >
-                            Sau
-                        </Button>
-                    </div>
-                </div>
-            </div>
+            <Card className={styles.panel}>
+                <AccountFilters
+                    filters={filters}
+                    loading={loading}
+                    onFilterChange={updateFilter}
+                    onRefresh={() => void loadAccounts()}
+                />
+                <AccountTable
+                    accounts={accounts}
+                    actionLoadingId={actionLoadingId}
+                    currentUserId={currentUserId}
+                    loading={loading}
+                    onDelete={setAccountToDelete}
+                    onEdit={setFormAccount}
+                    onToggleStatus={(account) => void handleToggleStatus(account)}
+                />
+                <AccountPagination
+                    count={accounts.length}
+                    loading={loading}
+                    pagination={pagination}
+                    onPageChange={changePage}
+                />
+            </Card>
 
             {formAccount !== undefined && (
                 <AccountFormModal
@@ -340,52 +179,14 @@ const AccountManagementPage = () => {
                 />
             )}
 
-            <Modal
-                show={Boolean(accountToDelete)}
-                onHide={() => {
+            <DeleteAccountModal
+                account={accountToDelete}
+                deleting={deleting}
+                onClose={() => {
                     if (!deleting) setAccountToDelete(null);
                 }}
-                centered
-                backdrop={deleting ? 'static' : true}
-                keyboard={!deleting}
-                dialogClassName={styles.deleteDialog}
-                contentClassName={styles.deleteModal}
-            >
-                <Modal.Header className={styles.deleteHeader} closeButton={!deleting}>
-                    <Modal.Title className="visually-hidden">Xóa tài khoản</Modal.Title>
-                </Modal.Header>
-                <Modal.Body className={styles.deleteBody}>
-                    <span className={styles.deleteIcon}>
-                        <Trash2 size={27} aria-hidden="true" />
-                    </span>
-                    <h3>Xóa tài khoản?</h3>
-                    <p>Bạn đang chuẩn bị xóa vĩnh viễn tài khoản sau:</p>
-
-                    {accountToDelete && (
-                        <div className={styles.deleteAccountPreview}>
-                            <span className={styles.deleteAvatar}>{getInitials(accountToDelete.fullName)}</span>
-                            <span>
-                                <strong>{accountToDelete.fullName}</strong>
-                                <small>{accountToDelete.email}</small>
-                            </span>
-                        </div>
-                    )}
-
-                    <div className={styles.deleteWarning}>
-                        <AlertTriangle size={17} aria-hidden="true" />
-                        <span>Hành động này không thể hoàn tác.</span>
-                    </div>
-                </Modal.Body>
-                <Modal.Footer className={styles.deleteFooter}>
-                    <Button className={styles.deleteCancelButton} variant="light" onClick={() => setAccountToDelete(null)} disabled={deleting}>
-                        Giữ tài khoản
-                    </Button>
-                    <Button className={styles.deleteConfirmButton} variant="danger" onClick={() => void handleDelete()} disabled={deleting}>
-                        {deleting ? <Spinner animation="border" size="sm" className="me-2" /> : <Trash2 size={16} className="me-2" />}
-                        Xác nhận xóa
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+                onConfirm={() => void handleDelete()}
+            />
         </section>
     );
 };

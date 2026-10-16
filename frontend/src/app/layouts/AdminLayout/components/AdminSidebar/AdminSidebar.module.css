@@ -1,0 +1,133 @@
+.sidebar:global(.offcanvas-lg) {
+    width: 280px !important;
+    flex: 0 0 280px;
+    border: 0 !important;
+    background: linear-gradient(180deg, #1b3954 0%, #132b40 100%) !important;
+    color: #fff !important;
+}
+
+.header {
+    display: flex !important;
+    min-height: 91px;
+    margin: 0 18px;
+    padding: 20px 6px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header :global(.offcanvas-title) {
+    line-height: inherit;
+}
+
+.header :global(.btn-close) {
+    box-shadow: none !important;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #fff;
+    text-decoration: none;
+}
+
+.brand:hover {
+    color: #fff;
+}
+
+.brandIcon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.brand strong,
+.brand small {
+    display: block;
+}
+
+.brand strong {
+    font-size: 1.08rem;
+    letter-spacing: 0.02em;
+}
+
+.brand small {
+    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.body {
+    display: flex;
+    flex-grow: 1 !important;
+    flex-direction: column;
+    padding: 4px 18px 24px !important;
+}
+
+.navLabel {
+    margin: 20px 12px 9px;
+    color: rgba(255, 255, 255, 0.46);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.navItem,
+.footerItem {
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    min-height: 48px;
+    padding: 10px 12px !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.72) !important;
+    font-size: 0.91rem !important;
+    text-decoration: none;
+    transition: background 160ms ease, color 160ms ease;
+}
+
+.navItem:hover,
+.navItem.active,
+.footerItem:hover {
+    background: rgba(255, 255, 255, 0.11) !important;
+    color: #fff !important;
+}
+
+.navItem.active {
+    box-shadow: inset 3px 0 #e5a96b;
+}
+
+.disabledItem {
+    cursor: default;
+    opacity: 0.46;
+}
+
+.disabledItem small {
+    font-size: 0.67rem;
+}
+
+.footer {
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footerItem {
+    width: 100%;
+    min-height: 42px;
+    font-size: 0.88rem !important;
+    text-align: left;
+}
+
+@media (max-width: 575px) {
+    .sidebar {
+        width: min(88vw, 300px) !important;
+    }
+}

@@ -1,0 +1,47 @@
+.breadcrumb {
+    margin-bottom: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.breadcrumb :global(.breadcrumb) {
+    margin-bottom: 0;
+}
+
+.breadcrumb :global(.breadcrumb-item),
+.breadcrumb :global(.breadcrumb-item a) {
+    color: #8493a1;
+    text-decoration: none;
+}
+
+.title {
+    margin: 0;
+    color: #1b3954;
+    font-size: clamp(1.55rem, 2.5vw, 2rem);
+    font-weight: 700;
+}
+
+.description {
+    margin: 8px 0 0;
+    color: #71818f;
+    font-size: 0.9rem;
+}
+
+.addButton {
+    min-height: 42px;
+    padding-inline: 18px !important;
+    border-color: #284e70 !important;
+    background: #284e70 !important;
+    white-space: nowrap;
+}
+
+.addButton:hover {
+    border-color: #1b3954 !important;
+    background: #1b3954 !important;
+}
+
+@media (max-width: 575px) {
+    .addButton {
+        width: 100%;
+    }
+}
