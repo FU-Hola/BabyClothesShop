@@ -73,7 +73,8 @@ const LoginForm = () => {
                 localStorage.setItem('user', JSON.stringify(data.user));
             }
 
-            navigate('/');
+            const destination = location.state?.from || (data.user?.role === 'admin' ? '/admin/accounts' : '/');
+            navigate(destination, { replace: true });
         } catch (err) {
             const msg =
                 err.response?.data?.message ||
