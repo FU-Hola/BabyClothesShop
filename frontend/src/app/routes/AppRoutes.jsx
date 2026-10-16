@@ -10,6 +10,7 @@ const AdminLayout = lazy(() => import('../layouts/AdminLayout/AdminLayout'));
 const AccountManagementPage = lazy(
     () => import('../../modules/account/pages/AccountManagementPage/AccountManagementPage')
 );
+const ExceptionPage = lazy(() => import('../pages/ExceptionPage/ExceptionPage'));
 
 const AppRoutes = () => {
     return (
@@ -34,6 +35,9 @@ const AppRoutes = () => {
                         <Route path="customers" element={<AccountManagementPage key="customer" accountType="customer" />} />
                     </Route>
                 </Route>
+                <Route path="/403" element={<ExceptionPage statusCode={403} />} />
+                <Route path="/404" element={<ExceptionPage statusCode={404} />} />
+                <Route path="*" element={<ExceptionPage statusCode={404} />} />
             </Routes>
         </Suspense>
     );

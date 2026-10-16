@@ -18,7 +18,7 @@ const AdminRoute = () => {
     }
 
     if (user.role !== 'admin' || user.status !== 'active' || user.deletedAt) {
-        return <Navigate to="/" replace />;
+        return <Navigate to="/403" replace state={{ from: location.pathname }} />;
     }
 
     return <Outlet />;
