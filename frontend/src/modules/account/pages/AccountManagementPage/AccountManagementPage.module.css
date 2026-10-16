@@ -3,10 +3,3 @@
     max-width: 1440px;
     margin: 0 auto;
 }
-
-.panel {
-    overflow: hidden;
-    border-color: #e3e9ee !important;
-    border-radius: 15px !important;
-    box-shadow: 0 7px 24px rgba(28, 53, 75, 0.05);
-}

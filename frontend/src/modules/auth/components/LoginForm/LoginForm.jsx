@@ -73,7 +73,9 @@ const LoginForm = () => {
                 localStorage.setItem('user', JSON.stringify(data.user));
             }
 
-            const destination = location.state?.from || (data.user?.role === 'admin' ? '/admin/accounts' : '/');
+            const destination = data.user?.role === 'admin'
+                ? location.state?.from || '/admin/staff'
+                : '/';
             navigate(destination, { replace: true });
         } catch (err) {
             const msg =

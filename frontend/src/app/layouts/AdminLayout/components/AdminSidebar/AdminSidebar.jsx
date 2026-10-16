@@ -9,7 +9,8 @@ import {
     ShieldCheck,
     ShoppingBag,
     Store,
-    Users,
+    UserRoundCog,
+    UsersRound,
 } from 'lucide-react';
 import styles from './AdminSidebar.module.css';
 
@@ -30,7 +31,7 @@ const AdminSidebar = ({ show, onClose, onLogout }) => (
     >
         <Offcanvas.Header closeButton closeVariant="white" className={styles.header}>
             <Offcanvas.Title>
-                <Link className={styles.brand} to="/admin/accounts" onClick={onClose}>
+                <Link className={styles.brand} to="/admin/staff" onClick={onClose}>
                     <span className={styles.brandIcon}>
                         <ShieldCheck size={22} aria-hidden="true" />
                     </span>
@@ -47,11 +48,20 @@ const AdminSidebar = ({ show, onClose, onLogout }) => (
                 <p className={styles.navLabel}>Quản trị</p>
                 <NavLink
                     className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
-                    to="/admin/accounts"
+                    to="/admin/staff"
                     onClick={onClose}
                 >
-                    <Users size={19} aria-hidden="true" />
-                    <span>Quản lý tài khoản</span>
+                    <UserRoundCog size={19} aria-hidden="true" />
+                    <span>Nhân viên</span>
+                    <ChevronRight className="ms-auto" size={16} aria-hidden="true" />
+                </NavLink>
+                <NavLink
+                    className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+                    to="/admin/customers"
+                    onClick={onClose}
+                >
+                    <UsersRound size={19} aria-hidden="true" />
+                    <span>Khách hàng</span>
                     <ChevronRight className="ms-auto" size={16} aria-hidden="true" />
                 </NavLink>
 

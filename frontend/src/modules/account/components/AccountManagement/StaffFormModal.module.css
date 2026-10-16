@@ -1,0 +1,5 @@
+.modal { overflow: hidden; border: 0 !important; border-radius: 18px !important; box-shadow: 0 24px 65px rgba(23, 49, 71, 0.22) !important; }
+.header { display: flex; align-items: center !important; gap: 13px; padding: 20px 24px !important; background: #f8fafc; }
+.header p { margin: 3px 0 0; color: #788894; font-size: 0.8rem; }
+.icon { display: grid; flex: 0 0 43px; width: 43px; height: 43px; place-items: center; border-radius: 12px; background: #284e70; color: #fff; }
+.footer { padding: 16px 24px !important; background: #fafbfd; }

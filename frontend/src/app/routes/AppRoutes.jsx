@@ -28,8 +28,10 @@ const AppRoutes = () => {
                 </Route>
                 <Route element={<AdminRoute />}>
                     <Route path="/admin" element={<AdminLayout />}>
-                        <Route index element={<Navigate to="accounts" replace />} />
-                        <Route path="accounts" element={<AccountManagementPage />} />
+                        <Route index element={<Navigate to="staff" replace />} />
+                        <Route path="accounts" element={<Navigate to="/admin/staff" replace />} />
+                        <Route path="staff" element={<AccountManagementPage key="staff" accountType="staff" />} />
+                        <Route path="customers" element={<AccountManagementPage key="customer" accountType="customer" />} />
                     </Route>
                 </Route>
             </Routes>

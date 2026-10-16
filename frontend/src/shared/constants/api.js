@@ -7,5 +7,6 @@ export const AUTH_ENDPOINTS = {
 };
 
 export const ADMIN_ENDPOINTS = {
-    ACCOUNTS: '/admin/accounts',
+    STAFF: '/admin/staff',
+    CUSTOMERS: '/admin/customers',
 };
