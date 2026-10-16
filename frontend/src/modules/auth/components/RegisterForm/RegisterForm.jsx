@@ -1,91 +1,61 @@
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Form, InputGroup, Button, Alert, Badge, Spinner } from 'react-bootstrap';
 import { User, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import authApi from '../../api/authApi';
 import authBanner from '../../../../shared/assets/auth-banner.png';
+import registerSchema from './registerSchema';
 import styles from './RegisterForm.module.css';
 
 const RegisterForm = () => {
     const navigate = useNavigate();
 
-    const [formData, setFormData] = useState({
-        fullName: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-    });
-
-    const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [serverError, setServerError] = useState('');
-    const [loading, setLoading] = useState(false);
+    const {
+        register,
+        handleSubmit,
+        trigger,
+        getFieldState,
+        formState: { errors, isSubmitting },
+    } = useForm({
+        resolver: zodResolver(registerSchema),
+        mode: 'onTouched',
+        reValidateMode: 'onChange',
+        defaultValues: {
+            fullName: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+        },
+    });
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+    const registerField = (name) =>
+        register(name, {
+            onChange: () => {
+                if (serverError) setServerError('');
+                if (name === 'password' && getFieldState('confirmPassword').isTouched) {
+                    void trigger('confirmPassword');
+                }
+            },
+        });
 
-        if (errors[name] || (name === 'password' && errors.confirmPassword)) {
-            setErrors((prev) => ({
-                ...prev,
-                [name]: '',
-                ...(name === 'password' ? { confirmPassword: '' } : {}),
-            }));
-        }
-        if (serverError) setServerError('');
-    };
-
-    const validate = () => {
-        const newErrors = {};
-
-        if (!formData.fullName.trim()) {
-            newErrors.fullName = 'Vui lòng nhập họ và tên';
-        } else if (formData.fullName.trim().length < 2) {
-            newErrors.fullName = 'Họ và tên phải có ít nhất 2 ký tự';
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!formData.email.trim()) {
-            newErrors.email = 'Vui lòng nhập địa chỉ email';
-        } else if (!emailRegex.test(formData.email.trim())) {
-            newErrors.email = 'Email không hợp lệ (ví dụ: ten@gmail.com)';
-        }
-
-        if (!formData.password) {
-            newErrors.password = 'Vui lòng nhập mật khẩu';
-        } else if (formData.password.length < 6) {
-            newErrors.password = 'Mật khẩu phải chứa ít nhất 6 ký tự';
-        }
-
-        if (!formData.confirmPassword) {
-            newErrors.confirmPassword = 'Vui lòng xác nhận lại mật khẩu';
-        } else if (formData.password !== formData.confirmPassword) {
-            newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp';
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const onSubmit = async ({ fullName, email, password }) => {
         setServerError('');
-
-        if (!validate()) return;
-
-        setLoading(true);
         try {
             await authApi.register({
-                fullName: formData.fullName.trim(),
-                email: formData.email.trim(),
-                password: formData.password,
+                fullName,
+                email,
+                password,
             });
 
             navigate('/login', {
                 state: {
                     message: 'Đăng ký thành công! Vui lòng đăng nhập.',
-                    email: formData.email.trim(),
+                    email,
                 },
             });
         } catch (err) {
@@ -94,8 +64,6 @@ const RegisterForm = () => {
                 err.message ||
                 'Đăng ký không thành công. Vui lòng thử lại sau!';
             setServerError(msg);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -141,7 +109,7 @@ const RegisterForm = () => {
                         </Alert>
                     )}
 
-                    <Form onSubmit={handleSubmit} noValidate>
+                    <Form onSubmit={handleSubmit(onSubmit)} noValidate>
                         <Form.Group className="mb-3" controlId="registerFullName">
                             <Form.Label className="fw-semibold small text-primary mb-1">
                                 Họ và tên *
@@ -152,17 +120,15 @@ const RegisterForm = () => {
                                 </InputGroup.Text>
                                 <Form.Control
                                     type="text"
-                                    name="fullName"
                                     placeholder="Nguyễn Văn A"
-                                    value={formData.fullName}
-                                    onChange={handleChange}
+                                    {...registerField('fullName')}
                                     autoComplete="name"
                                     isInvalid={!!errors.fullName}
-                                    disabled={loading}
+                                    disabled={isSubmitting}
                                     className="bg-light border-start-0 rounded-end-3 py-2"
                                 />
                                 <Form.Control.Feedback type="invalid" className="small">
-                                    {errors.fullName}
+                                    {errors.fullName?.message}
                                 </Form.Control.Feedback>
                             </InputGroup>
                         </Form.Group>
@@ -177,17 +143,15 @@ const RegisterForm = () => {
                                 </InputGroup.Text>
                                 <Form.Control
                                     type="email"
-                                    name="email"
                                     placeholder="example@gmail.com"
-                                    value={formData.email}
-                                    onChange={handleChange}
+                                    {...registerField('email')}
                                     autoComplete="email"
                                     isInvalid={!!errors.email}
-                                    disabled={loading}
+                                    disabled={isSubmitting}
                                     className="bg-light border-start-0 rounded-end-3 py-2"
                                 />
                                 <Form.Control.Feedback type="invalid" className="small">
-                                    {errors.email}
+                                    {errors.email?.message}
                                 </Form.Control.Feedback>
                             </InputGroup>
                         </Form.Group>
@@ -202,13 +166,11 @@ const RegisterForm = () => {
                                 </InputGroup.Text>
                                 <Form.Control
                                     type={showPassword ? 'text' : 'password'}
-                                    name="password"
                                     placeholder="Tối thiểu 6 ký tự"
-                                    value={formData.password}
-                                    onChange={handleChange}
+                                    {...registerField('password')}
                                     autoComplete="new-password"
                                     isInvalid={!!errors.password}
-                                    disabled={loading}
+                                    disabled={isSubmitting}
                                     className="bg-light border-start-0 border-end-0 py-2"
                                 />
                                 <Button
@@ -221,7 +183,7 @@ const RegisterForm = () => {
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </Button>
                                 <Form.Control.Feedback type="invalid" className="small">
-                                    {errors.password}
+                                    {errors.password?.message}
                                 </Form.Control.Feedback>
                             </InputGroup>
                         </Form.Group>
@@ -236,13 +198,11 @@ const RegisterForm = () => {
                                 </InputGroup.Text>
                                 <Form.Control
                                     type={showConfirmPassword ? 'text' : 'password'}
-                                    name="confirmPassword"
                                     placeholder="Nhập lại mật khẩu"
-                                    value={formData.confirmPassword}
-                                    onChange={handleChange}
+                                    {...registerField('confirmPassword')}
                                     autoComplete="new-password"
                                     isInvalid={!!errors.confirmPassword}
-                                    disabled={loading}
+                                    disabled={isSubmitting}
                                     className="bg-light border-start-0 border-end-0 py-2"
                                 />
                                 <Button
@@ -255,7 +215,7 @@ const RegisterForm = () => {
                                     {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </Button>
                                 <Form.Control.Feedback type="invalid" className="small">
-                                    {errors.confirmPassword}
+                                    {errors.confirmPassword?.message}
                                 </Form.Control.Feedback>
                             </InputGroup>
                         </Form.Group>
@@ -263,10 +223,10 @@ const RegisterForm = () => {
                         <Button
                             variant="primary"
                             type="submit"
-                            disabled={loading}
+                            disabled={isSubmitting}
                             className={`${styles.submitButton} w-100 py-2 mt-3 fw-semibold rounded-3 shadow-sm d-flex align-items-center justify-content-center gap-2`}
                         >
-                            {loading ? (
+                            {isSubmitting ? (
                                 <>
                                     <Spinner animation="border" size="sm" />
                                     <span>Đang xử lý...</span>
