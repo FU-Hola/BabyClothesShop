@@ -1,0 +1,425 @@
+/* ==========================================================================
+   Baby Clothes Shop - Admin & Warehouse Modern Design System
+   Matches Group Style: Exact Navy Blue Sidebar sampled from project screenshot
+   ========================================================================== */
+
+.goods-receipt-packing {
+  --admin-bg: #f4f6fa;
+  /* Sidebar colors sampled directly from the user's screenshot */
+  --sidebar-bg: #162c44;
+  --sidebar-gradient: linear-gradient(180deg, #1b3854 0%, #142a40 100%);
+  --sidebar-hover: #223f60;
+  --sidebar-active-bg: #274669;
+  --sidebar-active-border: #d4a359;
+  --sidebar-text: #a3b8cd;
+  --sidebar-text-active: #ffffff;
+  --primary-navy: #162c44;
+  --primary-navy-hover: #1f3e60;
+  --card-bg: #ffffff;
+  --card-border: #eef2f6;
+  --text-dark: #1e293b;
+  --text-muted: #64748b;
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.goods-receipt-packing:not(.modal) {
+  margin: 0;
+  padding: 0;
+  background-color: var(--admin-bg);
+  color: var(--text-dark);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   Card & Container Components
+   ========================================================================== */
+.goods-receipt-packing .admin-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.goods-receipt-packing .admin-card:hover {
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+/* Stat Cards */
+.goods-receipt-packing .stat-card {
+  background-color: #ffffff;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.goods-receipt-packing .stat-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.goods-receipt-packing .stat-icon-blue {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.goods-receipt-packing .stat-icon-purple {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+}
+
+.goods-receipt-packing .stat-icon-green {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.goods-receipt-packing .stat-icon-amber {
+  background-color: #fff7ed;
+  color: #ea580c;
+}
+
+.goods-receipt-packing .stat-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+  font-weight: 500;
+}
+
+.goods-receipt-packing .stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.2;
+}
+
+/* ==========================================================================
+   Sidebar Styling (Lighter, Authentic Navy from Screenshot)
+   ========================================================================== */
+.goods-receipt-packing .warehouse-sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background: var(--sidebar-gradient);
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.goods-receipt-packing .sidebar-brand {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.goods-receipt-packing .sidebar-logo-icon {
+  width: 38px;
+  height: 38px;
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 20px;
+}
+
+.goods-receipt-packing .sidebar-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #7b95b0;
+  text-transform: uppercase;
+  padding: 16px 20px 8px;
+}
+
+.goods-receipt-packing .sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  margin: 3px 14px;
+  border-radius: 10px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.goods-receipt-packing .sidebar-nav-item:hover {
+  background-color: var(--sidebar-hover);
+  color: #ffffff;
+}
+
+.goods-receipt-packing .sidebar-nav-item.active {
+  background-color: var(--sidebar-active-bg);
+  color: var(--sidebar-text-active);
+  border: 1px solid var(--sidebar-active-border);
+  box-shadow: 0 2px 8px rgba(10, 25, 45, 0.3);
+}
+
+.goods-receipt-packing .sidebar-nav-item.active .nav-icon {
+  color: #f6ad55;
+}
+
+.goods-receipt-packing .sidebar-footer {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ==========================================================================
+   Header & Breadcrumb
+   ========================================================================== */
+.goods-receipt-packing .admin-topbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--card-border);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.goods-receipt-packing .topbar-subtitle {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.goods-receipt-packing .topbar-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.goods-receipt-packing .user-avatar-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  color: #1e293b;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+.goods-receipt-packing .page-breadcrumb {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.goods-receipt-packing .page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+}
+
+.goods-receipt-packing .page-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Buttons & Inputs
+   ========================================================================== */
+.goods-receipt-packing .btn-primary-navy {
+  background-color: var(--primary-navy);
+  border-color: var(--primary-navy);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 8px 18px;
+  transition: all 0.2s ease;
+}
+
+.goods-receipt-packing .btn-primary-navy:hover,
+.goods-receipt-packing .btn-primary-navy:focus {
+  background-color: var(--primary-navy-hover);
+  border-color: var(--primary-navy-hover);
+  color: #ffffff;
+}
+
+.goods-receipt-packing .search-input-group {
+  position: relative;
+}
+
+.goods-receipt-packing .search-input-group .search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 15px;
+  pointer-events: none;
+}
+
+.goods-receipt-packing .search-input-group .form-control {
+  padding-left: 38px;
+  border-radius: 8px;
+  border-color: #e2e8f0;
+  font-size: 14px;
+}
+
+.goods-receipt-packing .search-input-group .form-control:focus {
+  border-color: #162c44;
+  box-shadow: 0 0 0 3px rgba(22, 44, 68, 0.12);
+}
+
+.goods-receipt-packing .admin-select {
+  border-radius: 8px;
+  border-color: #e2e8f0;
+  font-size: 14px;
+}
+
+.goods-receipt-packing .admin-select:focus {
+  border-color: #162c44;
+  box-shadow: 0 0 0 3px rgba(22, 44, 68, 0.12);
+}
+
+/* ==========================================================================
+   Table & Badges
+   ========================================================================== */
+.goods-receipt-packing .admin-table {
+  width: 100%;
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.goods-receipt-packing .admin-table thead th {
+  background-color: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  border-top: none;
+}
+
+.goods-receipt-packing .admin-table tbody td {
+  padding: 14px 16px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+}
+
+.goods-receipt-packing .admin-table tbody tr:hover td {
+  background-color: #f8fafc;
+}
+
+.goods-receipt-packing .admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status Badges with Dots */
+.goods-receipt-packing .status-badge-dot {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+.goods-receipt-packing .status-badge-dot::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.goods-receipt-packing .status-badge-success {
+  background-color: #f0fdf4;
+  color: #15803d;
+}
+.goods-receipt-packing .status-badge-success::before {
+  background-color: #22c55e;
+}
+
+.goods-receipt-packing .status-badge-warning {
+  background-color: #fffbeb;
+  color: #b45309;
+}
+.goods-receipt-packing .status-badge-warning::before {
+  background-color: #f59e0b;
+}
+
+.goods-receipt-packing .status-badge-info {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+}
+.goods-receipt-packing .status-badge-info::before {
+  background-color: #3b82f6;
+}
+
+.goods-receipt-packing .status-badge-neutral {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+.goods-receipt-packing .status-badge-neutral::before {
+  background-color: #94a3b8;
+}
+
+/* Soft Role / Category Badges */
+.goods-receipt-packing .badge-soft-primary {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-weight: 500;
+}
+
+.goods-receipt-packing .badge-soft-secondary {
+  background-color: #f1f5f9;
+  color: #475569;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-weight: 500;
+}
+
+.goods-receipt-packing .action-btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  background-color: transparent;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.goods-receipt-packing .action-btn-icon:hover {
+  background-color: #f1f5f9;
+  color: #162c44;
+  border-color: #e2e8f0;
+}

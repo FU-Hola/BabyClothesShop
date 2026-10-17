@@ -15,8 +15,13 @@ import LoginPage from "../../modules/auth/pages/LoginPage/LoginPage";
 import storeStaffRoutes from "../router/store-staff.routes.jsx";
 import warehouseStaffRoutes from "../router/warehouse-staff.routes.jsx";
 import { cartCheckoutRouteList } from "../../modules/cart-checkout/routes";
+import WarehouseOperations from "../../modules/goods-receipt-packing/pages/WarehouseOperations.jsx";
 
 const router = createBrowserRouter([
+    {
+        path: "/warehouse-operations",
+        element: <WarehouseOperations />
+    },
     {
         element: <MainLayout />,
         errorElement: <div>404</div>,
