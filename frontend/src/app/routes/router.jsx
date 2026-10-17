@@ -14,12 +14,14 @@ import RegisterPage from "../../modules/auth/pages/RegisterPage/RegisterPage";
 import LoginPage from "../../modules/auth/pages/LoginPage/LoginPage";
 import storeStaffRoutes from "../router/store-staff.routes.jsx";
 import warehouseStaffRoutes from "../router/warehouse-staff.routes.jsx";
+import { cartCheckoutRouteList } from "../../modules/cart-checkout/routes";
 
 const router = createBrowserRouter([
     {
         element: <MainLayout />,
         errorElement: <div>404</div>,
         children: [
+            ...cartCheckoutRouteList,
             {
                 path: "/register",
                 element: <RegisterPage />
