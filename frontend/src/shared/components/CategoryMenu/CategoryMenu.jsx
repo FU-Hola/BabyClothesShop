@@ -2,9 +2,14 @@ import { NavLink } from "react-router-dom";
 import styles from "./CategoryMenu.module.css";
 
 const categories = [
-    { to: "/quan-ao-so-sinh", firstLine: "quần áo", secondLine: "sơ sinh" },
-    { to: "/thoi-trang-be-gai", firstLine: "thời trang", secondLine: "bé gái" },
-    { to: "/thoi-trang-be-trai", firstLine: "thời trang", secondLine: "bé trai" },
+    { to: "/ao-so-mi", firstLine: "áo sơ mi" },
+    { to: "/ao-thun", firstLine: "áo thun" },
+    { to: "/ao-polo", firstLine: "thời trang" },
+    { to: "/ao-khoac", firstLine: "áo khoác" },
+    { to: "/quan-jean", firstLine: "quần jean" },
+    { to: "/quan-dai", firstLine: "quần dài" },
+    { to: "/quan-short", firstLine: "quần short" }
+
 ];
 
 const CategoryMenu = () => {
@@ -20,7 +25,6 @@ const CategoryMenu = () => {
                             }
                         >
                             <span>{category.firstLine}</span>
-                            <span>{category.secondLine}</span>
                         </NavLink>
                     </li>
                 ))}

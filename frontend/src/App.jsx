@@ -1,19 +1,7 @@
-import Header from "./shared/components/Header/Header";
-import MainHeader from "./shared/components/MainHeader/MainHeader";
-import CategoryMenu from "./shared/components/CategoryMenu/CategoryMenu";
+import { RouterProvider } from "react-router-dom";
+import router from "./app/routes/router";
 
 
-const App = () => {
-    return (
-        <>
-            <Header></Header>
-            <MainHeader />
-            <CategoryMenu />
-            <main>
 
-            </main>
-        </>
-    )
-
-}
+const App = () => <RouterProvider router={router} />
 export default App;
