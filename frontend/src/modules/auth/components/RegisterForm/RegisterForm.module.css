@@ -1,0 +1,50 @@
+.card {
+    width: 100%;
+    max-width: 920px;
+    margin: 40px auto;
+    --bs-primary-rgb: 40, 78, 112;
+}
+
+.bannerSide {
+    min-height: 480px;
+}
+
+.bannerOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(40, 78, 112, 0.25) 0%,
+        rgba(31, 61, 89, 0.85) 75%,
+        rgba(22, 46, 68, 0.95) 100%
+    );
+    z-index: 2;
+}
+
+.memberBadge {
+    background-color: #eef4f8 !important;
+    color: #284e70 !important;
+}
+
+.submitButton {
+    --bs-btn-bg: #284e70;
+    --bs-btn-border-color: #284e70;
+    --bs-btn-hover-bg: #1f3d59;
+    --bs-btn-hover-border-color: #1f3d59;
+    --bs-btn-active-bg: #162e44;
+    --bs-btn-active-border-color: #162e44;
+    --bs-btn-focus-shadow-rgb: 40, 78, 112;
+}
+
+.card :global(.form-control:focus) {
+    border-color: #284e70;
+    box-shadow: 0 0 0 0.25rem rgba(40, 78, 112, 0.15);
+}
+
+.brandBadge {
+    background: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+    letter-spacing: 0.5px;
+}
