@@ -1,0 +1,425 @@
+/* ==========================================================================
+   Baby Clothes Shop - Admin & Warehouse Modern Design System
+   Matches Group Style: Exact Navy Blue Sidebar sampled from project screenshot
+   ========================================================================== */
+
+:root {
+  --admin-bg: #f4f6fa;
+  /* Sidebar colors sampled directly from the user's screenshot */
+  --sidebar-bg: #162c44;
+  --sidebar-gradient: linear-gradient(180deg, #1b3854 0%, #142a40 100%);
+  --sidebar-hover: #223f60;
+  --sidebar-active-bg: #274669;
+  --sidebar-active-border: #d4a359;
+  --sidebar-text: #a3b8cd;
+  --sidebar-text-active: #ffffff;
+  --primary-navy: #162c44;
+  --primary-navy-hover: #1f3e60;
+  --card-bg: #ffffff;
+  --card-border: #eef2f6;
+  --text-dark: #1e293b;
+  --text-muted: #64748b;
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--admin-bg);
+  color: var(--text-dark);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   Card & Container Components
+   ========================================================================== */
+.admin-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.admin-card:hover {
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+/* Stat Cards */
+.stat-card {
+  background-color: #ffffff;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.stat-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.stat-icon-blue {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.stat-icon-purple {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+}
+
+.stat-icon-green {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.stat-icon-amber {
+  background-color: #fff7ed;
+  color: #ea580c;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.2;
+}
+
+/* ==========================================================================
+   Sidebar Styling (Lighter, Authentic Navy from Screenshot)
+   ========================================================================== */
+.warehouse-sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background: var(--sidebar-gradient);
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-brand {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-logo-icon {
+  width: 38px;
+  height: 38px;
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 20px;
+}
+
+.sidebar-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #7b95b0;
+  text-transform: uppercase;
+  padding: 16px 20px 8px;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  margin: 3px 14px;
+  border-radius: 10px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.sidebar-nav-item:hover {
+  background-color: var(--sidebar-hover);
+  color: #ffffff;
+}
+
+.sidebar-nav-item.active {
+  background-color: var(--sidebar-active-bg);
+  color: var(--sidebar-text-active);
+  border: 1px solid var(--sidebar-active-border);
+  box-shadow: 0 2px 8px rgba(10, 25, 45, 0.3);
+}
+
+.sidebar-nav-item.active .nav-icon {
+  color: #f6ad55;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ==========================================================================
+   Header & Breadcrumb
+   ========================================================================== */
+.admin-topbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--card-border);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar-subtitle {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.topbar-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.user-avatar-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  color: #1e293b;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+.page-breadcrumb {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Buttons & Inputs
+   ========================================================================== */
+.btn-primary-navy {
+  background-color: var(--primary-navy);
+  border-color: var(--primary-navy);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 8px 18px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary-navy:hover,
+.btn-primary-navy:focus {
+  background-color: var(--primary-navy-hover);
+  border-color: var(--primary-navy-hover);
+  color: #ffffff;
+}
+
+.search-input-group {
+  position: relative;
+}
+
+.search-input-group .search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 15px;
+  pointer-events: none;
+}
+
+.search-input-group .form-control {
+  padding-left: 38px;
+  border-radius: 8px;
+  border-color: #e2e8f0;
+  font-size: 14px;
+}
+
+.search-input-group .form-control:focus {
+  border-color: #162c44;
+  box-shadow: 0 0 0 3px rgba(22, 44, 68, 0.12);
+}
+
+.admin-select {
+  border-radius: 8px;
+  border-color: #e2e8f0;
+  font-size: 14px;
+}
+
+.admin-select:focus {
+  border-color: #162c44;
+  box-shadow: 0 0 0 3px rgba(22, 44, 68, 0.12);
+}
+
+/* ==========================================================================
+   Table & Badges
+   ========================================================================== */
+.admin-table {
+  width: 100%;
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.admin-table thead th {
+  background-color: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  border-top: none;
+}
+
+.admin-table tbody td {
+  padding: 14px 16px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+}
+
+.admin-table tbody tr:hover td {
+  background-color: #f8fafc;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status Badges with Dots */
+.status-badge-dot {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+.status-badge-dot::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.status-badge-success {
+  background-color: #f0fdf4;
+  color: #15803d;
+}
+.status-badge-success::before {
+  background-color: #22c55e;
+}
+
+.status-badge-warning {
+  background-color: #fffbeb;
+  color: #b45309;
+}
+.status-badge-warning::before {
+  background-color: #f59e0b;
+}
+
+.status-badge-info {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+}
+.status-badge-info::before {
+  background-color: #3b82f6;
+}
+
+.status-badge-neutral {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+.status-badge-neutral::before {
+  background-color: #94a3b8;
+}
+
+/* Soft Role / Category Badges */
+.badge-soft-primary {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-weight: 500;
+}
+
+.badge-soft-secondary {
+  background-color: #f1f5f9;
+  color: #475569;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-weight: 500;
+}
+
+.action-btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  background-color: transparent;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.action-btn-icon:hover {
+  background-color: #f1f5f9;
+  color: #162c44;
+  border-color: #e2e8f0;
+}
