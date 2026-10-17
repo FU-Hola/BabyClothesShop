@@ -72,7 +72,7 @@
 .grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 24px 4px;
+    gap: 24px 8px;
     margin-top: 32px;
 }
 
@@ -131,6 +131,12 @@
     gap: 8px;
 }
 
+.prices strong {
+    color: #222;
+    font-weight: 700;
+    font-synthesis: weight;
+}
+
 .prices del {
     color: #888;
 }
@@ -156,7 +162,7 @@
     }
 
     .grid {
-        gap: 16px 4px;
+        gap: 16px 8px;
     }
 
     .info {
