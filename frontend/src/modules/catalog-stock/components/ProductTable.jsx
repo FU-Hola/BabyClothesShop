@@ -16,6 +16,7 @@ const ProductTable = ({products, onEdit}) => {
                     <th>Danh mục</th>
                     <th>Giá bán</th>
                     <th>Trạng thái</th>
+                    <th>Ngày tạo</th>
                     <th>Thao tác</th>
                 </tr>
                 </thead>
@@ -45,6 +46,9 @@ const ProductTable = ({products, onEdit}) => {
                                     className={product.status === "ACTIVE" ? "text-success fw-medium" : "text-secondary fw-medium"}>
                                     {product.status === "ACTIVE" ? "Đang kinh doanh" : "Ngừng kinh doanh"}
                                 </span>
+                        </td>
+                        <td className="text-nowrap">
+                            {new Date(product.createdAt).toLocaleDateString("vi-VN")}
                         </td>
                         <td>
                             <Button

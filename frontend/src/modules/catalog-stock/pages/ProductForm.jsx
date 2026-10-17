@@ -186,7 +186,7 @@ const ProductForm = () => {
                                 <Form.Label className="fw-semibold text-dark">Mã SKU</Form.Label>
                                 <Form.Control
                                     type="text"
-                                    placeholder="Ví dụ: BABY005"
+                                    placeholder="Ví dụ: BABY006"
                                     value={sku}
                                     onChange={(event) => setSku(event.target.value)}
                                     isInvalid={Boolean(errors.sku)}
@@ -214,7 +214,7 @@ const ProductForm = () => {
 
                         <Col xs={4}>
                             <Form.Group controlId="productPrice">
-                                <Form.Label className="fw-semibold text-dark">Giá bán (VNĐ)</Form.Label>
+                                <Form.Label className="fw-semibold text-dark">Giá bán (VND)</Form.Label>
                                 <Form.Control
                                     type="number"
                                     min="0"
@@ -231,7 +231,7 @@ const ProductForm = () => {
 
                         <Col xs={4}>
                             <Form.Group controlId="productOriginalPrice">
-                                <Form.Label className="fw-semibold text-dark">Giá trước giảm (VNĐ)</Form.Label>
+                                <Form.Label className="fw-semibold text-dark">Giá trước giảm (VND)</Form.Label>
                                 <Form.Control
                                     type="number"
                                     min="0"
@@ -298,7 +298,7 @@ const ProductForm = () => {
                             />
                         </div>
                     </section>
-                    <div className="d-flex align-items-center pt-3 border-top border-light-subtle">
+                    <div className="d-flex justify-content-between align-items-center pt-3 border-top border-light-subtle">
                         <Button
                             as={Link}
                             to="/store-staff/products"
@@ -310,7 +310,7 @@ const ProductForm = () => {
                         <Button
                             type="submit"
                             variant="dark"
-                            className="px-4 py-2 rounded-3 border-0 ms-2 text-white shadow-sm"
+                            className="px-4 py-2 rounded-3 border-0 text-white shadow-sm"
                             style={{ backgroundColor: "#10152B" }}
                         >
                             {isEditMode ? "Lưu thay đổi" : "Tạo sản phẩm"}
