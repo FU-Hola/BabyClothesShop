@@ -1,10 +1,12 @@
 import { Search } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import cartIcon from "../../assets/cart-icon.svg";
+import { useCart } from "../../../modules/cart-checkout/context/CartContext";
 import styles from "./MainHeader.module.css";
 
 const MainHeader = () => {
     const navigate = useNavigate();
+    const { totalItemsCount } = useCart();
 
     const handleSearch = (event) => {
         event.preventDefault();
@@ -37,7 +39,7 @@ const MainHeader = () => {
                 <Link className={styles.cart} to="/cart">
                     <span className={styles.cartText}>
                         <strong>giỏ hàng</strong>
-                        <span>không có sản phẩm</span>
+                        <span>{totalItemsCount > 0 ? `${totalItemsCount} sản phẩm` : "không có sản phẩm"}</span>
                     </span>
                     <img className={styles.cartIcon} src={cartIcon} alt="" width={27} height={33} />
                 </Link>
