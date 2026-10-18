@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "../styles/warehouse.css";
+import { useState, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button, Row, Col } from "react-bootstrap";
 import GoodsReceiptFilter from '../components/goods-receipt/GoodsReceiptFilter.jsx';
 import GoodsReceiptTable from '../components/goods-receipt/GoodsReceiptTable.jsx';
@@ -74,16 +77,11 @@ const INITIAL_RECEIPTS = [
     }
 ];
 
-function GoodsReceiptListPage({ onInspectReceipt }) {
-    const [originData, setOriginData] = useState([]);
-    const [displayData, setDisplayData] = useState([]);
+function GoodsReceiptListPage() {
+    const navigate = useNavigate();
+    const [originData, setOriginData] = useState(INITIAL_RECEIPTS);
+    const [displayData, setDisplayData] = useState(INITIAL_RECEIPTS);
     const [showModal, setShowModal] = useState(false);
-
-    // 1. Tải dữ liệu ban đầu
-    useEffect(() => {
-        setOriginData(INITIAL_RECEIPTS);
-        setDisplayData(INITIAL_RECEIPTS);
-    }, []);
 
     // 2. Callback filter
     const handleFilter = useCallback((f) => {
@@ -142,7 +140,7 @@ function GoodsReceiptListPage({ onInspectReceipt }) {
     }, [originData]);
 
     return (
-        <div>
+        <div className="goods-receipt-packing goods-receipt-list">
             {/* Top Page Header & Breadcrumb */}
             <div className="page-breadcrumb">Quản trị / Phiếu nhập hàng</div>
             <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
@@ -223,13 +221,7 @@ function GoodsReceiptListPage({ onInspectReceipt }) {
             {/* Bảng dữ liệu phiếu nhập */}
             <GoodsReceiptTable
                 items={displayData}
-                onConfirmReceipt={(code) => {
-                    if (typeof onInspectReceipt === "function") {
-                        onInspectReceipt(code);
-                    } else {
-                        alert(`Chuyển sang màn hình Xác nhận nhập kho (UC08) cho phiếu ${code}`);
-                    }
-                }}
+                onConfirmReceipt={(code) => navigate("/warehouse-staff/pending-receipts?receiptCode=" + encodeURIComponent(code))}
                 onViewDetail={(id) => alert(`Xem thông tin chi tiết phiếu nhập ID: ${id}`)}
             />
 

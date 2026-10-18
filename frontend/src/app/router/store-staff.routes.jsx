@@ -1,12 +1,19 @@
+import { Navigate } from "react-router-dom";
 import StoreStaffLayout from "../layouts/StoreStaffLayout.jsx";
 import ProductManagement from "../../modules/catalog-stock/pages/ProductManagement.jsx";
 import ProductForm from "../../modules/catalog-stock/pages/ProductForm.jsx";
+import GoodsReceiptListPage from "../../modules/goods-receipt-packing/pages/GoodsReceiptListPage.jsx";
+import StaffOrders from "../../modules/order-management/pages/StaffOrders.jsx";
 
 const storeStaffRoutes = [
     {
         path: "/store-staff",
         element: <StoreStaffLayout />,
         children: [
+            { index: true, element: <Navigate to="products" replace /> },
+            { path: "goods-receipts", element: <GoodsReceiptListPage /> },
+            { path: "orders", element: <StaffOrders /> },
+            { path: "orders/:orderId", element: <StaffOrders /> },
             {
                 path: "products",
                 element: <ProductManagement />
@@ -20,6 +27,10 @@ const storeStaffRoutes = [
                 element: <ProductForm />
             }
         ]
+    },
+    {
+        path: "/warehouse-operations",
+        element: <Navigate to="/store-staff/goods-receipts" replace />
     }
 ];
 

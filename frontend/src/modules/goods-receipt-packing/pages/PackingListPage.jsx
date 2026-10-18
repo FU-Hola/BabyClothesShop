@@ -1,4 +1,7 @@
-import React, { useState, useMemo } from "react";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "../styles/warehouse.css";
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Table, Button, Form, Row, Col } from "react-bootstrap";
 
 const MOCK_PACKING_LIST = [
@@ -64,8 +67,10 @@ const MOCK_PACKING_LIST = [
     }
 ];
 
-function PackingListPage({ onGoToPackingStation }) {
-    const [orders, setOrders] = useState(MOCK_PACKING_LIST);
+function PackingListPage() {
+    const navigate = useNavigate();
+    const onGoToPackingStation = (code) => navigate("/warehouse-staff/packing/" + encodeURIComponent(code));
+    const orders = MOCK_PACKING_LIST;
     const [searchCode, setSearchCode] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
 
@@ -87,7 +92,7 @@ function PackingListPage({ onGoToPackingStation }) {
     const rate = orders.length > 0 ? Math.round((countPacked / orders.length) * 100) : 0;
 
     return (
-        <div>
+        <div className="goods-receipt-packing">
             {/* Header & Breadcrumb */}
             <div className="page-breadcrumb">Kho hàng / Vận hành đóng gói</div>
             <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
@@ -99,7 +104,7 @@ function PackingListPage({ onGoToPackingStation }) {
                 </div>
                 <Button
                     className="btn-primary-navy d-flex align-items-center gap-2"
-                    onClick={() => onGoToPackingStation && onGoToPackingStation("ORD-8821")}
+                    onClick={() => onGoToPackingStation("ORD-8821")}
                 >
                     <i className="bi bi-box-arrow-in-down"></i>
                     <span>Vào bàn đóng gói ngay</span>
@@ -282,7 +287,7 @@ function PackingListPage({ onGoToPackingStation }) {
                                                     size="sm"
                                                     className="rounded-2 fw-medium px-2 py-1"
                                                     style={{ fontSize: "13px", backgroundColor: "#0f2942" }}
-                                                    onClick={() => onGoToPackingStation && onGoToPackingStation(item.orderCode)}
+                                                    onClick={() => onGoToPackingStation(item.orderCode)}
                                                 >
                                                     Đóng gói ngay →
                                                 </Button>

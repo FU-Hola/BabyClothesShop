@@ -1,18 +1,5 @@
-/* ==========================================================================
-   Baby Clothes Shop - Admin & Warehouse Modern Design System
-   Matches Group Style: Exact Navy Blue Sidebar sampled from project screenshot
-   ========================================================================== */
-
 .goods-receipt-packing {
   --admin-bg: #f4f6fa;
-  /* Sidebar colors sampled directly from the user's screenshot */
-  --sidebar-bg: #162c44;
-  --sidebar-gradient: linear-gradient(180deg, #1b3854 0%, #142a40 100%);
-  --sidebar-hover: #223f60;
-  --sidebar-active-bg: #274669;
-  --sidebar-active-border: #d4a359;
-  --sidebar-text: #a3b8cd;
-  --sidebar-text-active: #ffffff;
   --primary-navy: #162c44;
   --primary-navy-hover: #1f3e60;
   --card-bg: #ffffff;
@@ -31,10 +18,6 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
-/* ==========================================================================
-   Card & Container Components
-   ========================================================================== */
 .goods-receipt-packing .admin-card {
   background-color: var(--card-bg);
   border: 1px solid var(--card-border);
@@ -46,8 +29,6 @@
 .goods-receipt-packing .admin-card:hover {
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
 }
-
-/* Stat Cards */
 .goods-receipt-packing .stat-card {
   background-color: #ffffff;
   border: 1px solid var(--card-border);
@@ -104,124 +85,29 @@
   line-height: 1.2;
 }
 
-/* ==========================================================================
-   Sidebar Styling (Lighter, Authentic Navy from Screenshot)
-   ========================================================================== */
-.goods-receipt-packing .warehouse-sidebar {
-  width: 260px;
-  min-height: 100vh;
-  background: var(--sidebar-gradient);
-  background-color: var(--sidebar-bg);
-  color: var(--sidebar-text);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-  transition: all 0.3s ease;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+.goods-receipt-list .stat-card {
+  height: 100%;
+  min-height: 120px;
+  border-radius: 20px;
+  padding: 24px;
 }
 
-.goods-receipt-packing .sidebar-brand {
-  padding: 24px 20px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+.goods-receipt-list .stat-icon-box {
+  width: 56px;
+  height: 56px;
 }
 
-.goods-receipt-packing .sidebar-logo-icon {
-  width: 38px;
-  height: 38px;
-  background-color: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  font-size: 20px;
-}
-
-.goods-receipt-packing .sidebar-section-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #7b95b0;
-  text-transform: uppercase;
-  padding: 16px 20px 8px;
-}
-
-.goods-receipt-packing .sidebar-nav-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 11px 16px;
-  margin: 3px 14px;
-  border-radius: 10px;
-  color: var(--sidebar-text);
-  text-decoration: none;
+.goods-receipt-list .stat-label {
   font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
 }
 
-.goods-receipt-packing .sidebar-nav-item:hover {
-  background-color: var(--sidebar-hover);
-  color: #ffffff;
+.goods-receipt-list .stat-value {
+  font-size: 28px;
 }
 
-.goods-receipt-packing .sidebar-nav-item.active {
-  background-color: var(--sidebar-active-bg);
-  color: var(--sidebar-text-active);
-  border: 1px solid var(--sidebar-active-border);
-  box-shadow: 0 2px 8px rgba(10, 25, 45, 0.3);
-}
-
-.goods-receipt-packing .sidebar-nav-item.active .nav-icon {
-  color: #f6ad55;
-}
-
-.goods-receipt-packing .sidebar-footer {
-  margin-top: auto;
-  padding: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* ==========================================================================
-   Header & Breadcrumb
-   ========================================================================== */
-.goods-receipt-packing .admin-topbar {
-  background-color: #ffffff;
-  border-bottom: 1px solid var(--card-border);
-  padding: 14px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.goods-receipt-packing .topbar-subtitle {
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-}
-
-.goods-receipt-packing .topbar-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-dark);
-}
-
-.goods-receipt-packing .user-avatar-circle {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background-color: #e2e8f0;
-  color: #1e293b;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
+.goods-receipt-list .search-input-group .form-control,
+.goods-receipt-list .admin-select {
+  height: 42px;
 }
 
 .goods-receipt-packing .page-breadcrumb {
@@ -242,10 +128,6 @@
   font-size: 13px;
   color: var(--text-muted);
 }
-
-/* ==========================================================================
-   Buttons & Inputs
-   ========================================================================== */
 .goods-receipt-packing .btn-primary-navy {
   background-color: var(--primary-navy);
   border-color: var(--primary-navy);
@@ -299,10 +181,6 @@
   border-color: #162c44;
   box-shadow: 0 0 0 3px rgba(22, 44, 68, 0.12);
 }
-
-/* ==========================================================================
-   Table & Badges
-   ========================================================================== */
 .goods-receipt-packing .admin-table {
   width: 100%;
   margin-bottom: 0;
@@ -336,8 +214,6 @@
 .goods-receipt-packing .admin-table tbody tr:last-child td {
   border-bottom: none;
 }
-
-/* Status Badges with Dots */
 .goods-receipt-packing .status-badge-dot {
   display: inline-flex;
   align-items: center;
@@ -387,8 +263,6 @@
 .goods-receipt-packing .status-badge-neutral::before {
   background-color: #94a3b8;
 }
-
-/* Soft Role / Category Badges */
 .goods-receipt-packing .badge-soft-primary {
   background-color: #eff6ff;
   color: #1d4ed8;

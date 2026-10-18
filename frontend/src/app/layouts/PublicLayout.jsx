@@ -4,7 +4,7 @@ import Footer from "../../shared/components/Footer/Footer";
 import Header from "../../shared/components/Header/Header";
 import MainHeader from "../../shared/components/MainHeader/MainHeader";
 
-const MainLayout = () => {
+const PublicLayout = () => {
   return (
     <>
       <Header />
@@ -18,4 +18,4 @@ const MainLayout = () => {
   );
 };
 
-export default MainLayout;
+export default PublicLayout;

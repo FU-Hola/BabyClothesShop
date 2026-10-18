@@ -1,11 +1,11 @@
 import { RouterProvider } from "react-router-dom";
 import { CartProvider } from "./modules/cart-checkout/context/CartContext";
-import router from "./app/routes/router";
+import routes from "./app/router/routes.js";
 
 const App = () => {
     return (
         <CartProvider>
-            <RouterProvider router={router} />
+            <RouterProvider router={routes} />
         </CartProvider>
     );
 };

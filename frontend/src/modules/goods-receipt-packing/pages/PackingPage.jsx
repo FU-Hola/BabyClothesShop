@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "../styles/warehouse.css";
+import { useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Row, Col } from 'react-bootstrap';
 import PackingFilter from '../components/packing/PackingFilter.jsx';
 import PackingTableDetail from '../components/packing/PackingTableDetail.jsx';
@@ -44,44 +47,41 @@ const MOCK_PACKING_ORDERS = {
     }
 };
 
-function PackingPage({ onBackToList }) {
-    const [orderCodes, setOrderCodes] = useState([]);
-    const [selectedOrderCode, setSelectedOrderCode] = useState("");
-    const [currentOrder, setCurrentOrder] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
+function PackingPage() {
+    const { orderCode: selectedOrderCode } = useParams();
+    const navigate = useNavigate();
+    const [orders, setOrders] = useState(MOCK_PACKING_ORDERS);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const orderCodes = Object.keys(orders);
+    const currentOrder = orders[selectedOrderCode];
+    const onBackToList = () => navigate("/warehouse-staff/packing");
+    const handleSelectOrder = (code) => navigate("/warehouse-staff/packing/" + encodeURIComponent(code));
 
-    useEffect(() => {
-        const codes = Object.keys(MOCK_PACKING_ORDERS);
-        setOrderCodes(codes);
-        if (codes.length > 0) {
-            setSelectedOrderCode(codes[0]);
-            setCurrentOrder(MOCK_PACKING_ORDERS[codes[0]]);
-        }
-    }, []);
-
-    const handleSelectOrder = (code) => {
-        setSelectedOrderCode(code);
-        setIsLoading(true);
-        setTimeout(() => {
-            setCurrentOrder(MOCK_PACKING_ORDERS[code] || null);
-            setIsLoading(false);
-        }, 150);
-    };
-
-    const handleConfirmPacking = (selectedProductIds) => {
+    const handleConfirmPacking = () => {
         setIsSubmitting(true);
         setTimeout(() => {
             setIsSubmitting(false);
             alert(`✓ [THÀNH CÔNG] Đơn hàng ${selectedOrderCode} đã đóng gói xong!\n- Trạng thái đơn: Chuyển sang PACKED (Sẵn sàng giao cho shipper).\n- Quy tắc tồn kho: Hàng đã được giữ lúc khách đặt, chưa trừ tồn thực tế (chỉ xuất kho khi Sale Staff bàn giao shipper ở UC14).`);
 
             // Cập nhật trạng thái đơn thành PACKED
-            setCurrentOrder(prev => prev ? { ...prev, orderStatus: "PACKED" } : null);
+            setOrders(previous => ({
+                ...previous,
+                [selectedOrderCode]: { ...previous[selectedOrderCode], orderStatus: "PACKED" }
+            }));
         }, 600);
     };
 
+    if (!currentOrder) {
+        return (
+            <div className="goods-receipt-packing alert alert-warning">
+                Không tìm thấy đơn hàng {selectedOrderCode} trong dữ liệu đóng gói.
+                <Link className="ms-2" to="/warehouse-staff/packing">Quay lại danh sách đơn</Link>
+            </div>
+        );
+    }
+
     return (
-        <div>
+        <div className="goods-receipt-packing">
             {/* Header & Breadcrumb */}
             <div className="page-breadcrumb">Kho hàng / Bàn đóng gói chi tiết</div>
             <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
@@ -156,8 +156,8 @@ function PackingPage({ onBackToList }) {
 
             {/* Bảng chi tiết nhặt hàng */}
             <PackingTableDetail
+                key={selectedOrderCode}
                 data={currentOrder}
-                isLoading={isLoading}
                 isSubmit={isSubmitting}
                 onConfirm={handleConfirmPacking}
             />

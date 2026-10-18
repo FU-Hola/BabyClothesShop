@@ -4,7 +4,7 @@ import styles from "./CategoryMenu.module.css";
 const categories = [
     { to: "/ao-so-mi", firstLine: "áo sơ mi" },
     { to: "/ao-thun", firstLine: "áo thun" },
-    { to: "/ao-polo", firstLine: "thời trang" },
+    { to: "/thoi-trang", firstLine: "thời trang" },
     { to: "/ao-khoac", firstLine: "áo khoác" },
     { to: "/quan-jean", firstLine: "quần jean" },
     { to: "/quan-dai", firstLine: "quần dài" },

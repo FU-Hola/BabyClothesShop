@@ -4,8 +4,8 @@ import { Package, ClipboardList, ShoppingBag, Store, ShieldCheck, ChevronRight, 
 
 const menuItems = [
     { label: "Tồn kho", path: "/warehouse-staff/stock", icon: Package },
-    { label: "Xác nhận nhập kho", icon: ClipboardList },
-    { label: "Đóng gói", icon: ShoppingBag }
+    { label: "Xác nhận nhập kho", path: "/warehouse-staff/pending-receipts", icon: ClipboardList },
+    { label: "Đóng gói", path: "/warehouse-staff/packing", icon: ShoppingBag }
 ];
 
 const WarehouseStaffSidebar = () => {

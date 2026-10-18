@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "../styles/warehouse.css";
+import { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Row, Col } from 'react-bootstrap';
 import PendingReceiptFilter from '../components/pending-receipt/PendingReceiptFilter.jsx';
 import PendingReceiptTable from '../components/pending-receipt/PendingReceiptTable.jsx';
@@ -28,28 +31,14 @@ const MOCK_PENDING_DATA = {
 };
 
 function PendingReceiptPage() {
-    const [receiptCodes, setReceiptCodes] = useState([]);
-    const [selectedCode, setSelectedCode] = useState("");
-    const [currentReceipt, setCurrentReceipt] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [receiptCodes, setReceiptCodes] = useState(Object.keys(MOCK_PENDING_DATA));
     const [isSubmitting, setIsSubmitting] = useState(false);
-
-    useEffect(() => {
-        const codes = Object.keys(MOCK_PENDING_DATA);
-        setReceiptCodes(codes);
-        if (codes.length > 0) {
-            setSelectedCode(codes[0]);
-            setCurrentReceipt(MOCK_PENDING_DATA[codes[0]]);
-        }
-    }, []);
+    const selectedCode = searchParams.get("receiptCode") ?? receiptCodes[0] ?? "";
+    const currentReceipt = receiptCodes.includes(selectedCode) ? MOCK_PENDING_DATA[selectedCode] : null;
 
     const handleSelectCode = (code) => {
-        setSelectedCode(code);
-        setIsLoading(true);
-        setTimeout(() => {
-            setCurrentReceipt(MOCK_PENDING_DATA[code] || null);
-            setIsLoading(false);
-        }, 150);
+        setSearchParams(code ? { receiptCode: code } : {});
     };
 
     const handleConfirmReceipt = (dataToSubmit) => {
@@ -62,18 +51,12 @@ function PendingReceiptPage() {
             // Xóa phiếu đã hoàn tất khỏi danh sách pending
             const remaining = receiptCodes.filter(c => c !== dataToSubmit.code);
             setReceiptCodes(remaining);
-            if (remaining.length > 0) {
-                setSelectedCode(remaining[0]);
-                setCurrentReceipt(MOCK_PENDING_DATA[remaining[0]]);
-            } else {
-                setSelectedCode("");
-                setCurrentReceipt(null);
-            }
+            setSearchParams(remaining.length ? { receiptCode: remaining[0] } : {}, { replace: true });
         }, 600);
     };
 
     return (
-        <div>
+        <div className="goods-receipt-packing">
             {/* Breadcrumb & Header */}
             <div className="page-breadcrumb">Kho hàng / Xác nhận nhập kho</div>
             <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
@@ -143,10 +126,17 @@ function PendingReceiptPage() {
                 onSelectedCode={handleSelectCode}
             />
 
+            {selectedCode && !currentReceipt && (
+                <div className="alert alert-warning">
+                    Không tìm thấy phiếu nhập {selectedCode} trong dữ liệu chờ kiểm.
+                    <Link className="ms-2" to="/warehouse-staff/pending-receipts">Quay lại danh sách phiếu chờ</Link>
+                </div>
+            )}
+
             {/* Bảng kiểm nhận & cập nhật tồn kho */}
             <PendingReceiptTable
+                key={selectedCode}
                 data={currentReceipt}
-                isLoading={isLoading}
                 isSubmit={isSubmitting}
                 onConfirm={handleConfirmReceipt}
             />

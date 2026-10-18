@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Form, Row, Col, Button } from "react-bootstrap";
 
 function GoodsReceiptFilter({ categories = [], formStatus = [], onFilter, onReset }) {
@@ -84,7 +84,7 @@ function GoodsReceiptFilter({ categories = [], formStatus = [], onFilter, onRese
                         className="action-btn-icon border w-100"
                         title="Đặt lại bộ lọc"
                         onClick={handleReset}
-                        style={{ height: "38px" }}
+                        style={{ height: "42px" }}
                     >
                         <i className="bi bi-arrow-clockwise fs-6"></i>
                     </Button>
