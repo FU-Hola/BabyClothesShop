@@ -1,12 +1,12 @@
 .goods-receipt-packing {
-  --admin-bg: #f4f6fa;
-  --primary-navy: #162c44;
-  --primary-navy-hover: #1f3e60;
+  --admin-bg: var(--ui-background);
+  --primary-navy: var(--ui-primary);
+  --primary-navy-hover: var(--ui-primary-hover);
   --card-bg: #ffffff;
   --card-border: #eef2f6;
-  --text-dark: #1e293b;
+  --text-dark: var(--ui-text);
   --text-muted: #64748b;
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family: var(--ui-font);
 }
 
 .goods-receipt-packing:not(.modal) {
@@ -53,7 +53,7 @@
 
 .goods-receipt-packing .stat-icon-blue {
   background-color: #eff6ff;
-  color: #2563eb;
+  color: var(--ui-primary);
 }
 
 .goods-receipt-packing .stat-icon-purple {
@@ -107,7 +107,7 @@
 
 .goods-receipt-list .search-input-group .form-control,
 .goods-receipt-list .admin-select {
-  height: 42px;
+  min-height: var(--ui-control-height);
 }
 
 .goods-receipt-packing .page-breadcrumb {
@@ -154,31 +154,31 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
+  color: var(--ui-text-muted);
   font-size: 15px;
   pointer-events: none;
 }
 
 .goods-receipt-packing .search-input-group .form-control {
   padding-left: 38px;
-  border-radius: 8px;
-  border-color: #e2e8f0;
+  border-radius: var(--ui-control-radius);
+  border-color: var(--ui-control-border);
   font-size: 14px;
 }
 
 .goods-receipt-packing .search-input-group .form-control:focus {
-  border-color: #162c44;
+  border-color: var(--ui-primary);
   box-shadow: 0 0 0 3px rgba(22, 44, 68, 0.12);
 }
 
 .goods-receipt-packing .admin-select {
-  border-radius: 8px;
-  border-color: #e2e8f0;
+  border-radius: var(--ui-control-radius);
+  border-color: var(--ui-control-border);
   font-size: 14px;
 }
 
 .goods-receipt-packing .admin-select:focus {
-  border-color: #162c44;
+  border-color: var(--ui-primary);
   box-shadow: 0 0 0 3px rgba(22, 44, 68, 0.12);
 }
 .goods-receipt-packing .admin-table {
@@ -250,7 +250,7 @@
 
 .goods-receipt-packing .status-badge-info {
   background-color: #eff6ff;
-  color: #1d4ed8;
+  color: var(--ui-primary);
 }
 .goods-receipt-packing .status-badge-info::before {
   background-color: #3b82f6;
@@ -265,7 +265,7 @@
 }
 .goods-receipt-packing .badge-soft-primary {
   background-color: #eff6ff;
-  color: #1d4ed8;
+  color: var(--ui-primary);
   border-radius: 6px;
   padding: 4px 8px;
   font-weight: 500;
@@ -294,6 +294,6 @@
 
 .goods-receipt-packing .action-btn-icon:hover {
   background-color: #f1f5f9;
-  color: #162c44;
+  color: var(--ui-primary);
   border-color: #e2e8f0;
 }

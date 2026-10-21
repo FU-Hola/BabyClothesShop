@@ -1,7 +1,7 @@
 .header {
     padding: 0 var(--page-gutter);
     background-color: #fff;
-    color: #284e70;
+    color: var(--ui-primary);
     font-size: 12px;
     font-weight: 400;
     line-height: 1.5;

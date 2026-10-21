@@ -7,7 +7,7 @@
 .pageTitle {
   font-size: 24px;
   font-weight: 700;
-  color: #284e70;
+  color: var(--ui-primary);
   margin-bottom: 24px;
   display: flex;
   align-items: center;
@@ -17,7 +17,7 @@
 .itemCountBadge {
   font-size: 14px;
   font-weight: 500;
-  color: #8b8b8b;
+  color: var(--ui-text-muted);
 }
 
 /* Bảng sản phẩm */
@@ -81,7 +81,7 @@
 .productName {
   font-size: 15px;
   font-weight: 600;
-  color: #284e70;
+  color: var(--ui-primary);
   margin: 0;
   line-height: 1.4;
 }
@@ -91,12 +91,12 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #8b8b8b;
+  color: var(--ui-text-muted);
 }
 
 .sizeBadge {
   background-color: #f0f4f8;
-  color: #284e70;
+  color: var(--ui-primary);
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -135,7 +135,7 @@
 
 .qtyBtn:hover:not(:disabled) {
   background-color: #e5e5e5;
-  color: #284e70;
+  color: var(--ui-primary);
 }
 
 .qtyBtn:disabled {
@@ -152,7 +152,7 @@
   text-align: center;
   font-size: 14px;
   font-weight: 600;
-  color: #284e70;
+  color: var(--ui-primary);
   background-color: #fff;
 }
 
@@ -169,14 +169,14 @@
 .lineTotal {
   font-size: 15px;
   font-weight: 700;
-  color: #284e70;
+  color: var(--ui-primary);
 }
 
 /* Nút xóa */
 .deleteBtn {
   border: none;
   background: transparent;
-  color: #8b8b8b;
+  color: var(--ui-text-muted);
   cursor: pointer;
   padding: 6px;
   border-radius: 4px;
@@ -205,7 +205,7 @@
 .summaryTitle {
   font-size: 18px;
   font-weight: 700;
-  color: #284e70;
+  color: var(--ui-primary);
   margin-bottom: 20px;
   padding-bottom: 12px;
   border-bottom: 1px solid #ececec;
@@ -236,18 +236,18 @@
 .totalLabel {
   font-size: 16px;
   font-weight: 700;
-  color: #284e70;
+  color: var(--ui-primary);
 }
 
 .totalValue {
   font-size: 22px;
   font-weight: 700;
-  color: #284e70;
+  color: var(--ui-primary);
 }
 
 .vatNotice {
   font-size: 12px;
-  color: #8b8b8b;
+  color: var(--ui-text-muted);
   margin-top: -12px;
   margin-bottom: 16px;
   text-align: right;
@@ -256,7 +256,7 @@
 .checkoutBtn {
   width: 100%;
   height: 46px;
-  background-color: #284e70;
+  background-color: var(--ui-primary);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -303,19 +303,19 @@
 }
 
 .emptyIcon {
-  color: #8b8b8b;
+  color: var(--ui-text-muted);
   margin-bottom: 16px;
 }
 
 .emptyTitle {
   font-size: 20px;
   font-weight: 700;
-  color: #284e70;
+  color: var(--ui-primary);
   margin-bottom: 8px;
 }
 
 .emptyText {
-  color: #8b8b8b;
+  color: var(--ui-text-muted);
   font-size: 14px;
   margin-bottom: 24px;
 }
@@ -325,7 +325,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 24px;
-  background-color: #284e70;
+  background-color: var(--ui-primary);
   color: #fff;
   border-radius: 6px;
   text-decoration: none;
@@ -343,7 +343,7 @@
   margin-left: 12px;
   padding: 10px 18px;
   background-color: #f0f0f0;
-  color: #284e70;
+  color: var(--ui-primary);
   border: 1px solid #d5d5d5;
   border-radius: 6px;
   font-size: 14px;
@@ -376,12 +376,12 @@
 
   .unitPrice::before {
     content: "Đơn giá: ";
-    color: #8b8b8b;
+    color: var(--ui-text-muted);
   }
 
   .lineTotal::before {
     content: "Thành tiền: ";
-    color: #8b8b8b;
+    color: var(--ui-text-muted);
     font-size: 13px;
     font-weight: 400;
   }

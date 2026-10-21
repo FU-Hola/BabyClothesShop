@@ -66,13 +66,13 @@
 }
 
 .metaLabel {
-  color: #8b8b8b;
+  color: var(--ui-text-muted);
   font-size: 13px;
 }
 
 .metaValue {
   font-weight: 600;
-  color: #284e70;
+  color: var(--ui-primary);
 }
 
 .badgePending {
@@ -109,7 +109,7 @@
 .sectionTitle {
   font-size: 16px;
   font-weight: 700;
-  color: #284e70;
+  color: var(--ui-primary);
   margin-bottom: 12px;
 }
 
@@ -128,7 +128,7 @@
 
 .infoLabel {
   width: 140px;
-  color: #8b8b8b;
+  color: var(--ui-text-muted);
 }
 
 .infoValue {
@@ -189,7 +189,7 @@
 
 .btnPrimary {
   padding: 12px 28px;
-  background-color: #284e70;
+  background-color: var(--ui-primary);
   color: #fff;
   border-radius: 6px;
   font-weight: 600;
@@ -224,7 +224,7 @@
 
 .btnSecondary:hover {
   background-color: #f5f5f5;
-  color: #284e70;
+  color: var(--ui-primary);
 }
 
 @media (max-width: 640px) {

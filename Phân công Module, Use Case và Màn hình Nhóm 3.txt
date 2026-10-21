@@ -1,0 +1,401 @@
+﻿Phân công Role và Use Case
+1. Giới thiệu và phạm vi hệ thống
+1.1. Mục đích
+Tài liệu mô tả các yêu cầu của hệ thống bán hàng trực tuyến của Nhóm 3, làm cơ sở để thiết kế giao diện, xây dựng chức năng và kiểm thử. Hệ thống hỗ trợ khách hàng đặt mua sản phẩm và nhân viên xử lý nhập hàng, tồn kho, đóng gói và giao hàng.
+1.2. Phạm vi chức năng
+Hệ thống quản lý sản phẩm theo màu và size, bao gồm các nhóm chức năng:
+Tài khoản: đăng ký tài khoản khách hàng, đăng nhập và tạo tài khoản nhân viên.
+Sản phẩm: xem danh sách, tìm kiếm, lọc, xem chi tiết, tạo và cập nhật sản phẩm.
+Nhập hàng và tồn kho: tạo phiếu nhập, xác nhận số lượng thực nhận và xem tồn kho.
+Giỏ hàng và đặt hàng: thêm sản phẩm vào giỏ, thay đổi số lượng, nhập thông tin nhận hàng và thanh toán mô phỏng.
+Xử lý đơn hàng: xác nhận đơn, xác nhận đóng gói, ghi nhận đã gửi hàng và xác nhận giao hàng thành công.
+Theo dõi đơn hàng: khách hàng xem lịch sử và chi tiết đơn hàng của mình.
+1.3. Giới hạn phạm vi
+Thanh toán chỉ được mô phỏng bằng việc người dùng chọn kết quả thành công hoặc thất bại; hệ thống không kết nối cổng thanh toán thật.
+Nhân viên cửa hàng cập nhật thông tin gửi hàng và giao hàng thủ công dựa trên kết quả từ đơn vị vận chuyển; hệ thống không tích hợp API vận chuyển.
+Danh mục sản phẩm được chuẩn bị sẵn. Các chức năng hủy đơn, hoàn tiền, đổi trả và xử lý giao hàng thất bại chưa thuộc phạm vi phiên bản này.
+2. Người dùng và phân quyền
+2.1. Các vai trò
+
+
+Vai trò
+	Mô tả
+	Customer
+	Khách hàng đăng ký tài khoản, chọn sản phẩm, đặt hàng và theo dõi đơn hàng của mình.
+	Admin
+	Quản trị viên tạo tài khoản cho nhân viên và chỉ định vai trò Store Staff hoặc Warehouse Staff.
+	Store Staff
+	Nhân viên cửa hàng quản lý sản phẩm, tạo phiếu nhập và xử lý các bước xác nhận, gửi hàng, hoàn tất đơn hàng.
+	Warehouse Staff
+	Nhân viên kho xác nhận nhập hàng, theo dõi tồn kho và xác nhận đóng gói đơn hàng.
+	
+
+2.2. Bảng phân quyền
+
+
+Chức năng
+	Customer
+	Admin
+	Store Staff
+	Warehouse Staff
+	Đăng nhập
+	✓
+	✓
+	✓
+	✓
+	Tạo tài khoản nhân viên và chọn role
+	—
+	✓
+	—
+	—
+	Xem, tìm kiếm, lọc và xem chi tiết sản phẩm
+	✓
+	—
+	✓
+	—
+	Tạo và cập nhật sản phẩm
+	—
+	—
+	✓
+	—
+	Tạo phiếu nhập hàng
+	—
+	—
+	✓
+	—
+	Xem phiếu nhập thuộc phạm vi công việc
+	—
+	—
+	✓
+	✓
+	Xác nhận nhập hàng
+	—
+	—
+	—
+	✓
+	Xem tồn kho
+	—
+	—
+	—
+	✓
+	Thêm sản phẩm và cập nhật số lượng trong giỏ
+	✓
+	—
+	—
+	—
+	Checkout và thanh toán mô phỏng
+	✓
+	—
+	—
+	—
+	Xem lịch sử và chi tiết đơn của mình
+	✓
+	—
+	—
+	—
+	Xem danh sách và chi tiết đơn để xử lý
+	—
+	—
+	✓
+	✓
+	Xác nhận đơn hàng
+	—
+	—
+	✓
+	—
+	Xác nhận đóng gói
+	—
+	—
+	—
+	✓
+	Ghi nhận đã gửi hàng
+	—
+	—
+	✓
+	—
+	Xác nhận giao hàng thành công
+	—
+	—
+	✓
+	—
+	Chú thích
+	✓: Được phép
+	—: Không cấp quyền
+	Theo nghiệp vụ
+	Theo nghiệp vụ
+	
+
+2.3. Quy định truy cập
+Người chưa đăng nhập được xem danh sách, tìm kiếm, lọc, xem chi tiết sản phẩm và đăng ký tài khoản Customer.
+Đăng ký công khai chỉ tạo tài khoản Customer. Tài khoản nhân viên do Admin tạo.
+Customer chỉ được truy cập giỏ hàng và đơn hàng của chính mình.
+Warehouse Staff truy cập các đơn cần đóng gói; Store Staff truy cập các đơn cần xử lý theo nghiệp vụ.
+Mỗi vai trò chỉ được sử dụng các chức năng được cấp quyền. Truy cập trực tiếp bằng URL không được phép vượt qua kiểm tra phân quyền.
+
+
+3. Luồng chính
+a. Nhập hàng: Login → Create Product (nếu chưa có) → Create Goods Receipt → Nhận và kiểm tra hàng → Confirm Goods Receipt → System cập nhật tồn kho → View Stock.
+Description:
+
+
+Bước
+	Role
+	Thực hiện
+	1. Login
+	Store Staff , Warehouse Staff
+	Mỗi người đăng nhập tài khoản của mình trước khi thao tác.
+	2. Create Product
+	Store Staff 
+	Nếu là sản phẩm mới, tạo thông tin, màu, size, giá và upload ảnh. Nếu đã có thì sử dụng sản phẩm hiện có.
+	3. Create Goods Receipt
+	Store Staff 
+	Tạo phiếu nhập, chọn sản phẩm và số lượng dự kiến nhập.
+	4. Nhận và kiểm tra hàng
+	Warehouse Staff
+	Kiểm tra hàng thực tế theo phiếu nhập.
+	5. Confirm Goods Receipt
+	Warehouse Staff
+	Ghi số lượng thực nhận và xác nhận nhập kho.
+	6. Cập nhật tồn kho
+	System
+	Tự động tăng tồn theo số lượng đã xác nhận.
+	7. View Stock
+	Warehouse Staff
+	Xem tồn kho sau khi nhập.
+	b. Đặt hàng: Login → Add to Cart → Update Cart Item Quantity (nếu cần) → Checkout → Confirm Order → Confirm Packing → Mark Order as Shipped → Confirm Delivery.
+Description:
+Bước
+	Role
+	Thực hiện
+	1. Login
+	Customer, Store Staff , Warehouse Staff
+	Mỗi người đăng nhập tài khoản của mình trước khi thao tác.
+	2. Add to Cart
+	Customer
+	Chọn sản phẩm, size và số lượng rồi thêm vào giỏ hàng.
+	3. Update Cart Item Quantity
+	Customer
+	Điều chỉnh số lượng sản phẩm trong giỏ nếu cần. Hệ thống tính lại thành tiền.
+	4. Checkout
+	Customer
+	Nhập thông tin người nhận, địa chỉ giao hàng và kiểm tra tổng tiền. Bấm "Thanh toán" để chuyển sang trang thanh toán mô phỏng, rồi chọn kết quả thanh toán. Nếu thành công, hệ thống kiểm tra tồn kho, tạo đơn trạng thái Pending Confirmation và giữ hàng cho đơn. Nếu thất bại, không tạo đơn và giỏ hàng được giữ nguyên.
+	5. Confirm Order
+	Store Staff 
+	Kiểm tra thông tin đơn và xác nhận tiếp nhận đơn để kho chuẩn bị hàng.
+	6. Confirm Packing
+	Warehouse Staff
+	Lấy đúng sản phẩm, size và số lượng theo đơn. Đóng gói và xác nhận đơn đã được đóng gói.
+	7. Mark Order as Shipped
+	Store Staff 
+	Ghi nhận đơn đã được bàn giao cho đơn vị vận chuyển, hệ thống chính thức xuất kho (giảm tồn thực tế và giảm số lượng đang giữ), đồng thời chuyển trạng thái sang Shipping.
+	8. Confirm Delivery
+	Store Staff 
+	Ghi nhận giao hàng thành công theo kết quả từ đơn vị vận chuyển và chuyển trạng thái đơn sang đã giao.
+	4. Phân công use case
+
+
+Member
+	Module phụ trách
+	Use Case
+	Số UC
+	Lý
+	Auth & Account
+	UC01 Register, UC02 Log In, UC03 Create Staff Account
+	3
+	Lâm 
+	Catalog & Stock
+	UC04 Create Product, UC05 Update Product, UC07 View Stock
+	3
+	Hùng
+	Goods Receipt & Packing
+	UC06 Create Goods Receipt, UC08 Confirm Goods Receipt, UC09 Confirm Packing
+	3
+	Công
+	Cart & Checkout
+	UC10 Add to Cart, UC11 Update Cart Item Quantity, UC12 Checkout
+	3
+	Hiếu
+	Order Management
+	UC13 Confirm Order, UC14 Mark Order as Shipped, UC15 Confirm Delivery
+	3
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+5. Đặc tả use case
+
+
+ID
+	Use case
+	Actor
+	Mô tả và luồng chính
+	Kết quả
+	UC01
+	Register
+	Customer (chưa có tài khoản)
+	Người dùng mở trang đăng ký → nhập họ tên, email và mật khẩu → hệ thống kiểm tra thông tin, bảo đảm email chưa được sử dụng → tạo tài khoản Customer.
+	Khách hàng có tài khoản để đăng nhập.
+	UC02
+	Log In
+	Admin, Store Staff, Warehouse Staff, Customer
+	Người dùng nhập email và mật khẩu → hệ thống xác thực tài khoản → chuyển đến giao diện phù hợp với role. Nếu thông tin sai, hiển thị thông báo.
+	Người dùng đăng nhập thành công và được truy cập chức năng theo role.
+	UC03
+	Create Staff Account
+	Admin
+	Admin mở danh sách nhân viên → chọn tạo tài khoản → nhập thông tin, mật khẩu và chọn role (Store Staff hoặc Warehouse Staff) → hệ thống kiểm tra và lưu tài khoản.
+	Tạo tài khoản cho Store Staff hoặc Warehouse Staff.
+	UC04
+	Create Product
+	Store Staff 
+	Store Staff nhập tên, mô tả, chọn danh mục có sẵn, nhập màu, mã SKU, giá, giá gốc (nếu giảm giá) và các size → upload ảnh sản phẩm → hệ thống kiểm tra thông tin, định dạng và dung lượng ảnh → lưu sản phẩm.
+	Sản phẩm được tạo với tồn kho ban đầu bằng 0; có thể được chọn để lập phiếu nhập hàng.
+	UC05
+	Update Product
+	Store Staff 
+	Store Staff chọn sản phẩm → sửa thông tin, giá hoặc trạng thái kinh doanh; thêm, thay hoặc xóa ảnh nếu cần → hệ thống kiểm tra và lưu thay đổi.
+	Thông tin sản phẩm được cập nhật. Thao tác này không thay đổi tồn kho.
+	UC06
+	Create Goods Receipt
+	Store Staff
+	Store Staff chọn tạo phiếu nhập → chọn sản phẩm theo size → nhập số lượng dự kiến và ghi chú → hệ thống kiểm tra và lưu phiếu chờ xác nhận.
+	Phiếu nhập được tạo để Warehouse Staff đối chiếu khi nhận hàng; tồn kho chưa tăng.
+	UC07
+	View Stock
+	Warehouse Staff
+	Warehouse Staff mở trang tồn kho → hệ thống hiển thị số lượng theo từng sản phẩm và size → nhân viên tìm kiếm hoặc lọc sản phẩm cần xem.
+	Nhân viên biết số lượng tồn thực tế, số lượng đang giữ cho đơn và số lượng còn có thể bán.
+	UC08
+	Confirm Goods Receipt
+	Warehouse Staff
+	Warehouse Staff mở phiếu nhập chờ xác nhận → đối chiếu hàng thực tế → nhập số lượng được chấp nhận vào kho cho từng sản phẩm và size và ghi chú chênh lệch nếu có → xác nhận → hệ thống tăng tồn kho.
+	Phiếu nhập hoàn tất; tồn kho tăng theo số lượng thực nhận được chấp nhận. Phiếu đã xác nhận không được cộng tồn lần nữa.
+	UC09
+	Confirm Packing
+	Warehouse Staff
+	Warehouse Staff mở đơn đã được xác nhận → xem sản phẩm, size và số lượng → lấy hàng, kiểm tra và đóng gói → chọn xác nhận đóng gói.
+	Đơn chuyển từ Confirmed sang Packed.
+	UC10
+	Add to Cart
+	Customer
+	Customer chọn sản phẩm, size và số lượng → chọn thêm vào giỏ → hệ thống kiểm tra số lượng có thể bán và thêm sản phẩm. Nếu cùng biến thể đã có trong giỏ, cộng số lượng và kiểm tra tổng số lượng.
+	Giỏ hàng chứa sản phẩm và số lượng cần mua. Chưa tạo đơn hoặc giữ hàng.
+	UC11
+	Update Cart Item Quantity
+	Customer
+	Customer mở giỏ hàng → tăng hoặc giảm số lượng sản phẩm → hệ thống kiểm tra số lượng hợp lệ, không vượt số lượng có thể bán → tính lại thành tiền.
+	Số lượng và tổng tiền trong giỏ được cập nhật.
+	UC12
+	Checkout
+	Customer
+	Customer mở giỏ hàng → nhập tên người nhận, số điện thoại, địa chỉ và ghi chú → kiểm tra tổng tiền → bấm "Thanh toán" → hệ thống kiểm tra lại số lượng có thể bán; nếu thiếu hàng thì thông báo để khách điều chỉnh giỏ, nếu đủ thì chuyển sang trang thanh toán mô phỏng hiển thị tổng tiền → Customer chọn "Thanh toán thành công" hoặc "Thanh toán thất bại". Khi khách chọn thành công, hệ thống kiểm tra lại số lượng có thể bán một lần nữa trước khi tạo đơn Pending Confirmation và giữ hàng.
+	Thành công: tạo đơn Pending Confirmation, thanh toán Paid theo mô phỏng, giữ hàng cho đơn và xóa các sản phẩm đã đặt khỏi giỏ. Thất bại: không tạo đơn, không giữ hàng, giỏ hàng giữ nguyên và khách có thể thử lại. Không phát sinh thanh toán thật.
+	UC13
+	Confirm Order
+	Store Staff 
+	Store Staff mở đơn chờ xác nhận → kiểm tra thông tin người nhận, sản phẩm, trạng thái thanh toán mô phỏng và hàng đã giữ → chọn xác nhận đơn.
+	Đơn chuyển từ Pending Confirmation sang Confirmed, sẵn sàng để kho đóng gói. Không trừ thêm số lượng có thể bán vì hàng đã được giữ khi Checkout.
+	UC14
+	Mark Order as Shipped
+	Store Staff 
+	Store Staff mở đơn đã đóng gói (Packed) → ghi nhận thông tin bàn giao vận chuyển → xác nhận đã gửi hàng → hệ thống chuyển trạng thái sang Shipping và ghi nhận xuất kho (giảm tồn thực tế và giảm số lượng giữ hàng tương ứng).
+	Đơn chuyển từ Packed sang Shipping. Tồn thực tế và số lượng đang giữ cùng giảm đồng thời theo số hàng đã xuất.
+	UC15
+	Confirm Delivery
+	Store Staff 
+	Sau khi nhận thông tin giao hàng thành công từ đơn vị vận chuyển, Store Staff mở đơn đang giao → chọn xác nhận đã giao.
+	Đơn chuyển từ Shipping sang Delivered, hoàn tất luồng đặt hàng.
+	Ghi chú về tồn kho: Số lượng có thể bán = Tồn thực tế − Số lượng đang giữ cho đơn. Checkout giữ hàng; khi bàn giao vận chuyển, hệ thống ghi nhận xuất kho để tránh trừ tồn hai lần. Thanh toán trong hệ thống chỉ là mô phỏng, không kết nối cổng thanh toán thật. Kết quả thanh toán do người dùng chọn trên trang mô phỏng. Hàng chỉ được giữ khi thanh toán mô phỏng thành công.
+6. Phân công màn hình
+Nhóm
+	Màn hình
+	UC liên quan
+	Người làm
+	Màn chung
+	Layout chung (navbar, sidebar theo role)
+	Không có
+	Hiếu
+	Màn chung
+	Đăng nhập
+	UC02
+	Lý
+	Màn chung
+	Đăng ký
+	UC01
+	Lý
+	Màn chung
+	Dashboard theo role (card số liệu và link)
+	Không có
+	Lý 
+	Màn chung
+	Trang lỗi 403 / 404
+	Không có
+	Lý
+	Customer
+	Trang chủ: danh sách sản phẩm, lọc danh mục, tìm kiếm
+	Không có
+	Hiếu
+	Customer
+	Chi tiết sản phẩm: chọn size, số lượng
+	UC10 (nút Thêm vào giỏ)
+	Hiếu
+	Customer
+	Giỏ hàng
+	UC10, UC11
+	Công
+	Customer
+	Checkout: nhập người nhận, địa chỉ
+	UC12
+	Công
+	Customer
+	Thanh toán mô phỏng (Thành công / Thất bại)
+	UC12
+	Công
+	Customer
+	Kết quả đặt hàng
+	UC12
+	Công
+	Customer
+	Lịch sử đơn và chi tiết đơn
+	Không có
+	Hiếu
+	Admin
+	Danh sách nhân viên và form tạo tài khoản
+	UC03
+	Lý
+	Store Staff 
+	Danh sách sản phẩm quản lý
+	UC04, UC05
+	Lâm
+	Store Staff 
+	Form tạo / sửa sản phẩm (size, ảnh)
+	UC04, UC05
+	Lâm
+	Store Staff 
+	Danh sách phiếu nhập và form tạo phiếu
+	UC06
+	Hùng
+	Warehouse Staff
+	Tồn kho (lọc, tìm kiếm)
+	UC07
+	Lâm
+	Warehouse Staff
+	Phiếu nhập chờ xác nhận và chi tiết
+	UC08
+	Hùng
+	Warehouse Staff
+	Đơn chờ đóng gói và chi tiết
+	UC09
+	Hùng
+	Store Staff 
+	Danh sách đơn (lọc theo trạng thái) và chi tiết đơn, có nút Xác nhận / Đã gửi / Đã giao
+	UC13, UC14, UC15
+	Hiếu

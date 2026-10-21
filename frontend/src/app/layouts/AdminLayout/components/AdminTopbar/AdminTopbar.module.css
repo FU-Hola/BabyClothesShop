@@ -9,12 +9,12 @@
 
 .menuButton {
     padding: 8px !important;
-    color: #284e70 !important;
+    color: var(--ui-primary) !important;
 }
 
 .eyebrow {
     margin: 0 0 2px;
-    color: #8a99a7;
+    color: var(--ui-text-muted);
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.12em;
@@ -41,7 +41,7 @@
 }
 
 .profile small {
-    color: #8897a5;
+    color: var(--ui-text-muted);
     font-size: 0.72rem;
 }
 
@@ -52,7 +52,7 @@
     place-items: center;
     border-radius: 12px;
     background: #eaf0f5;
-    color: #284e70;
+    color: var(--ui-primary);
     font-weight: 700;
 }
 

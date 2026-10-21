@@ -23,12 +23,12 @@
 
 .memberBadge {
     background-color: #eef4f8 !important;
-    color: #284e70 !important;
+    color: var(--ui-primary) !important;
 }
 
 .submitButton {
-    --bs-btn-bg: #284e70;
-    --bs-btn-border-color: #284e70;
+    --bs-btn-bg: var(--ui-primary);
+    --bs-btn-border-color: var(--ui-primary);
     --bs-btn-hover-bg: #1f3d59;
     --bs-btn-hover-border-color: #1f3d59;
     --bs-btn-active-bg: #162e44;
@@ -37,7 +37,7 @@
 }
 
 .card :global(.form-control:focus) {
-    border-color: #284e70;
+    border-color: var(--ui-primary);
     box-shadow: 0 0 0 0.25rem rgba(40, 78, 112, 0.15);
 }
 
@@ -47,4 +47,10 @@
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
     color: #ffffff !important;
     letter-spacing: 0.5px;
+}
+
+/* Keep supporting copy readable over the photographic banner. */
+.bannerOverlay :global(.text-white-50) {
+    color: #fff !important;
+    text-shadow: 0 1px 3px rgb(19 43 64 / 65%);
 }

@@ -10,7 +10,7 @@
 
 .breadcrumb :global(.breadcrumb-item),
 .breadcrumb :global(.breadcrumb-item a) {
-    color: #8493a1;
+    color: var(--ui-text-muted);
     text-decoration: none;
 }
 
@@ -23,15 +23,15 @@
 
 .description {
     margin: 8px 0 0;
-    color: #71818f;
+    color: var(--ui-text-muted);
     font-size: 0.9rem;
 }
 
 .addButton {
     min-height: 42px;
     padding-inline: 18px !important;
-    border-color: #284e70 !important;
-    background: #284e70 !important;
+    border-color: var(--ui-primary) !important;
+    background: var(--ui-primary) !important;
     white-space: nowrap;
 }
 
@@ -58,7 +58,7 @@
 .label {
     overflow: hidden;
     margin-bottom: 2px !important;
-    color: #81909d !important;
+    color: var(--ui-text-muted) !important;
     font-size: 0.75rem !important;
     font-weight: 400 !important;
     text-overflow: ellipsis;

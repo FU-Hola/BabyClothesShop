@@ -17,7 +17,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #8b8b8b;
+  color: var(--ui-text-muted);
   font-size: 14px;
 }
 
@@ -32,7 +32,7 @@
   background-color: #fff;
   font-size: 13px;
   font-weight: 600;
-  color: #8b8b8b;
+  color: var(--ui-text-muted);
   transition: all 0.3s ease;
 }
 
@@ -42,13 +42,13 @@
 
 /* Bước đang hoạt động */
 .active .stepNumber {
-  border-color: #284e70;
-  background-color: #284e70;
+  border-color: var(--ui-primary);
+  background-color: var(--ui-primary);
   color: #fff;
 }
 
 .active .stepLabel {
-  color: #284e70;
+  color: var(--ui-primary);
   font-weight: 700;
 }
 

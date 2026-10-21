@@ -8,13 +8,168 @@
 
 :root {
     --page-gutter: clamp(12px, 3.5vw, 68px);
+    --ui-font: "SFUFutura", "Segoe UI", Arial, sans-serif;
+    --ui-primary: #284e70;
+    --ui-primary-hover: #1b3954;
+    --ui-background: #f4f7fa;
+    --ui-surface: #ffffff;
+    --ui-text: #243746;
+    --ui-text-muted: #586d7e;
+    --ui-accent: #e5a96b;
+    --ui-border: #dfe6ec;
+    --ui-control-border: #8396a6;
+    --ui-control-radius: 8px;
+    --ui-control-height: 44px;
+    --bs-body-font-family: var(--ui-font);
+    --bs-body-color: var(--ui-text);
+    --bs-body-bg: var(--ui-background);
+    --bs-primary: var(--ui-primary);
+    --bs-primary-rgb: 40, 78, 112;
+    --bs-secondary-color: var(--ui-text-muted);
+    --bs-secondary-rgb: 88, 109, 126;
+    --bs-dark-rgb: 36, 55, 70;
+    --bs-link-color: var(--ui-primary);
+    --bs-link-color-rgb: 40, 78, 112;
+    --bs-link-hover-color: var(--ui-primary-hover);
+    --bs-link-hover-color-rgb: 27, 57, 84;
+    --bs-border-color: var(--ui-border);
 }
 
 body {
-    color: #4a4a4a;
-    font-family: "SFUFutura", Arial, sans-serif;
+    color: var(--ui-text);
+    background: var(--ui-background);
+    font-family: var(--ui-font);
     font-style: normal;
     font-weight: 400;
-    line-height: 1.42857143;
-    font-size: 1.3rem;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+button, input, select, textarea {
+    font-family: inherit;
+}
+
+/* Shared form treatment, including Bootstrap controls rendered in modal portals. */
+body .form-control,
+body .form-select {
+    min-height: var(--ui-control-height);
+    border-color: var(--ui-control-border);
+    border-radius: var(--ui-control-radius);
+    color: var(--ui-text);
+    font-family: var(--ui-font);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+}
+
+body .form-control.bg-light,
+body .form-select.bg-light {
+    background-color: var(--ui-surface) !important;
+}
+
+body .form-control::placeholder,
+input::placeholder,
+textarea::placeholder {
+    color: var(--ui-text-muted);
+    opacity: 1;
+}
+
+body .form-label,
+body .form-check-label {
+    color: var(--ui-text);
+    font-size: 0.9375rem;
+}
+
+body .form-text { color: var(--ui-text-muted); }
+body .input-group-text { border-color: var(--ui-control-border); }
+
+body .form-control:focus,
+body .form-select:focus {
+    border-color: var(--ui-primary);
+    box-shadow: 0 0 0 3px rgb(40 78 112 / 18%);
+}
+
+body .form-control.is-invalid,
+body .form-select.is-invalid { border-color: #b42335; }
+body .invalid-feedback { color: #b42335; }
+
+body .form-control:disabled,
+body .form-select:disabled {
+    background-color: #eaf0f4 !important;
+    color: var(--ui-text-muted);
+}
+
+body .form-check-input:checked {
+    background-color: var(--ui-primary);
+    border-color: var(--ui-primary);
+}
+
+body :is(a, button, input, select, textarea):focus-visible {
+    outline: 2px solid var(--ui-primary);
+    outline-offset: 3px;
+}
+
+body .btn-primary,
+body .btn-dark {
+    --bs-btn-bg: var(--ui-primary);
+    --bs-btn-border-color: var(--ui-primary);
+    --bs-btn-hover-bg: var(--ui-primary-hover);
+    --bs-btn-hover-border-color: var(--ui-primary-hover);
+    --bs-btn-active-bg: #132b40;
+    --bs-btn-active-border-color: #132b40;
+    --bs-btn-disabled-bg: var(--ui-primary);
+    --bs-btn-disabled-border-color: var(--ui-primary);
+    --bs-btn-focus-shadow-rgb: 40, 78, 112;
+    background-color: var(--bs-btn-bg) !important;
+}
+
+body :is(.btn-primary, .btn-dark):hover { background-color: var(--bs-btn-hover-bg) !important; }
+body :is(.btn-primary, .btn-dark):active { background-color: var(--bs-btn-active-bg) !important; }
+
+body .btn-outline-primary {
+    --bs-btn-color: var(--ui-primary);
+    --bs-btn-border-color: var(--ui-primary);
+    --bs-btn-hover-bg: var(--ui-primary);
+    --bs-btn-hover-border-color: var(--ui-primary);
+    --bs-btn-active-bg: var(--ui-primary-hover);
+    --bs-btn-active-border-color: var(--ui-primary-hover);
+    --bs-btn-disabled-color: var(--ui-text-muted);
+}
+
+body .modal-content {
+    color: var(--ui-text);
+    background: var(--ui-surface);
+    border-color: var(--ui-border);
+    border-radius: 16px;
+}
+
+/* Existing staff shells contain inline presentation styles. Override only
+   their appearance here so JSX attributes and application behavior stay intact. */
+#root > .d-flex.min-vh-100 {
+    background-color: var(--ui-background) !important;
+    color: var(--ui-text) !important;
+    font-family: var(--ui-font) !important;
+}
+
+#root > .d-flex.min-vh-100 > aside {
+    background: linear-gradient(180deg, #1b3954, #132b40) !important;
+}
+
+#root > .d-flex.min-vh-100 > aside :is(.text-white-50, nav a) {
+    color: #c4d3df !important;
+}
+
+#root > .d-flex.min-vh-100 > aside nav a[aria-current="page"] {
+    background: rgb(255 255 255 / 11%) !important;
+    border-color: transparent !important;
+    box-shadow: inset 3px 0 var(--ui-accent);
+    color: #fff !important;
+}
+
+#root > .d-flex.min-vh-100 > aside :is(a, button):hover {
+    background-color: rgb(255 255 255 / 11%) !important;
+    color: #fff !important;
+}
+
+body aside :is(a, button):focus-visible {
+    outline-color: var(--ui-accent);
 }

@@ -1,0 +1,35 @@
+name: sba
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sba-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in backend/project_group2/.env}
+      POSTGRES_DB: ${DB_NAME:?Set DB_NAME}
+      DB_USERNAME: ${DB_USERNAME:?Set DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+      DB_MIGRATION_USERNAME: ${DB_MIGRATION_USERNAME:?Set DB_MIGRATION_USERNAME}
+      DB_MIGRATION_PASSWORD: ${DB_MIGRATION_PASSWORD:?Set DB_MIGRATION_PASSWORD}
+    ports:
+      - "127.0.0.1:${DB_PORT:-5433}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/01-init.sh:/docker-entrypoint-initdb.d/01-init.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    shm_size: 128mb
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres-data:

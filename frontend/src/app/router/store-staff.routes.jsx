@@ -11,7 +11,6 @@ const storeStaffRoutes = [
         element: <StoreStaffLayout />,
         children: [
             { index: true, element: <Navigate to="products" replace /> },
-            { path: "goods-receipts", element: <GoodsReceiptListPage /> },
             { path: "orders", element: <StaffOrders /> },
             { path: "orders/:orderId", element: <StaffOrders /> },
             {
