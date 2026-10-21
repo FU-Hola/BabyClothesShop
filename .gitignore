@@ -138,8 +138,9 @@ dependency-reduced-pom.xml
 AGENTS.md
 AGENTS.override.md
 CLAUDE.md
-/docs
-# Keep docs/UI-CODE-MAP.md as project documentation.
+
+# Local project documentation
+/docs/
 
 # Python cache produced by local tooling
 __pycache__/
