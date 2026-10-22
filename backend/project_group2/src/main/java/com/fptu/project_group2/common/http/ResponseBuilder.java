@@ -1,6 +1,7 @@
 package com.fptu.project_group2.common.http;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -198,7 +199,7 @@ public final class ResponseBuilder {
             String message
     ) {
         return error(
-                HttpStatus.UNPROCESSABLE_ENTITY,
+                HttpStatus.UNPROCESSABLE_CONTENT,
                 message,
                 null
         );

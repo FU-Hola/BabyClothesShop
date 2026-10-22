@@ -12,9 +12,9 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @SuperBuilder
+@MappedSuperclass
 public abstract class BaseEntity {
 
     @Id
@@ -28,4 +28,7 @@ public abstract class BaseEntity {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    public BaseEntity() {
+    }
 }
