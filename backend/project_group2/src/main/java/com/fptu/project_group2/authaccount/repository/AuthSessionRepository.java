@@ -12,9 +12,9 @@ import java.util.UUID;
 
 public interface AuthSessionRepository extends JpaRepository<AuthSession, UUID> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select session from AuthSession session join fetch session.user where session.id = :id")
-    Optional<AuthSession> findByIdForUpdate(@Param("id") UUID id);
+    @Query("select s from AuthSession s join fetch s.user where s.sessionKey = :sessionKey")
+    Optional<AuthSession> findBySessionKeyForUpdate(@Param("sessionKey") UUID sessionKey);
 
-    @Query("select session from AuthSession session join fetch session.user where session.id = :id")
-    Optional<AuthSession> findByIdWithUser(@Param("id") UUID id);
+    @Query("select s from AuthSession s join fetch s.user where s.sessionKey = :sessionKey")
+    Optional<AuthSession> findBySessionKeyWithUser(@Param("sessionKey") UUID sessionKey);
 }

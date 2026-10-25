@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -20,6 +21,9 @@ import java.time.Instant;
 @Entity
 @Table(name = "auth_sessions")
 public class AuthSession extends BaseEntity {
+    @Column(name = "session_key", nullable = false, unique = true, updatable = false)
+    private UUID sessionKey;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

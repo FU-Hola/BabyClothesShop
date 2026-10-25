@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -17,9 +18,10 @@ public class AuthSessionService {
     private final TokenHashingService tokenHashingService;
 
     @Transactional
-    public AuthSession create(User user, String refreshToken, Instant expiresAt) {
+    public AuthSession create(User user, UUID sessionKey, String refreshToken, Instant expiresAt) {
         AuthSession session = new AuthSession();
         session.setUser(user);
+        session.setSessionKey(sessionKey);
         session.setRefreshTokenHash(tokenHashingService.hash(refreshToken));
         session.setExpiresAt(expiresAt);
         return sessionRepository.saveAndFlush(session);

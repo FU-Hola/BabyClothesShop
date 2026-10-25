@@ -10,12 +10,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.security.core.AuthenticationException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestControllerAdvice(basePackageClasses = AuthController.class)
 public class AuthExceptionHandler {
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(AuthenticationException exception) {
+        return ResponseBuilder.error(
+                HttpStatus.UNAUTHORIZED,
+                ErrorCode.INVALID_CREDENTIALS.getCode(),
+                ErrorCode.INVALID_CREDENTIALS.getDefaultMessage(),
+                null
+        );
+    }
+
     @ExceptionHandler(BaseBusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(BaseBusinessException exception) {
         return ResponseBuilder.error(

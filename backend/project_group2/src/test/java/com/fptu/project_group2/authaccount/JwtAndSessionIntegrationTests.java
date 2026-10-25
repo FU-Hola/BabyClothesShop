@@ -128,8 +128,9 @@ class JwtAndSessionIntegrationTests extends IntegrationTestSupport {
         user = userRepository.saveAndFlush(user);
 
         String refreshToken = "raw-refresh-token";
-        var session = sessionService.create(user, refreshToken, Instant.now().plusSeconds(600));
-        var stored = sessionRepository.findByIdWithUser(session.getId()).orElseThrow();
+        UUID sessionKey = UUID.randomUUID();
+        sessionService.create(user, sessionKey, refreshToken, Instant.now().plusSeconds(600));
+        var stored = sessionRepository.findBySessionKeyWithUser(sessionKey).orElseThrow();
 
         assertNotEquals(refreshToken, stored.getRefreshTokenHash());
         assertEquals(64, stored.getRefreshTokenHash().length());
