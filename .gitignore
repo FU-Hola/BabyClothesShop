@@ -1,4 +1,4 @@
-# Repository policy: keep source, lockfiles, migrations, shared configuration,
+# Repository policy: keep source, lockfiles, shared configuration,
 # sanitized examples and application assets. Ignore generated/local state only.
 # Ignore rules do not remove files that Git already tracks.
 
@@ -90,7 +90,9 @@ dependency-reduced-pom.xml
 # Keep Maven wrapper scripts, properties and wrapper JAR for reproducible builds.
 # Keep application.yaml and profile configs; only local/secrets overrides are ignored.
 
-# Runtime storage / database dumps; keep SQL migrations and mock fixtures
+# Runtime storage / database dumps; keep mock fixtures
+# Keep local Flyway migration SQL out of commits.
+/backend/project_group2/src/main/resources/db/migration/*.sql
 /backend/**/data/
 /backend/**/uploads/
 /backend/**/storage/
