@@ -1,0 +1,18 @@
+spring:
+  flyway:
+    enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        hbm2ddl:
+          halt_on_error: true
+  security:
+    user:
+      name: test-only
+      password: test-only-password
+
+logging:
+  level:
+    root: WARN
