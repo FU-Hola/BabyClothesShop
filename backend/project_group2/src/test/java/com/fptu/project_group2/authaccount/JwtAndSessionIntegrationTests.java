@@ -79,8 +79,11 @@ class JwtAndSessionIntegrationTests extends IntegrationTestSupport {
         UUID sessionId = UUID.randomUUID();
         Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         String valid = jwtService.generateAccessToken(userId, sessionId, now, now.plusSeconds(60));
-        char replacement = valid.endsWith("a") ? 'b' : 'a';
-        String tampered = valid.substring(0, valid.length() - 1) + replacement;
+        int signatureStart = valid.lastIndexOf('.') + 1;
+        char replacement = valid.charAt(signatureStart) == 'a' ? 'b' : 'a';
+        String tampered = valid.substring(0, signatureStart)
+                + replacement
+                + valid.substring(signatureStart + 1);
         String expired = jwtService.generateAccessToken(userId, sessionId, now.minusSeconds(120), now.minusSeconds(60));
 
         assertThrows(JwtException.class, () -> jwtService.validate(tampered, TokenType.ACCESS));
