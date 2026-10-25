@@ -54,11 +54,16 @@ spring:
     multipart:
       max-file-size: ${UPLOAD_MAX_FILE_SIZE:5MB}
       max-request-size: ${UPLOAD_MAX_REQUEST_SIZE:10MB}
-  security:
-    user:
-      name: ${BOOTSTRAP_ADMIN_USERNAME}
-      password: ${BOOTSTRAP_ADMIN_PASSWORD}
-      roles: ADMIN
+
+app:
+  jwt:
+    secret-base64: ${JWT_SECRET_BASE64}
+    access-ttl-seconds: ${JWT_ACCESS_TTL_SECONDS:900}
+    refresh-ttl-seconds: ${JWT_REFRESH_TTL_SECONDS:604800}
+    issuer: ${JWT_ISSUER:baby-clothes-shop-api}
+    audience: ${JWT_AUDIENCE:baby-clothes-shop}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
 
 server:
   port: ${SERVER_PORT:8080}

@@ -1,6 +1,7 @@
 package com.fptu.project_group2.entity;
 
 import com.fptu.project_group2.authaccount.entity.User;
+import com.fptu.project_group2.authaccount.entity.AuthSession;
 import com.fptu.project_group2.common.entity.BaseEntity;
 import com.fptu.project_group2.cartcheckout.entity.Cart;
 import com.fptu.project_group2.cartcheckout.entity.CartItem;
@@ -37,7 +38,7 @@ class DomainEntityMappingTests {
                 .build();
         try {
             var sources = new MetadataSources(registry);
-            for (var type : new Class<?>[]{User.class, Category.class, Product.class,
+            for (var type : new Class<?>[]{User.class, AuthSession.class, Category.class, Product.class,
                     ProductVariant.class, ProductImage.class, Cart.class, CartItem.class,
                     Order.class, OrderItem.class, GoodsIssue.class, GoodsIssueItem.class,
                     GoodsReceipt.class, GoodsReceiptItem.class, Inventory.class}) {
@@ -45,7 +46,7 @@ class DomainEntityMappingTests {
             }
             var metadata = sources.buildMetadata();
             try (var factory = metadata.buildSessionFactory()) {
-                assertEquals(14, factory.getMetamodel().getEntities().size());
+                assertEquals(15, factory.getMetamodel().getEntities().size());
                 for (var entity : factory.getMetamodel().getEntities()) {
                     assertTrue(BaseEntity.class.isAssignableFrom(entity.getJavaType()));
                     for (var attribute : new String[]{"id", "createdAt", "updatedAt"}) {

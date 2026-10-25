@@ -8,10 +8,14 @@ spring:
       hibernate:
         hbm2ddl:
           halt_on_error: true
-  security:
-    user:
-      name: test-only
-      password: test-only-password
+
+app:
+  jwt:
+    secret-base64: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+    access-ttl-seconds: 900
+    refresh-ttl-seconds: 604800
+    issuer: baby-clothes-shop-test
+    audience: baby-clothes-shop-tests
 
 logging:
   level:
