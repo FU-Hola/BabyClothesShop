@@ -2,6 +2,7 @@ package com.fptu.project_group2.authaccount;
 
 import com.fptu.project_group2.authaccount.dto.request.RegisterRequest;
 import com.fptu.project_group2.authaccount.repository.UserRepository;
+import com.fptu.project_group2.authaccount.repository.AuthSessionRepository;
 import com.fptu.project_group2.authaccount.service.AuthService;
 import com.fptu.project_group2.common.exception.BaseBusinessException;
 import com.fptu.project_group2.support.IntegrationTestSupport;
@@ -28,10 +29,14 @@ class RegisterIntegrationTests extends IntegrationTestSupport {
     private UserRepository userRepository;
 
     @Autowired
+    private AuthSessionRepository sessionRepository;
+
+    @Autowired
     private AuthService authService;
 
     @BeforeEach
     void clearUsers() {
+        sessionRepository.deleteAll();
         userRepository.deleteAll();
     }
 

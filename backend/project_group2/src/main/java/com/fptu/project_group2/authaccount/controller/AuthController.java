@@ -2,6 +2,7 @@ package com.fptu.project_group2.authaccount.controller;
 
 import com.fptu.project_group2.authaccount.dto.request.RegisterRequest;
 import com.fptu.project_group2.authaccount.dto.request.LoginRequest;
+import com.fptu.project_group2.authaccount.dto.request.RefreshTokenRequest;
 import com.fptu.project_group2.authaccount.dto.response.AuthTokensResponse;
 import com.fptu.project_group2.authaccount.dto.response.UserResponse;
 import com.fptu.project_group2.authaccount.security.AuthenticatedUser;
@@ -37,5 +38,18 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> me(@AuthenticationPrincipal AuthenticatedUser principal) {
         return ResponseBuilder.ok(authService.getCurrentUser(principal.id()), "Lấy thông tin tài khoản thành công");
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<AuthTokensResponse>> refresh(
+            @Valid @RequestBody RefreshTokenRequest request
+    ) {
+        return ResponseBuilder.ok(authService.refresh(request), "Làm mới phiên đăng nhập thành công");
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody RefreshTokenRequest request) {
+        authService.logout(request);
+        return ResponseBuilder.ok(null, "Đăng xuất thành công");
     }
 }

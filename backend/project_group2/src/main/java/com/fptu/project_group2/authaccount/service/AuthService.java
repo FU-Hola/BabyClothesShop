@@ -4,12 +4,17 @@ import com.fptu.project_group2.authaccount.common.UserRole;
 import com.fptu.project_group2.authaccount.common.UserStatus;
 import com.fptu.project_group2.authaccount.dto.request.RegisterRequest;
 import com.fptu.project_group2.authaccount.dto.request.LoginRequest;
+import com.fptu.project_group2.authaccount.dto.request.RefreshTokenRequest;
 import com.fptu.project_group2.authaccount.dto.response.AuthTokensResponse;
 import com.fptu.project_group2.authaccount.dto.response.UserResponse;
 import com.fptu.project_group2.authaccount.entity.User;
 import com.fptu.project_group2.authaccount.repository.UserRepository;
+import com.fptu.project_group2.authaccount.repository.AuthSessionRepository;
 import com.fptu.project_group2.authaccount.security.AuthenticatedUser;
 import com.fptu.project_group2.authaccount.security.JwtService;
+import com.fptu.project_group2.authaccount.security.TokenHashingService;
+import com.fptu.project_group2.authaccount.security.TokenType;
+import com.fptu.project_group2.authaccount.security.ValidatedJwt;
 import com.fptu.project_group2.common.exception.BaseBusinessException;
 import com.fptu.project_group2.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +24,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import io.jsonwebtoken.JwtException;
 
 import java.util.Locale;
 import java.util.Map;
@@ -33,6 +39,8 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final AuthSessionService sessionService;
+    private final AuthSessionRepository sessionRepository;
+    private final TokenHashingService tokenHashingService;
 
     @Transactional
     public UserResponse register(RegisterRequest request) {
@@ -92,6 +100,70 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseBusinessException(ErrorCode.UNAUTHENTICATED));
         return UserResponse.from(user);
+    }
+
+    @Transactional
+    public AuthTokensResponse refresh(RefreshTokenRequest request) {
+        ValidatedJwt claims = validateRefreshToken(request.refreshToken());
+        var session = sessionRepository.findBySessionKeyForUpdate(claims.sessionId())
+                .orElseThrow(this::invalidToken);
+        Instant now = Instant.now();
+        User user = session.getUser();
+        if (!session.isActiveAt(now)
+                || !user.getId().equals(claims.userId())
+                || !tokenHashingService.matches(request.refreshToken(), session.getRefreshTokenHash())
+                || user.getStatus() != UserStatus.ACTIVE
+                || user.getDeletedAt() != null) {
+            throw invalidToken();
+        }
+
+        Instant accessExpiresAt = now.plusSeconds(jwtService.accessTtlSeconds());
+        if (accessExpiresAt.isAfter(session.getExpiresAt())) {
+            accessExpiresAt = session.getExpiresAt();
+        }
+        String accessToken = jwtService.generateAccessToken(
+                user.getId(), session.getSessionKey(), now, accessExpiresAt
+        );
+        String refreshToken = jwtService.generateRefreshToken(
+                user.getId(), session.getSessionKey(), now, session.getExpiresAt()
+        );
+        session.setRefreshTokenHash(tokenHashingService.hash(refreshToken));
+        sessionRepository.saveAndFlush(session);
+
+        return new AuthTokensResponse(
+                accessToken,
+                refreshToken,
+                "Bearer",
+                accessExpiresAt.getEpochSecond() - now.getEpochSecond(),
+                UserResponse.from(user)
+        );
+    }
+
+    @Transactional
+    public void logout(RefreshTokenRequest request) {
+        ValidatedJwt claims = validateRefreshToken(request.refreshToken());
+        var session = sessionRepository.findBySessionKeyForUpdate(claims.sessionId())
+                .orElseThrow(this::invalidToken);
+        if (!session.getUser().getId().equals(claims.userId())
+                || !tokenHashingService.matches(request.refreshToken(), session.getRefreshTokenHash())) {
+            throw invalidToken();
+        }
+        if (session.getRevokedAt() == null) {
+            session.setRevokedAt(Instant.now());
+            sessionRepository.saveAndFlush(session);
+        }
+    }
+
+    private ValidatedJwt validateRefreshToken(String refreshToken) {
+        try {
+            return jwtService.validate(refreshToken, TokenType.REFRESH);
+        } catch (JwtException | IllegalArgumentException exception) {
+            throw invalidToken();
+        }
+    }
+
+    private BaseBusinessException invalidToken() {
+        return new BaseBusinessException(ErrorCode.TOKEN_EXPIRED);
     }
 
     private void validateNormalizedName(String fullName) {
