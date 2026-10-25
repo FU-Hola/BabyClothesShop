@@ -1,6 +1,7 @@
 package com.fptu.project_group2.warehouse.controller;
 
 
+import com.fptu.project_group2.authaccount.security.AuthenticatedUser;
 import com.fptu.project_group2.common.http.ApiResponse;
 import com.fptu.project_group2.common.http.ResponseBuilder;
 import com.fptu.project_group2.warehouse.common.GoodsReceiptStatus;
@@ -10,6 +11,7 @@ import com.fptu.project_group2.warehouse.service.IGoodsReceipt;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -25,20 +27,20 @@ public class GoodsReceiptController {
 
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<Void>> createGoodsReceipt(
-            @Valid @RequestBody CreateReceiptRequest request
+            @Valid @RequestBody CreateReceiptRequest request,
+            @AuthenticationPrincipal AuthenticatedUser principal
             ){
-        UUID userId = UUID.randomUUID();
-        goodsReceiptService.createGoodsReceipt(request, userId);
+        goodsReceiptService.createGoodsReceipt(request, principal.id());
         return ResponseBuilder.created(null, "Tạo phiếu nhập hàng thành công");
     }
 
     @PatchMapping("/confirm/{id}")
     public ResponseEntity<ApiResponse<Void>> confirmGoodsReceipt(
             @PathVariable UUID id,
-            @Valid @RequestBody ConfirmReceiptRequest request
+            @Valid @RequestBody ConfirmReceiptRequest request,
+            @AuthenticationPrincipal AuthenticatedUser principal
             ){
-        UUID userId = UUID.randomUUID();
-        goodsReceiptService.confirmReceipt(request, userId, id);
+        goodsReceiptService.confirmReceipt(request, principal.id(), id);
 
         return ResponseBuilder.ok(null, "Xác nhận phiếu nhập kho thành công");
     }

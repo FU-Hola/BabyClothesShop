@@ -46,7 +46,10 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories").permitAll()
                         .requestMatchers("/api/v1/auth/me").authenticated()
-                        .anyRequest().permitAll())
+                        .requestMatchers("/api/v1/store-staff/**").hasRole("STORE_STAFF")
+                        .requestMatchers("/api/v1/warehouse-staff/**").hasRole("WAREHOUSE_STAFF")
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
