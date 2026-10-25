@@ -1,0 +1,111 @@
+# This backend is also an independent Git repository.
+# Keep source, migrations, pom.xml, Maven wrapper (including its JAR),
+# application.yaml/profile configs, documentation and sanitized env examples.
+# Ignore rules do not untrack files already committed or staged.
+
+# Maven build output (do not hide source directories named target)
+target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+*.class
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+dependency-reduced-pom.xml
+
+# Credentials and machine-specific configuration
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+!.env.*.example
+!.env.*.sample
+!.env.*.template
+application-local.properties
+application-local.yml
+application-local.yaml
+application-secrets.properties
+application-secrets.yml
+application-secrets.yaml
+secrets/
+.aws/
+.ssh/
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_ecdsa
+id_ed25519
+
+# Runtime data (SQL migrations and test fixtures remain trackable)
+/data/
+/uploads/
+/storage/
+/backups/
+/dumps/
+/docker/volumes/
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-wal
+*.sqlite3-shm
+*.h2.db
+*.mv.db
+*.trace.db
+
+# Logs, diagnostics and temporary files
+logs/
+*.log
+*.pid
+*.pid.lock
+hs_err_pid*
+replay_pid*
+*.hprof
+/tmp/
+/temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# IDE state; share only reviewed VS Code extension recommendations
+.idea/
+*.iml
+*.ipr
+*.iws
+**/.vscode/*
+!**/.vscode/extensions.json
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+/nbproject/private/
+/nbbuild/
+/nbdist/
+
+# Local assistant settings and indexes (same policy as the root repository)
+.cursor/
+.codex/
+.agents/
+.claude/
+.codegraph/
+AGENTS.md
+AGENTS.override.md
+CLAUDE.md
+
+# Operating system metadata
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/

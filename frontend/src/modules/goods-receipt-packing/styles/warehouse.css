@@ -1,0 +1,299 @@
+.goods-receipt-packing {
+  --admin-bg: var(--ui-background);
+  --primary-navy: var(--ui-primary);
+  --primary-navy-hover: var(--ui-primary-hover);
+  --card-bg: #ffffff;
+  --card-border: #eef2f6;
+  --text-dark: var(--ui-text);
+  --text-muted: #64748b;
+  --font-family: var(--ui-font);
+}
+
+.goods-receipt-packing:not(.modal) {
+  margin: 0;
+  padding: 0;
+  background-color: var(--admin-bg);
+  color: var(--text-dark);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.goods-receipt-packing .admin-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.goods-receipt-packing .admin-card:hover {
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+.goods-receipt-packing .stat-card {
+  background-color: #ffffff;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.goods-receipt-packing .stat-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.goods-receipt-packing .stat-icon-blue {
+  background-color: #eff6ff;
+  color: var(--ui-primary);
+}
+
+.goods-receipt-packing .stat-icon-purple {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+}
+
+.goods-receipt-packing .stat-icon-green {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.goods-receipt-packing .stat-icon-amber {
+  background-color: #fff7ed;
+  color: #ea580c;
+}
+
+.goods-receipt-packing .stat-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+  font-weight: 500;
+}
+
+.goods-receipt-packing .stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.2;
+}
+
+.goods-receipt-list .stat-card {
+  height: 100%;
+  min-height: 120px;
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.goods-receipt-list .stat-icon-box {
+  width: 56px;
+  height: 56px;
+}
+
+.goods-receipt-list .stat-label {
+  font-size: 14px;
+}
+
+.goods-receipt-list .stat-value {
+  font-size: 28px;
+}
+
+.goods-receipt-list .search-input-group .form-control,
+.goods-receipt-list .admin-select {
+  min-height: var(--ui-control-height);
+}
+
+.goods-receipt-packing .page-breadcrumb {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.goods-receipt-packing .page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+}
+
+.goods-receipt-packing .page-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.goods-receipt-packing .btn-primary-navy {
+  background-color: var(--primary-navy);
+  border-color: var(--primary-navy);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 8px 18px;
+  transition: all 0.2s ease;
+}
+
+.goods-receipt-packing .btn-primary-navy:hover,
+.goods-receipt-packing .btn-primary-navy:focus {
+  background-color: var(--primary-navy-hover);
+  border-color: var(--primary-navy-hover);
+  color: #ffffff;
+}
+
+.goods-receipt-packing .search-input-group {
+  position: relative;
+}
+
+.goods-receipt-packing .search-input-group .search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ui-text-muted);
+  font-size: 15px;
+  pointer-events: none;
+}
+
+.goods-receipt-packing .search-input-group .form-control {
+  padding-left: 38px;
+  border-radius: var(--ui-control-radius);
+  border-color: var(--ui-control-border);
+  font-size: 14px;
+}
+
+.goods-receipt-packing .search-input-group .form-control:focus {
+  border-color: var(--ui-primary);
+  box-shadow: 0 0 0 3px rgba(22, 44, 68, 0.12);
+}
+
+.goods-receipt-packing .admin-select {
+  border-radius: var(--ui-control-radius);
+  border-color: var(--ui-control-border);
+  font-size: 14px;
+}
+
+.goods-receipt-packing .admin-select:focus {
+  border-color: var(--ui-primary);
+  box-shadow: 0 0 0 3px rgba(22, 44, 68, 0.12);
+}
+.goods-receipt-packing .admin-table {
+  width: 100%;
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.goods-receipt-packing .admin-table thead th {
+  background-color: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  border-top: none;
+}
+
+.goods-receipt-packing .admin-table tbody td {
+  padding: 14px 16px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+}
+
+.goods-receipt-packing .admin-table tbody tr:hover td {
+  background-color: #f8fafc;
+}
+
+.goods-receipt-packing .admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.goods-receipt-packing .status-badge-dot {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+.goods-receipt-packing .status-badge-dot::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.goods-receipt-packing .status-badge-success {
+  background-color: #f0fdf4;
+  color: #15803d;
+}
+.goods-receipt-packing .status-badge-success::before {
+  background-color: #22c55e;
+}
+
+.goods-receipt-packing .status-badge-warning {
+  background-color: #fffbeb;
+  color: #b45309;
+}
+.goods-receipt-packing .status-badge-warning::before {
+  background-color: #f59e0b;
+}
+
+.goods-receipt-packing .status-badge-info {
+  background-color: #eff6ff;
+  color: var(--ui-primary);
+}
+.goods-receipt-packing .status-badge-info::before {
+  background-color: #3b82f6;
+}
+
+.goods-receipt-packing .status-badge-neutral {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+.goods-receipt-packing .status-badge-neutral::before {
+  background-color: #94a3b8;
+}
+.goods-receipt-packing .badge-soft-primary {
+  background-color: #eff6ff;
+  color: var(--ui-primary);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-weight: 500;
+}
+
+.goods-receipt-packing .badge-soft-secondary {
+  background-color: #f1f5f9;
+  color: #475569;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-weight: 500;
+}
+
+.goods-receipt-packing .action-btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  background-color: transparent;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.goods-receipt-packing .action-btn-icon:hover {
+  background-color: #f1f5f9;
+  color: var(--ui-primary);
+  border-color: #e2e8f0;
+}

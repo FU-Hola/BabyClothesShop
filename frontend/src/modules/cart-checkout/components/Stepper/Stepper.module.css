@@ -1,0 +1,80 @@
+.stepperContainer {
+  padding: 24px 0 16px 0;
+  margin-bottom: 24px;
+}
+
+.stepperList {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 12px;
+}
+
+.stepItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ui-text-muted);
+  font-size: 14px;
+}
+
+.stepNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid #d5d5d5;
+  background-color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ui-text-muted);
+  transition: all 0.3s ease;
+}
+
+.stepLabel {
+  font-weight: 500;
+}
+
+/* Bước đang hoạt động */
+.active .stepNumber {
+  border-color: var(--ui-primary);
+  background-color: var(--ui-primary);
+  color: #fff;
+}
+
+.active .stepLabel {
+  color: var(--ui-primary);
+  font-weight: 700;
+}
+
+/* Bước đã hoàn thành */
+.completed .stepNumber {
+  border-color: #198754;
+  background-color: #198754;
+  color: #fff;
+}
+
+.completed .stepLabel {
+  color: #198754;
+}
+
+/* Đường gạch ngang phân cách giữa các bước */
+.stepDivider {
+  width: 40px;
+  height: 2px;
+  background-color: #e0e0e0;
+}
+
+@media (max-width: 640px) {
+  .stepLabel {
+    display: none; /* Thu gọn chữ trên mobile */
+  }
+  .stepDivider {
+    width: 20px;
+  }
+}

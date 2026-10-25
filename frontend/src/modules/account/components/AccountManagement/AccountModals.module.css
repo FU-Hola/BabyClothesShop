@@ -1,89 +1,21 @@
-.modal {
-    overflow: hidden;
-    border: 0 !important;
-    border-radius: 18px !important;
-    box-shadow: 0 24px 65px rgba(23, 49, 71, 0.22) !important;
-}
-
-.avatar {
-    display: grid;
-    flex: 0 0 41px;
-    width: 41px;
-    height: 41px;
-    place-items: center;
-    border-radius: 11px;
-    background: #e8f0f6;
-    color: #284e70;
-    font-size: 0.76rem;
-    font-weight: 700;
-}
-
-.deleteDialog {
-    max-width: 455px !important;
-}
-
-.deleteHeader {
-    position: absolute;
-    z-index: 2;
-    top: 0;
-    right: 0;
-    padding: 16px !important;
-    border: 0 !important;
-    background: transparent !important;
-}
-
-.deleteBody {
-    padding: 34px 32px 20px !important;
-    text-align: center;
-}
-
-.deleteBody h2 {
-    margin: 0 0 7px;
-    color: #1c3a54;
-    font-size: 1.3rem;
-    font-weight: 700;
-}
-
-.deleteBody > p {
-    margin: 0 0 18px;
-    color: #788894;
-    font-size: 0.84rem;
-}
-
-.deleteIcon {
-    display: grid;
-    width: 62px;
-    height: 62px;
-    margin: 0 auto 17px;
-    place-items: center;
-    border: 1px solid #f5d1cd;
-    border-radius: 18px;
-    background: #fff1ef;
-    color: #c6534b;
-}
-
-.deleteFooter {
-    flex-wrap: nowrap !important;
-    gap: 9px;
-    padding: 4px 32px 30px !important;
-    border: 0 !important;
-}
-
-.deleteFooter button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 50%;
-    min-height: 43px;
-}
+.modal { overflow: hidden; border: 0 !important; border-radius: 18px !important; box-shadow: 0 24px 65px rgba(23, 49, 71, 0.22) !important; }
+.modal :global(.modal-header) { padding: 20px 24px; border-bottom-color: #e7edf1; background: #f8fafc; color: #1c3a54; }
+.avatar { display: grid; flex: 0 0 41px; width: 41px; height: 41px; place-items: center; border-radius: 11px; background: #e8f0f6; color: var(--ui-primary); font-size: 0.76rem; font-weight: 700; }
+.details { overflow: hidden; border: 1px solid #e4ebf0; border-radius: 12px; }
+.item { min-height: 72px; padding: 13px 16px !important; border-color: #edf1f4 !important; }
+.item small, .item strong { display: block; }
+.item small { margin-bottom: 4px; color: var(--ui-text-muted); font-size: 0.72rem; }
+.item strong { color: #31495b; font-size: 0.86rem; font-weight: 600; }
+.deleteDialog { max-width: 455px !important; }
+.deleteHeader { position: absolute; z-index: 2; top: 0; right: 0; padding: 16px !important; border: 0 !important; background: transparent !important; }
+.deleteBody { padding: 34px 32px 20px !important; text-align: center; }
+.deleteBody h2 { margin: 0 0 7px; color: #1c3a54; font-size: 1.3rem; font-weight: 700; }
+.deleteBody > p { margin: 0 0 18px; color: var(--ui-text-muted); font-size: 0.84rem; }
+.deleteIcon { display: grid; width: 62px; height: 62px; margin: 0 auto 17px; place-items: center; border: 1px solid #f5d1cd; border-radius: 18px; background: #fff1ef; color: #c6534b; }
+.deleteFooter { flex-wrap: nowrap !important; gap: 9px; padding: 4px 32px 30px !important; border: 0 !important; }
+.deleteFooter button { display: inline-flex; align-items: center; justify-content: center; width: 50%; min-height: 43px; }
 
 @media (max-width: 575px) {
-    .deleteDialog {
-        margin: 12px !important;
-    }
-
-    .deleteBody,
-    .deleteFooter {
-        padding-inline: 20px !important;
-    }
+    .deleteDialog { margin: 12px !important; }
+    .deleteBody, .deleteFooter { padding-inline: 20px !important; }
 }

@@ -1,15 +1,15 @@
 .menu {
-    padding: 0 50px;
+    padding: 0 var(--page-gutter);
     background: #fff;
-    color: #284e70;
+    color: var(--ui-primary);
 }
 
 .list {
     display: flex;
     align-items: stretch;
-    justify-content: center;
+    justify-content: space-between;
     min-height: 49px;
-    margin: 0;
+    margin: 0 auto;
     padding: 0;
     border-bottom: 1px solid #d5d5d5;
     list-style: none;
@@ -17,7 +17,7 @@
 
 .item {
     position: relative;
-    flex: 0 1 200px;
+    flex: 1;
 }
 
 .item + .item::before {
@@ -41,7 +41,7 @@
     height: 100%;
     padding: 8px 12px;
     color: inherit;
-    font-size: 12px;
+    font-size: 14px;
     line-height: 16px;
     text-align: center;
     text-decoration: none;
@@ -60,15 +60,11 @@
 }
 
 .link:focus-visible {
-    outline: 2px solid #284e70;
+    outline: 2px solid var(--ui-primary);
     outline-offset: -2px;
 }
 
 @media (max-width: 640px) {
-    .menu {
-        padding: 0 16px;
-    }
-
     .item {
         flex: 1;
         min-width: 0;

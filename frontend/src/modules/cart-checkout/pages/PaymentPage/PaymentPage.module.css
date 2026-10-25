@@ -1,0 +1,174 @@
+.paymentPage {
+  padding: 0 50px 60px 50px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.simulatorCard {
+  border: 1.5px solid var(--ui-primary);
+  border-radius: 12px;
+  background-color: #fff;
+  padding: 32px;
+  box-shadow: 0 4px 16px rgba(40, 78, 112, 0.1);
+}
+
+.simHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 20px;
+}
+
+.simBrand {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ui-primary);
+}
+
+.simBadge {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.qrContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 24px 0;
+  text-align: center;
+}
+
+.qrImageFrame {
+  padding: 16px;
+  background-color: #fff;
+  border: 2px dashed var(--ui-primary);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.qrImage {
+  width: 220px;
+  height: 220px;
+  display: block;
+}
+
+.bankDetailsTable {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto 24px auto;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.bankDetailsTable tr {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.bankDetailsTable td {
+  padding: 10px 8px;
+}
+
+.tableLabel {
+  color: #666;
+  width: 40%;
+}
+
+.tableValue {
+  color: var(--ui-primary);
+  font-weight: 600;
+}
+
+.copyBadge {
+  cursor: pointer;
+  background-color: #e2e8f0;
+  color: var(--ui-primary);
+  border: none;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  margin-left: 8px;
+}
+
+/* Nút mô phỏng */
+.simActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.successBtn {
+  height: 48px;
+  background-color: #198754;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.successBtn:hover {
+  background-color: #157347;
+}
+
+.failBtn {
+  height: 48px;
+  background-color: #fff;
+  color: #dc3545;
+  border: 1.5px solid #dc3545;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.failBtn:hover {
+  background-color: #fee2e2;
+}
+
+.cancelLink {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  color: var(--ui-text-muted);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.cancelLink:hover {
+  color: var(--ui-primary);
+}
+
+@media (max-width: 640px) {
+  .paymentPage {
+    padding: 0 16px 40px 16px;
+  }
+  .simActions {
+    grid-template-columns: 1fr;
+  }
+  .simulatorCard {
+    padding: 20px;
+  }
+}

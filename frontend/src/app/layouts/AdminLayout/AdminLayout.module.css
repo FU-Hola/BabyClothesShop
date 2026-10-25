@@ -1,5 +1,5 @@
 .shell {
-    --admin-primary: #284e70;
+    --admin-primary: var(--ui-primary);
     --admin-primary-dark: #1b3954;
     --admin-accent: #e5a96b;
     display: flex;
