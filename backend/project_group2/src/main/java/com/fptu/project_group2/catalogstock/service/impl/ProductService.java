@@ -6,6 +6,7 @@ import com.fptu.project_group2.authaccount.entity.User;
 import com.fptu.project_group2.catalogstock.common.ProductStatus;
 import com.fptu.project_group2.catalogstock.dto.request.CreateProductRequest;
 import com.fptu.project_group2.catalogstock.dto.request.ProductSearchRequest;
+import com.fptu.project_group2.catalogstock.dto.response.ProductDetailResponse;
 import com.fptu.project_group2.catalogstock.dto.response.ProductListResponse;
 import com.fptu.project_group2.catalogstock.entity.Category;
 import com.fptu.project_group2.catalogstock.entity.Product;
@@ -43,8 +44,9 @@ public class ProductService implements IProduct {
         keyword = "%" + keyword + "%";
         Sort sort = Sort.by(request.getSortDirection(), "createdAt", "id");
         Pageable pageable = request.toPageable(sort);
-        Page<Product> products = productRepository.searchProducts(keyword, request.getCategoryId(), request.getStatus(), pageable);
-        return products.map(this::toResponse);
+        Page<Product> products = productRepository.searchProducts(keyword, request.getCategoryId(), request.getStatus(),
+                pageable);
+        return products.map(this::toProductListResponse);
     }
 
     @Override
@@ -69,6 +71,44 @@ public class ProductService implements IProduct {
         }
         Product savedProduct = productRepository.save(product);
         return savedProduct.getId();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProductDetailResponse getProductDetail(UUID productId) {
+        Product product = productRepository.findById(productId).orElseThrow(() -> new
+                NotFoundException("Không tìm thấy sản phẩm"));
+        return toProductDetailResponse(product);
+    }
+
+    private ProductDetailResponse toProductDetailResponse(Product product) {
+        List<ProductDetailResponse.VariantResponse> variants = product.getVariants()
+                .stream()
+                .map(this::toVariantResponse)
+                .toList();
+
+        return ProductDetailResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .categoryId(product.getCategory().getId())
+                .categoryName(product.getCategory().getName())
+                .status(product.getStatus())
+                .createdAt(product.getCreatedAt())
+                .variants(variants)
+                .build();
+    }
+
+    private ProductDetailResponse.VariantResponse toVariantResponse(ProductVariant variant) {
+        return ProductDetailResponse.VariantResponse.builder()
+                .id(variant.getId())
+                .sku(variant.getSku())
+                .color(variant.getColor())
+                .size(variant.getSize())
+                .price(variant.getPrice())
+                .originalPrice(variant.getOriginalPrice())
+                .active(variant.isActive())
+                .build();
     }
 
     private Product toProduct(CreateProductRequest request, Category category, User creator) {
@@ -100,7 +140,8 @@ public class ProductService implements IProduct {
             String sku = item.getSku().trim().toLowerCase(Locale.ROOT);
 
             if (!skus.add(sku)) {
-                throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED, "SKU bị trùng trong danh sách biến thể: " + item.getSku());
+                throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED,
+                        "SKU bị trùng trong danh sách biến thể: " + item.getSku());
             }
 
             if (productVariantRepository.existsBySkuIgnoreCase(sku)) {
@@ -115,12 +156,13 @@ public class ProductService implements IProduct {
             }
 
             if (item.getOriginalPrice() != null && item.getOriginalPrice().compareTo(item.getPrice()) < 0) {
-                throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED, "Giá trước giảm không được nhỏ hơn giá bán");
+                throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED,
+                        "Giá trước giảm không được nhỏ hơn giá bán");
             }
         }
     }
 
-    private ProductListResponse toResponse(Product product) {
+    private ProductListResponse toProductListResponse(Product product) {
         List<BigDecimal> prices = product.getVariants()
                 .stream()
                 .filter(ProductVariant::isActive)

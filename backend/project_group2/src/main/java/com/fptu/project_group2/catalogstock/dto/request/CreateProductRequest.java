@@ -47,7 +47,7 @@ public class CreateProductRequest {
         private String size;
 
         @NotNull
-        @DecimalMin("0.0")
+        @DecimalMin(value = "0.0", inclusive = false, message = "Giá bán phải lớn hơn 0")
         private BigDecimal price;
 
         @DecimalMin("0.0")

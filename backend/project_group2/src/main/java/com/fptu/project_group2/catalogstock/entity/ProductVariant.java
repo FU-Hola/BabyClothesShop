@@ -5,13 +5,14 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.math.BigDecimal;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "product_variants", uniqueConstraints = @UniqueConstraint(name = "uk_variant_product_color_size", columnNames = {"product_id", "color", "size"}), check = @CheckConstraint(constraint = "price >= 0 and (original_price is null or original_price >= price)"))
+@Table(name = "product_variants", uniqueConstraints = @UniqueConstraint(name = "uk_variant_product_color_size", columnNames = {"product_id", "color", "size"}), check = @CheckConstraint(constraint = "price > 0 and (original_price is null or original_price >= price)"))
 public class ProductVariant extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
