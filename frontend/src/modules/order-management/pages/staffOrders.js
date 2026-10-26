@@ -20,6 +20,11 @@ const initialOrders = [
     ...customerExamples,
 ];
 
+const intialProduct = [
+    {
+
+    }
+]
 const STORAGE_KEY = "baby-clothes-shop-staff-order-statuses";
 
 export function loadStaffOrders() {
