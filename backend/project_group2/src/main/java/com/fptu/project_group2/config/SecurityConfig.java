@@ -4,6 +4,7 @@ import com.fptu.project_group2.authaccount.security.JwtAuthenticationFilter;
 import com.fptu.project_group2.common.security.ApiAccessDeniedHandler;
 import com.fptu.project_group2.common.security.ApiAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
+import jakarta.servlet.DispatcherType;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -59,6 +60,8 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(authorize -> authorize
+                        // Cho servlet trả đúng lỗi 404/405, tránh bị bước xác thực của error dispatch đổi thành 401.
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         // Public về xác thực; các POST vẫn phải có CSRF token hợp lệ.
                         .requestMatchers(
                                 "/api/v1/auth/register",

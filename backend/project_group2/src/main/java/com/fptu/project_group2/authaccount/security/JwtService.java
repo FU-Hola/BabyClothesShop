@@ -6,7 +6,6 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -30,12 +29,12 @@ public class JwtService {
         signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(properties.secretBase64()));
     }
 
-    public String generateAccessToken(UserDetails user) {
+    public String generateAccessToken(AuthenticatedUser user) {
         // Thời hạn mặc định: 900 giây, tức 15 phút.
         return generateToken(user, TokenType.ACCESS, properties.accessTtlSeconds());
     }
 
-    public String generateRefreshToken(UserDetails user) {
+    public String generateRefreshToken(AuthenticatedUser user) {
         // Thời hạn mặc định: 604800 giây, tức 7 ngày.
         return generateToken(user, TokenType.REFRESH, properties.refreshTtlSeconds());
     }
@@ -62,26 +61,31 @@ public class JwtService {
         if (claims.getAudience() == null || !claims.getAudience().contains(properties.audience())) {
             throw new JwtException("Unexpected token audience");
         }
-        // Ứng dụng bắt buộc phải có danh tính sub và thời điểm hết hạn exp.
-        if (claims.getSubject() == null || claims.getSubject().isBlank() || claims.getExpiration() == null) {
-            throw new JwtException("Token is missing its subject or expiry");
+        // Bắt buộc có email sub, ID tài khoản uid và thời điểm hết hạn exp.
+        if (claims.getSubject() == null || claims.getSubject().isBlank()
+                || claims.get("uid", String.class) == null || claims.getExpiration() == null) {
+            throw new JwtException("Token is missing its user ID, subject or expiry");
         }
         return claims;
     }
 
-    public boolean verifyUser(Claims claims, UserDetails user) {
+    public boolean verifyUser(Claims claims, AuthenticatedUser user) {
         // Chỉ gọi sau verifyAndExtract: đối chiếu email và trạng thái hiện tại của user.
         // Không parse token lần nữa vì chữ ký và thời hạn đã được kiểm tra ở trên.
-        return claims.getSubject().equals(user.getUsername()) && user.isEnabled();
+        // ID cố định ngăn token của email cũ bị nhận nhầm khi email được cấp lại cho user khác.
+        return user.id().toString().equals(claims.get("uid", String.class))
+                && claims.getSubject().equals(user.getUsername()) && user.isEnabled();
     }
 
-    private String generateToken(UserDetails user, TokenType type, long ttlSeconds) {
+    private String generateToken(AuthenticatedUser user, TokenType type, long ttlSeconds) {
         Instant now = Instant.now();
         return Jwts.builder()
                 // jti: mã riêng của token, giúp token mới khác token cũ dù cấp cùng giây.
                 .id(UUID.randomUUID().toString())
                 // sub: danh tính chủ token. Dự án dùng email làm username.
                 .subject(user.getUsername())
+                // uid gắn token với đúng tài khoản, kể cả khi quản trị viên đổi email.
+                .claim("uid", user.id().toString())
                 // iss: hệ thống cấp token; aud: ứng dụng nhận token.
                 .issuer(properties.issuer())
                 .audience().add(properties.audience()).and()

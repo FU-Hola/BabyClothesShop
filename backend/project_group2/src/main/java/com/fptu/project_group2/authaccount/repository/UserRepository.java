@@ -2,6 +2,7 @@ package com.fptu.project_group2.authaccount.repository;
 
 import com.fptu.project_group2.authaccount.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,10 +11,12 @@ import jakarta.persistence.LockModeType;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserRepository extends JpaRepository<User, UUID> {
+public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
     Optional<User> findByEmailIgnoreCase(String email);
 
     boolean existsByEmailIgnoreCase(String email);
+
+    Optional<User> findByEmployeeCodeIgnoreCase(String employeeCode);
 
     // Khóa dòng user đến hết transaction để login và refresh không cập nhật chồng nhau.
     // Đây là khóa dữ liệu trong DB, không phải cơ chế quản lý phiên đăng nhập.

@@ -91,6 +91,8 @@ public class AuthService {
         if (!AuthenticatedUser.from(user).isEnabled()) {
             throw new BaseBusinessException(ErrorCode.INVALID_CREDENTIALS);
         }
+        // Chỉ cập nhật lần đăng nhập bằng mật khẩu, không cập nhật khi refresh JWT.
+        user.setLastLoginAt(Instant.now());
         // Bước 3: cấp hai JWT, lưu hash refresh token và trả kết quả cho controller.
         return issueTokens(user);
     }

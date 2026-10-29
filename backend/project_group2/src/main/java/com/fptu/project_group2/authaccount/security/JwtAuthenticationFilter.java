@@ -10,8 +10,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -37,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final AuthCookieService cookieService;
-    private final UserDetailsService userDetailsService;
+    private final DatabaseUserDetailsService userDetailsService;
     private final SecurityErrorWriter errorWriter;
 
     @Override
@@ -72,7 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Bước 2: xác minh chữ ký, thời hạn, loại token và lấy claims một lần.
             var claims = jwtService.verifyAndExtract(accessToken, TokenType.ACCESS);
             // Bước 3: dùng email trong sub để tải user và quyền hiện tại từ database.
-            UserDetails principal = userDetailsService.loadUserByUsername(claims.getSubject());
+            AuthenticatedUser principal = userDetailsService.loadUserByUsername(claims.getSubject());
             if (!jwtService.verifyUser(claims, principal)) {
                 throw new JwtException("User account is inactive");
             }
