@@ -1,5 +1,6 @@
 package com.fptu.project_group2.authaccount.security;
 
+// Hai mục đích khác nhau; JwtService kiểm tra loại phù hợp trước khi chấp nhận JWT.
 public enum TokenType {
     ACCESS("access"),
     REFRESH("refresh");

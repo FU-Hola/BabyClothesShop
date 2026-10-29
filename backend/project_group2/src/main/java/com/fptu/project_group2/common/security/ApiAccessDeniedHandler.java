@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+// Trả JSON 403 khi bị từ chối quyền truy cập hoặc kiểm tra CSRF không đạt.
 @Component
 @RequiredArgsConstructor
 public class ApiAccessDeniedHandler implements AccessDeniedHandler {

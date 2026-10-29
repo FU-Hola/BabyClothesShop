@@ -6,6 +6,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -13,92 +14,85 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
+/**
+ * Tạo và xác minh JWT; không đọc cookie và không truy vấn database.
+ * Access token dùng để gọi API, refresh token dùng để xin cặp token mới.
+ */
 @Service
 public class JwtService {
-    private static final String SESSION_ID_CLAIM = "sid";
-    private static final String TOKEN_TYPE_CLAIM = "token_type";
-
     private final JwtProperties properties;
     private final SecretKey signingKey;
 
     public JwtService(JwtProperties properties) {
         this.properties = properties;
-        try {
-            byte[] secret = Decoders.BASE64.decode(properties.secretBase64());
-            if (secret.length < 32) {
-                throw new IllegalArgumentException("JWT secret must contain at least 32 bytes");
-            }
-            signingKey = Keys.hmacShaKeyFor(secret);
-        } catch (RuntimeException exception) {
-            throw new IllegalArgumentException("JWT_SECRET_BASE64 must be valid Base64 with at least 32 bytes", exception);
-        }
+        // Đọc secret từ cấu hình, giải mã Base64 rồi tạo khóa ký HMAC.
+        // JJWT từ chối khóa ngắn hơn 32 byte; không ghi khóa thật trực tiếp vào code.
+        signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(properties.secretBase64()));
     }
 
-    public String generateAccessToken(UUID userId, UUID sessionId, Instant issuedAt, Instant expiresAt) {
-        return generate(userId, sessionId, TokenType.ACCESS, null, issuedAt, expiresAt);
+    public String generateAccessToken(UserDetails user) {
+        // Thời hạn mặc định: 900 giây, tức 15 phút.
+        return generateToken(user, TokenType.ACCESS, properties.accessTtlSeconds());
     }
 
-    public String generateRefreshToken(UUID userId, UUID sessionId, Instant issuedAt, Instant expiresAt) {
-        return generate(userId, sessionId, TokenType.REFRESH, UUID.randomUUID().toString(), issuedAt, expiresAt);
+    public String generateRefreshToken(UserDetails user) {
+        // Thời hạn mặc định: 604800 giây, tức 7 ngày.
+        return generateToken(user, TokenType.REFRESH, properties.refreshTtlSeconds());
     }
 
-    public ValidatedJwt validate(String token, TokenType expectedType) {
+    /**
+     * Xác minh token rồi trả thông tin bên trong (claims).
+     * expectedType ngăn việc dùng refresh token để gọi API cần access token.
+     * Token sai hoặc hết hạn sẽ gây exception, không trả claims để sử dụng tiếp.
+     */
+    public Claims verifyAndExtract(String token, TokenType expectedType) {
         Claims claims = Jwts.parser()
+                // Dùng cùng khóa bí mật đã ký token để kiểm tra chữ ký.
                 .verifyWith(signingKey)
+                // Chỉ chấp nhận thuật toán HS256 mà ứng dụng đang sử dụng.
                 .sig().clear().add(Jwts.SIG.HS256).and()
+                // Token phải do đúng hệ thống cấp và có đúng loại được yêu cầu.
                 .requireIssuer(properties.issuer())
-                .require(TOKEN_TYPE_CLAIM, expectedType.claimValue())
+                .require("token_type", expectedType.claimValue())
                 .build()
+                // Không chỉ đọc JSON: bước này kiểm tra cả chữ ký và thời hạn exp.
                 .parseSignedClaims(token)
                 .getPayload();
-
+        // aud cho biết ứng dụng nhận token; token phải dành cho dự án này.
         if (claims.getAudience() == null || !claims.getAudience().contains(properties.audience())) {
             throw new JwtException("Unexpected token audience");
         }
-        if (claims.getSubject() == null || claims.getExpiration() == null) {
-            throw new JwtException("Required token claims are missing");
+        // Ứng dụng bắt buộc phải có danh tính sub và thời điểm hết hạn exp.
+        if (claims.getSubject() == null || claims.getSubject().isBlank() || claims.getExpiration() == null) {
+            throw new JwtException("Token is missing its subject or expiry");
         }
-
-        try {
-            UUID userId = UUID.fromString(claims.getSubject());
-            UUID sessionId = UUID.fromString(claims.get(SESSION_ID_CLAIM, String.class));
-            String jwtId = claims.getId();
-            if (expectedType == TokenType.REFRESH && (jwtId == null || jwtId.isBlank())) {
-                throw new JwtException("Refresh token ID is missing");
-            }
-            return new ValidatedJwt(userId, sessionId, jwtId, claims.getExpiration().toInstant());
-        } catch (IllegalArgumentException | NullPointerException exception) {
-            throw new JwtException("Token contains invalid identifiers", exception);
-        }
+        return claims;
     }
 
-    public long accessTtlSeconds() {
-        return properties.accessTtlSeconds();
+    public boolean verifyUser(Claims claims, UserDetails user) {
+        // Chỉ gọi sau verifyAndExtract: đối chiếu email và trạng thái hiện tại của user.
+        // Không parse token lần nữa vì chữ ký và thời hạn đã được kiểm tra ở trên.
+        return claims.getSubject().equals(user.getUsername()) && user.isEnabled();
     }
 
-    public long refreshTtlSeconds() {
-        return properties.refreshTtlSeconds();
-    }
-
-    private String generate(
-            UUID userId,
-            UUID sessionId,
-            TokenType type,
-            String jwtId,
-            Instant issuedAt,
-            Instant expiresAt
-    ) {
-        var builder = Jwts.builder()
-                .subject(userId.toString())
+    private String generateToken(UserDetails user, TokenType type, long ttlSeconds) {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                // jti: mã riêng của token, giúp token mới khác token cũ dù cấp cùng giây.
+                .id(UUID.randomUUID().toString())
+                // sub: danh tính chủ token. Dự án dùng email làm username.
+                .subject(user.getUsername())
+                // iss: hệ thống cấp token; aud: ứng dụng nhận token.
                 .issuer(properties.issuer())
                 .audience().add(properties.audience()).and()
-                .claim(SESSION_ID_CLAIM, sessionId.toString())
-                .claim(TOKEN_TYPE_CLAIM, type.claimValue())
-                .issuedAt(Date.from(issuedAt))
-                .expiration(Date.from(expiresAt));
-        if (jwtId != null) {
-            builder.id(jwtId);
-        }
-        return builder.signWith(signingKey, Jwts.SIG.HS256).compact();
+                // Claim tự định nghĩa để phân biệt "access" và "refresh".
+                .claim("token_type", type.claimValue())
+                // iat: thời điểm cấp; exp: thời điểm hết hạn. TTL tính bằng giây.
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusSeconds(ttlSeconds)))
+                // Ký để phát hiện token bị sửa; chữ ký không mã hóa nội dung payload.
+                .signWith(signingKey, Jwts.SIG.HS256)
+                // Ghép thành chuỗi JWT: header.payload.signature.
+                .compact();
     }
 }

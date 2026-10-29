@@ -1,113 +1,125 @@
-# BabyClothesShop backend authentication
+# JWT cơ bản cho BabyClothesShop
 
-The backend uses stateless Spring Security authentication with signed JWT access and refresh tokens. Passwords are stored with BCrypt. Refresh tokens are stored only as SHA-256 hashes in `auth_sessions` so the raw token is never persisted.
+Backend dùng Spring Security + JJWT, phù hợp với luồng bài học: đăng nhập bằng email/mật khẩu, cấp JWT vào cookie, xác minh JWT ở filter rồi tạo SecurityContext. Frontend chưa được chuyển sang cookie; hiện kiểm tra bằng Postman.
 
-## Local configuration
+## Cấu hình và chạy
 
-Copy `.env.example` to `.env`, fill in the PostgreSQL passwords, and generate a JWT secret containing at least 32 random bytes:
+Tại thư mục backend/project_group2:
 
-```powershell
+~~~powershell
 Copy-Item .env.example .env
 openssl rand -base64 32
-```
+~~~
 
-Set the generated value as `JWT_SECRET_BASE64`. Never commit `.env` or a real JWT secret. The main JWT settings are:
+Điền cấu hình PostgreSQL vào .env và đặt chuỗi Base64 vừa tạo vào JWT_SECRET_BASE64. Không commit .env hoặc khóa thật. Khởi động PostgreSQL theo ../../docker/postgres/README.md, sau đó chạy:
 
-| Variable | Default | Purpose |
-|---|---:|---|
-| `JWT_ACCESS_TTL_SECONDS` | `900` | Access token lifetime, 15 minutes |
-| `JWT_REFRESH_TTL_SECONDS` | `604800` | Session and refresh token lifetime, 7 days |
-| `JWT_ISSUER` | `baby-clothes-shop-api` | Required `iss` claim |
-| `JWT_AUDIENCE` | `baby-clothes-shop` | Required `aud` claim |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | Comma-separated frontend origins |
-
-Start PostgreSQL as described in `../../docker/postgres/README.md`, then run:
-
-```powershell
+~~~powershell
 .\mvnw.cmd spring-boot:run
-```
+~~~
 
-The current development configuration uses `spring.jpa.hibernate.ddl-auto=create`. Restarting the backend recreates the tables and removes all accounts and authentication sessions.
+| Biến | Mặc định | Ý nghĩa |
+|---|---|---|
+| JWT_ACCESS_TTL_SECONDS | 900 | Access token có hiệu lực 15 phút |
+| JWT_REFRESH_TTL_SECONDS | 604800 | Refresh token có hiệu lực 7 ngày từ lần cấp mới nhất |
+| JWT_ISSUER | baby-clothes-shop-api | Hệ thống cấp token |
+| JWT_AUDIENCE | baby-clothes-shop | Ứng dụng nhận token |
+| AUTH_COOKIE_SECURE | false | Dùng false cho HTTP localhost; true khi triển khai HTTPS |
+| CORS_ALLOWED_ORIGINS | http://localhost:5173 | Origin frontend được phép gửi cookie |
 
-## Authentication flow
+Cấu hình phát triển đang dùng ddl-auto=create: mỗi lần khởi động backend sẽ tạo lại bảng và xóa dữ liệu cũ. Hai cột refresh_token_hash và refresh_token_expires_at được tạo trong users. Code không còn ánh xạ bảng auth_sessions; nếu database cũ còn bảng đó thì không còn được ứng dụng sử dụng. Không cần xóa thủ công để thử API.
 
-1. `POST /api/v1/auth/register` creates an active `CUSTOMER` account. Registration cannot choose a role.
-2. `POST /api/v1/auth/login` checks the password with BCrypt and returns an access token, refresh token, `tokenType`, `expiresIn`, and the public user data.
-3. Protected requests send `Authorization: Bearer <accessToken>`. The JWT filter checks the signature, algorithm, issuer, audience, token type, expiry, session, and current account status.
-4. `POST /api/v1/auth/refresh` rotates the refresh token while keeping the original seven-day session deadline. A refresh token can be used only once.
-5. `POST /api/v1/auth/logout` revokes the selected session. Access and refresh tokens from that session stop working immediately; other sessions remain active.
+## Luồng để học
 
-Both tokens contain `sub` as the user UUID and `sid` as the authentication-session UUID. The access token has `token_type=access`; the refresh token has `token_type=refresh` and a unique `jti`.
+**Đăng nhập:**
 
-## API examples
+~~~text
+AuthController nhận email/password
+→ AuthService gọi AuthenticationManager
+→ DaoAuthenticationProvider gọi DatabaseUserDetailsService
+→ BCrypt đối chiếu mật khẩu
+→ JwtService tạo access token và refresh token
+→ lưu hash refresh token vào users
+→ AuthCookieService đặt hai cookie HttpOnly
+~~~
 
-Register:
+**Request tiếp theo:**
 
-```http
-POST /api/v1/auth/register
-Content-Type: application/json
+~~~text
+Cookie accessToken
+→ JwtAuthenticationFilter đọc cookie
+→ JwtService.verifyAndExtract xác minh và trả claims
+→ DatabaseUserDetailsService tải user theo email trong sub
+→ kiểm tra tài khoản đang hoạt động
+→ tạo Authentication với quyền hiện tại từ database
+→ lưu vào SecurityContext
+→ Spring kiểm tra quyền
+→ controller xử lý nghiệp vụ
+~~~
 
-{
-  "fullName": "Nguyen Van An",
-  "email": "an@example.com",
-  "password": "secret123"
-}
-```
+JWT được parse một lần mỗi request. JJWT kiểm tra chữ ký HS256 và thời hạn; ứng dụng kiểm tra thêm issuer, audience và token_type. Không đưa password hoặc role vào JWT; quyền được tải từ database.
 
-Login:
+STATELESS vẫn được giữ: Spring Security không dùng HTTP session để ghi nhớ đăng nhập. SecurityContext phục vụ request hiện tại; request sau phải xác minh token lại.
 
-```http
-POST /api/v1/auth/login
-Content-Type: application/json
+## Refresh và logout
 
-{
-  "email": "an@example.com",
-  "password": "secret123"
-}
-```
+Mỗi user giữ **một refresh token hiện tại**, được lưu dưới dạng hash SHA-256, cùng thời hạn. Không lưu chuỗi JWT thô.
 
-Get the current user:
+- Login mới thay refresh token đang lưu của tài khoản.
+- Refresh kiểm tra JWT, hash, thời hạn và trạng thái user, rồi thay bằng cặp token mới. Token refresh cũ không dùng lại được.
+- Logout xóa hash/thời hạn refresh token và xóa hai cookie. Gọi lại logout vẫn thành công.
+- Không có quản lý thiết bị, danh sách phiên hoặc thu hồi access token theo phiên.
+- Access token đã sao chép có thể tiếp tục dùng đến exp sau logout, tối đa 15 phút với cấu hình mặc định. Trình duyệt/Postman bình thường đã bị xóa cookie nên không còn tự gửi token đó.
 
-```http
-GET /api/v1/auth/me
-Authorization: Bearer <accessToken>
-```
+Hai query khóa dòng user chỉ giữ thao tác login/refresh/logout nhất quán khi request đến đồng thời; đây không phải cơ chế quản lý phiên đăng nhập.
 
-Refresh or logout:
+## Test bằng Postman
 
-```http
-POST /api/v1/auth/refresh
-Content-Type: application/json
+Kiểm tra thủ công bằng Postman với baseUrl=http://localhost:8080/api/v1 theo bảng dưới đây. Postman tự lưu/gửi các cookie nhận từ Set-Cookie. Không chọn Bearer Token trong Authorization. Dùng email mới mỗi lần đăng ký.
 
-{"refreshToken":"<refreshToken>"}
-```
-
-Use the same JSON body with `POST /api/v1/auth/logout`. Every endpoint returns the existing `ApiResponse` envelope. Invalid credentials return error code `1003`; missing authentication returns `1001`; invalid or expired tokens return `1004`; insufficient roles return `1002`.
-
-Registration trims names, lowercases and trims email, and accepts passwords from 6 characters up to 72 UTF-8 bytes. Passwords are not trimmed.
-
-## Role boundaries
-
-| Path | Required role |
+| Request | Kết quả |
 |---|---|
-| `/api/v1/store-staff/**` | `STORE_STAFF` |
-| `/api/v1/warehouse-staff/**` | `WAREHOUSE_STAFF` |
-| `/api/v1/admin/**` | `ADMIN` |
+| GET /auth/csrf | 200; data.token và cookie XSRF-TOKEN |
+| POST /auth/register | 201; tạo CUSTOMER |
+| POST /auth/login thiếu CSRF | 403 |
+| POST /auth/login sai password | 401 |
+| POST /auth/login đúng | 200; profile trong data, JWT trong hai cookie HttpOnly |
+| GET /auth/me | 200 nếu access cookie hợp lệ |
+| GET /admin/probe với CUSTOMER | 403 |
+| POST /auth/refresh | 200; thay hai cookie |
+| Dùng lại refresh token cũ | 401 |
+| POST /auth/logout | 200; xóa cookie và refresh token trong DB |
+| GET /auth/me sau logout, không cookie | 401 |
+| POST /auth/refresh sau logout | 401 |
+| Gửi lại access token đã sao chép ngay sau logout | 200 trước exp; minh họa giới hạn đã chấp nhận |
 
-`ADMIN` does not inherit staff access. `GET /api/v1/categories` and the register, login, refresh, and logout endpoints are public. All other endpoints require a valid access token. Controllers take the acting user ID from the verified principal; `X-User-Id` is ignored.
+Khi gửi thủ công:
 
-## Verification
+1. Gọi GET /api/v1/auth/csrf; giữ cookie XSRF-TOKEN và lấy data.token.
+2. Trước mỗi POST/PUT/PATCH/DELETE, gọi lại /auth/csrf rồi thêm X-XSRF-TOKEN bằng data.token mới nhất. Spring có thể xóa CSRF cookie khi xác thực request. Giá trị trong JSON đã được Spring mã hóa để chống BREACH; không chép trực tiếp giá trị cookie vào header.
+3. Register/login gửi JSON; refresh/logout không cần body, backend đọc refreshToken từ cookie.
+4. Login trả profile trong data, không trả JWT trong JSON. Kiểm tra JWT ở Cookies hoặc Set-Cookie.
+5. Dùng cùng hostname, ví dụ luôn là localhost; không chuyển qua lại localhost và 127.0.0.1.
 
-With Docker available, Testcontainers is the default isolated PostgreSQL provider:
+Khi cố tình gửi lại token cũ, tắt cookie jar riêng cho request đó để không trộn cookie thử nghiệm với cookie hiện tại. Chỉ lưu token vào biến Postman để minh họa kiểm thử; frontend sau này không đọc hoặc lưu JWT trong localStorage. Collection kiểm thử được giữ cục bộ theo quy ước không commit file test.
 
-```powershell
-.\mvnw.cmd verify
-```
+CSRF được bật cho cả login, register, refresh, logout và API thay đổi dữ liệu. JWT cookie được trình duyệt tự gửi nên STATELESS không thay thế CSRF protection. Tham khảo [Spring Security CSRF](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html) và [Postman cookie manager](https://learning.postman.com/docs/use/send-requests/response-data/cookies/).
 
-On a Windows machine without Docker, use the isolated embedded PostgreSQL fallback:
+## Phân quyền và mã lỗi
 
-```powershell
-.\mvnw.cmd '-Dtest.database=embedded' verify
-```
+| Đường dẫn | Quyền |
+|---|---|
+| /api/v1/store-staff/** | STORE_STAFF |
+| /api/v1/warehouse-staff/** | WAREHOUSE_STAFF |
+| /api/v1/admin/** | ADMIN |
 
-The integration suite covers registration races, password authentication, JWT validation, refresh rotation, simultaneous refresh, immediate logout revocation, CORS, the complete authentication flow, role boundaries, and forged `X-User-Id` headers.
+ADMIN không tự kế thừa quyền staff. GET /api/v1/categories và các endpoint auth trừ /me là public về authentication; các POST vẫn cần CSRF. Controller lấy user ID từ principal đã xác minh; X-User-Id không quyết định danh tính.
+
+Response vẫn dùng ApiResponse. Mã lỗi: 1001 chưa đăng nhập, 1002 thiếu quyền hoặc CSRF không hợp lệ, 1003 sai thông tin đăng nhập, 1004 JWT/refresh token hết hạn hoặc không hợp lệ. Đăng ký luôn tạo CUSTOMER, không nhận role từ client.
+
+## Đóng gói backend
+
+~~~powershell
+.\mvnw.cmd '-Dmaven.test.skip=true' package
+~~~
+
+Theo quy ước dự án, các file test được tạo mới hoặc chỉnh sửa không đi kèm commit JWT này. Các test đang được Git theo dõi vẫn dùng cấu trúc xác thực cũ và chưa đồng bộ với code cookie mới; lệnh mvn test hoặc mvn verify sẽ cần cập nhật test trước khi sử dụng. Lệnh trên bỏ cả biên dịch và chạy test để đóng gói code ứng dụng.

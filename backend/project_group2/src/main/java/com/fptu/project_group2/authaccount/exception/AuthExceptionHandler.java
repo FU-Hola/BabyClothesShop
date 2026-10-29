@@ -15,10 +15,12 @@ import org.springframework.security.core.AuthenticationException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+// Xử lý lỗi từ AuthController/AuthService; lỗi ở JWT filter được ghi bằng SecurityErrorWriter.
 @RestControllerAdvice(basePackageClasses = AuthController.class)
 public class AuthExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(AuthenticationException exception) {
+        // AuthenticationManager ném lỗi khi mật khẩu sai hoặc tài khoản không hoạt động.
         return ResponseBuilder.error(
                 HttpStatus.UNAUTHORIZED,
                 ErrorCode.INVALID_CREDENTIALS.getCode(),
@@ -29,6 +31,7 @@ public class AuthExceptionHandler {
 
     @ExceptionHandler(BaseBusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(BaseBusinessException exception) {
+        // Giữ mã lỗi nghiệp vụ, ví dụ email đã tồn tại hoặc refresh token không hợp lệ.
         return ResponseBuilder.error(
                 exception.getHttpStatus(),
                 exception.getErrorCode().getCode(),

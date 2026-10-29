@@ -11,6 +11,10 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Ghi lỗi bảo mật trực tiếp vào HTTP response theo định dạng ApiResponse của dự án.
+ * Filter chạy trước controller nên lỗi ở đây không được xử lý như lỗi controller.
+ */
 @Component
 @RequiredArgsConstructor
 public class SecurityErrorWriter {

@@ -11,6 +11,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Chuyển dữ liệu User của ứng dụng thành UserDetails mà Spring Security hiểu.
+ */
 public record AuthenticatedUser(
         UUID id,
         String email,
@@ -19,6 +22,7 @@ public record AuthenticatedUser(
         boolean enabled
 ) implements UserDetails {
     public static AuthenticatedUser from(User user) {
+        // Chỉ tài khoản ACTIVE và chưa bị xóa mềm mới được coi là đang hoạt động.
         return new AuthenticatedUser(
                 user.getId(),
                 user.getEmail(),
@@ -30,16 +34,19 @@ public record AuthenticatedUser(
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        // hasRole("ADMIN") của Spring kiểm tra authority "ROLE_ADMIN".
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override
     public String getPassword() {
+        // Trả hash để BCrypt đối chiếu khi login; không phải mật khẩu gốc.
         return passwordHash;
     }
 
     @Override
     public String getUsername() {
+        // Tên hàm là username theo interface, nhưng dự án dùng email để đăng nhập.
         return email;
     }
 

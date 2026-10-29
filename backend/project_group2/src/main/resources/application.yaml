@@ -56,10 +56,16 @@ spring:
       max-request-size: ${UPLOAD_MAX_REQUEST_SIZE:10MB}
 
 app:
+  auth-cookie:
+    # false cho HTTP localhost; dùng true khi triển khai HTTPS.
+    secure: ${AUTH_COOKIE_SECURE:false}
   jwt:
+    # Đọc khóa từ môi trường hoặc .env; không đặt khóa thật trong file được commit.
     secret-base64: ${JWT_SECRET_BASE64}
+    # TTL là thời gian tồn tại tính bằng giây: 15 phút và 7 ngày.
     access-ttl-seconds: ${JWT_ACCESS_TTL_SECONDS:900}
     refresh-ttl-seconds: ${JWT_REFRESH_TTL_SECONDS:604800}
+    # Phải trùng giữa lúc cấp và xác minh JWT.
     issuer: ${JWT_ISSUER:baby-clothes-shop-api}
     audience: ${JWT_AUDIENCE:baby-clothes-shop}
   cors:

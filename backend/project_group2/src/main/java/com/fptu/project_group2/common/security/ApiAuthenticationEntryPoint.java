@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+// Trả JSON 401 khi request gọi API cần đăng nhập mà chưa có Authentication hợp lệ.
 @Component
 @RequiredArgsConstructor
 public class ApiAuthenticationEntryPoint implements AuthenticationEntryPoint {
