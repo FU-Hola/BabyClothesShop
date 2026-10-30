@@ -5,20 +5,23 @@ import PendingReceiptPage from "../../modules/goods-receipt-packing/pages/Pendin
 import PackingListPage from "../../modules/goods-receipt-packing/pages/PackingListPage.jsx";
 import PackingPage from "../../modules/goods-receipt-packing/pages/PackingPage.jsx";
 import GoodsReceiptListPage from "../../modules/goods-receipt-packing/pages/GoodsReceiptListPage.jsx";
+import RoleRoute from "./RoleRoute.jsx";
 
 const warehouseStaffRoutes = [
     {
-        path: "/warehouse-staff",
-        element: <WarehouseStaffLayout />,
+        element: <RoleRoute allowedRoles={['WAREHOUSE_STAFF']} />,
         children: [
-            { index: true, element: <Navigate to="stock" replace /> },
-            { path: "goods-receipts", element: <GoodsReceiptListPage /> },
-            { path: "pending-receipts", element: <PendingReceiptPage /> },
-            { path: "packing", element: <PackingListPage /> },
-            { path: "packing/:orderCode", element: <PackingPage /> },
             {
-                path: "stock",
-                element: <StockOverview />
+                path: "/warehouse-staff",
+                element: <WarehouseStaffLayout />,
+                children: [
+                    { index: true, element: <Navigate to="stock" replace /> },
+                    { path: "goods-receipts", element: <GoodsReceiptListPage /> },
+                    { path: "pending-receipts", element: <PendingReceiptPage /> },
+                    { path: "packing", element: <PackingListPage /> },
+                    { path: "packing/:orderCode", element: <PackingPage /> },
+                    { path: "stock", element: <StockOverview /> }
+                ]
             }
         ]
     }

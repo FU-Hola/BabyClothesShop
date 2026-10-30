@@ -8,11 +8,7 @@ const menuItems = [
     { label: "Đóng gói", path: "/warehouse-staff/packing", icon: ShoppingBag }
 ];
 
-const WarehouseStaffSidebar = () => {
-    const handleLogout = () => {
-        console.log("Yêu cầu đăng xuất — chưa tích hợp xác thực.");
-    };
-
+const WarehouseStaffSidebar = ({ onLogout }) => {
     return (
         <div className="d-flex flex-column h-100 p-3 text-white">
             <div className="d-flex align-items-center gap-3 border-bottom border-secondary border-opacity-25 pb-3 mb-3">
@@ -87,7 +83,7 @@ const WarehouseStaffSidebar = () => {
                 </Link>
                 <Button
                     variant="link"
-                    onClick={handleLogout}
+                    onClick={onLogout}
                     className="d-flex align-items-center gap-3 px-3 py-2 text-white-50 text-decoration-none text-start border-0 shadow-none"
                     style={{ fontSize: "0.9rem" }}
                 >

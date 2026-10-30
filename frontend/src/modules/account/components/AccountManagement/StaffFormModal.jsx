@@ -16,14 +16,13 @@ const StaffFormModal = ({ staff, onClose, onSaved }) => {
             phone: staff?.phone || '',
             employeeCode: staff?.employeeCode || '',
             position: staff?.position || '',
-            ...(!isEditing && { password: '' }),
+            ...(!isEditing && { password: '', role: 'STORE_STAFF' }),
         },
     });
 
     const onSubmit = async (formData) => {
         const profileData = {
             fullName: formData.fullName,
-            email: formData.email,
             phone: formData.phone,
             employeeCode: formData.employeeCode,
             position: formData.position,
@@ -31,7 +30,12 @@ const StaffFormModal = ({ staff, onClose, onSaved }) => {
         try {
             const response = isEditing
                 ? await accountApi.updateAccount('staff', staff.id, profileData)
-                : await accountApi.createAccount('staff', { ...profileData, password: formData.password });
+                : await accountApi.createAccount('staff', {
+                    ...profileData,
+                    email: formData.email,
+                    password: formData.password,
+                    role: formData.role,
+                });
             onSaved(response.message);
         } catch (error) {
             setError('root.server', { message: error.response?.data?.message || 'Không thể lưu thông tin nhân viên.' });
@@ -49,51 +53,51 @@ const StaffFormModal = ({ staff, onClose, onSaved }) => {
             size="lg"
             backdrop={isSubmitting ? 'static' : true}
             keyboard={!isSubmitting}
-            contentClassName={styles.modal}
+            contentClassName={`${styles.modal} overflow-hidden`}
         >
-            <Form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
-                <Modal.Header closeButton={!isSubmitting} className={styles.header}>
+            <Form className={`${styles.form} d-flex flex-column overflow-hidden`} onSubmit={handleSubmit(onSubmit)} noValidate>
+                <Modal.Header closeButton={!isSubmitting} className="flex-shrink-0 d-flex align-items-center gap-3 px-4 py-3 bg-light">
                     <span className={styles.headerIcon}>
                         <HeaderIcon size={23} strokeWidth={1.8} aria-hidden="true" />
                     </span>
                     <div className={styles.heading}>
                         <div className="d-flex align-items-center gap-2 mb-1">
                             <Modal.Title>{isEditing ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên mới'}</Modal.Title>
-                            <Badge className={styles.roleBadge}>Nhân viên</Badge>
+                            <Badge bg="primary">Nhân viên</Badge>
                         </div>
-                        <p>
+                        <p className="small text-muted mb-0">
                             {isEditing
                                 ? 'Cập nhật thông tin cá nhân và hồ sơ công việc.'
                                 : 'Tạo hồ sơ cùng tài khoản đăng nhập cho nhân viên.'}
                         </p>
                     </div>
                 </Modal.Header>
-                <Modal.Body className={styles.body}>
+                <Modal.Body className={`${styles.body} flex-grow-1 overflow-y-auto p-4`}>
                     {errors.root?.server && (
-                        <Alert variant="danger" className={styles.serverAlert}>
+                        <Alert variant="danger" className="mb-4">
                             {errors.root.server.message}
                         </Alert>
                     )}
 
-                    <fieldset className={styles.section} disabled={isSubmitting}>
-                        <legend className={styles.sectionHeader}>
+                    <fieldset className="border-0 p-0 mb-4" disabled={isSubmitting}>
+                        <legend className={`${styles.sectionHeader} d-flex align-items-center gap-2 mb-3`}>
                             <span className={styles.sectionIcon}>
                                 <UserRoundPen size={18} aria-hidden="true" />
                             </span>
-                            <span>
+                            <span className="d-flex flex-column">
                                 <strong>Thông tin cá nhân</strong>
-                                <small>Thông tin liên hệ cơ bản của nhân viên</small>
+                                <small className="text-muted fw-normal">Thông tin liên hệ cơ bản của nhân viên</small>
                             </span>
                         </legend>
                         <Row className="g-3">
                             <Col md={6}>
                                 <Form.Group controlId="staff-fullName">
-                                    <Form.Label className={styles.label}>
+                                    <Form.Label className="fw-semibold small mb-1">
                                         Họ và tên
-                                        <span className={styles.required} aria-hidden="true">*</span>
+                                        <span className="text-danger ms-1" aria-hidden="true">*</span>
                                     </Form.Label>
                                     <Form.Control
-                                        className={styles.control}
+                                        className="bg-light"
                                         type="text"
                                         placeholder="Nhập họ và tên"
                                         autoComplete="name"
@@ -109,30 +113,35 @@ const StaffFormModal = ({ staff, onClose, onSaved }) => {
                             </Col>
                             <Col md={6}>
                                 <Form.Group controlId="staff-email">
-                                    <Form.Label className={styles.label}>
+                                    <Form.Label className="fw-semibold small mb-1">
                                         Email
-                                        <span className={styles.required} aria-hidden="true">*</span>
+                                        {!isEditing && <span className="text-danger ms-1" aria-hidden="true">*</span>}
                                     </Form.Label>
                                     <Form.Control
-                                        className={styles.control}
+                                        className="bg-light"
                                         type="email"
                                         placeholder="Nhập địa chỉ email"
                                         autoComplete="email"
+                                        readOnly={isEditing}
+                                        aria-describedby="staff-email-help"
+                                        aria-required={!isEditing}
                                         isInvalid={Boolean(errors.email)}
                                         disabled={isSubmitting}
-                                        aria-required="true"
                                         {...register('email')}
                                     />
                                     <Form.Control.Feedback type="invalid">
                                         {errors.email?.message}
                                     </Form.Control.Feedback>
+                                    <Form.Text id="staff-email-help">
+                                        Email dùng để đăng nhập và không thể thay đổi sau khi tạo.
+                                    </Form.Text>
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
                                 <Form.Group controlId="staff-phone">
-                                    <Form.Label className={styles.label}>Số điện thoại</Form.Label>
+                                    <Form.Label className="fw-semibold small mb-1">Số điện thoại</Form.Label>
                                     <Form.Control
-                                        className={styles.control}
+                                        className="bg-light"
                                         type="tel"
                                         placeholder="Nhập số điện thoại"
                                         autoComplete="tel"
@@ -148,25 +157,25 @@ const StaffFormModal = ({ staff, onClose, onSaved }) => {
                         </Row>
                     </fieldset>
 
-                    <fieldset className={styles.section} disabled={isSubmitting}>
-                        <legend className={styles.sectionHeader}>
+                    <fieldset className="border-0 p-0 mb-4" disabled={isSubmitting}>
+                        <legend className={`${styles.sectionHeader} d-flex align-items-center gap-2 mb-3`}>
                             <span className={styles.sectionIcon}>
                                 <BriefcaseBusiness size={18} aria-hidden="true" />
                             </span>
-                            <span>
+                            <span className="d-flex flex-column">
                                 <strong>Thông tin công việc</strong>
-                                <small>Mã định danh và vị trí làm việc</small>
+                                <small className="text-muted fw-normal">Mã định danh và vị trí làm việc</small>
                             </span>
                         </legend>
                         <Row className="g-3">
                             <Col md={6}>
                                 <Form.Group controlId="staff-employeeCode">
-                                    <Form.Label className={styles.label}>
+                                    <Form.Label className="fw-semibold small mb-1">
                                         Mã nhân viên
-                                        <span className={styles.required} aria-hidden="true">*</span>
+                                        <span className="text-danger ms-1" aria-hidden="true">*</span>
                                     </Form.Label>
                                     <Form.Control
-                                        className={styles.control}
+                                        className="bg-light"
                                         type="text"
                                         placeholder="Nhập mã nhân viên"
                                         autoComplete="off"
@@ -182,12 +191,12 @@ const StaffFormModal = ({ staff, onClose, onSaved }) => {
                             </Col>
                             <Col md={6}>
                                 <Form.Group controlId="staff-position">
-                                    <Form.Label className={styles.label}>
+                                    <Form.Label className="fw-semibold small mb-1">
                                         Chức danh
-                                        <span className={styles.required} aria-hidden="true">*</span>
+                                        <span className="text-danger ms-1" aria-hidden="true">*</span>
                                     </Form.Label>
                                     <Form.Control
-                                        className={styles.control}
+                                        className="bg-light"
                                         type="text"
                                         placeholder="Nhập chức danh"
                                         autoComplete="organization-title"
@@ -203,13 +212,36 @@ const StaffFormModal = ({ staff, onClose, onSaved }) => {
                             </Col>
                             {!isEditing && (
                                 <Col md={6}>
+                                    <Form.Group controlId="staff-role">
+                                        <Form.Label className="fw-semibold small mb-1">
+                                            Quyền nhân viên
+                                            <span className="text-danger ms-1" aria-hidden="true">*</span>
+                                        </Form.Label>
+                                        <Form.Select
+                                            className="bg-light"
+                                            isInvalid={Boolean(errors.role)}
+                                            disabled={isSubmitting}
+                                            aria-required="true"
+                                            {...register('role')}
+                                        >
+                                            <option value="STORE_STAFF">Nhân viên bán hàng</option>
+                                            <option value="WAREHOUSE_STAFF">Nhân viên kho</option>
+                                        </Form.Select>
+                                        <Form.Control.Feedback type="invalid">
+                                            {errors.role?.message}
+                                        </Form.Control.Feedback>
+                                    </Form.Group>
+                                </Col>
+                            )}
+                            {!isEditing && (
+                                <Col md={6}>
                                     <Form.Group controlId="staff-password">
-                                        <Form.Label className={styles.label}>
+                                        <Form.Label className="fw-semibold small mb-1">
                                             Mật khẩu ban đầu
-                                            <span className={styles.required} aria-hidden="true">*</span>
+                                            <span className="text-danger ms-1" aria-hidden="true">*</span>
                                         </Form.Label>
                                         <Form.Control
-                                            className={styles.control}
+                                            className="bg-light"
                                             type="password"
                                             placeholder="Tối thiểu 6 ký tự"
                                             autoComplete="new-password"
@@ -227,20 +259,20 @@ const StaffFormModal = ({ staff, onClose, onSaved }) => {
                         </Row>
                     </fieldset>
 
-                    <Alert variant="light" className={styles.note}>
+                    <Alert variant="light" className={`${styles.note} d-flex align-items-start gap-2 mb-0`}>
                         <Info size={17} aria-hidden="true" />
                         <span>
                             {isEditing
-                                ? 'Vai trò và mật khẩu không được thay đổi tại màn hình này.'
+                                ? 'Email đăng nhập, vai trò và mật khẩu không được thay đổi tại màn hình này.'
                                 : 'Nhân viên có thể dùng email và mật khẩu ban đầu để đăng nhập.'}
                         </span>
                     </Alert>
                 </Modal.Body>
-                <Modal.Footer className={styles.footer}>
-                    <Button variant="outline-secondary" onClick={onClose} disabled={isSubmitting} className={styles.cancelButton}>
+                <Modal.Footer className="flex-shrink-0 px-4 py-3 bg-light">
+                    <Button variant="outline-secondary" onClick={onClose} disabled={isSubmitting} className="px-4">
                         Hủy
                     </Button>
-                    <Button type="submit" disabled={isSubmitting} className={styles.submitButton}>
+                    <Button type="submit" disabled={isSubmitting} className="d-inline-flex align-items-center justify-content-center gap-2 px-4">
                         {isSubmitting
                             ? <Spinner animation="border" size="sm" aria-hidden="true" />
                             : <Save size={17} aria-hidden="true" />}

@@ -1,9 +1,4 @@
-const StoreStaffHeader = () => {
-    const staff = {
-        name: "Nguyễn Văn A",
-        role: "Store Staff"
-    };
-
+const StoreStaffHeader = ({ user }) => {
     return (
         <header className="bg-white border-bottom border-light-subtle px-4 py-3 d-flex align-items-center justify-content-between">
             <div>
@@ -19,10 +14,10 @@ const StoreStaffHeader = () => {
             </div>
             <div className="text-end">
                 <div className="fw-bold text-dark" style={{ fontSize: "0.95rem" }}>
-                    {staff.name}
+                    {user?.fullName || 'Nhân viên bán hàng'}
                 </div>
                 <div className="text-muted" style={{ fontSize: "0.8rem" }}>
-                    {staff.role}
+                    Store Staff
                 </div>
             </div>
         </header>
