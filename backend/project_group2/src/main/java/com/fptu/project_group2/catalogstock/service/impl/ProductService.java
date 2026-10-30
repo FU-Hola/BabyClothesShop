@@ -18,6 +18,8 @@ import com.fptu.project_group2.catalogstock.service.IProduct;
 import com.fptu.project_group2.common.exception.BaseBusinessException;
 import com.fptu.project_group2.common.exception.ErrorCode;
 import com.fptu.project_group2.common.exception.NotFoundException;
+import com.fptu.project_group2.warehouse.entity.Inventory;
+import com.fptu.project_group2.warehouse.repository.InventoryRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,6 +38,7 @@ public class ProductService implements IProduct {
     private final CategoryRepository categoryRepository;
     private final ProductVariantRepository productVariantRepository;
     private final EntityManager entityManager;
+    private final InventoryRepository inventoryRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -70,15 +73,23 @@ public class ProductService implements IProduct {
             product.addProductVariant(toVariant(item));
         }
         Product savedProduct = productRepository.save(product);
+        initializeInventory(savedProduct.getVariants());
         return savedProduct.getId();
     }
 
     @Override
     @Transactional(readOnly = true)
     public ProductDetailResponse getProductDetail(UUID productId) {
-        Product product = productRepository.findById(productId).orElseThrow(() -> new
-                NotFoundException("Không tìm thấy sản phẩm"));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy sản phẩm"));
         return toProductDetailResponse(product);
+    }
+
+    private void initializeInventory(List<ProductVariant> variants) {
+        List<Inventory> inventories = variants.stream()
+                .map(variant -> Inventory.builder().variantId(variant.getId()).quantity(0L).build())
+                .toList();
+        inventoryRepository.saveAll(inventories);
     }
 
     private ProductDetailResponse toProductDetailResponse(Product product) {
