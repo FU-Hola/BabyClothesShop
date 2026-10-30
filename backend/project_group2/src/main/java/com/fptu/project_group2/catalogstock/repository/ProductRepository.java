@@ -14,14 +14,26 @@ import java.util.UUID;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, UUID> {
     @Query("""
-            select p from Product p
+            select p
+            from Product p
             where (
                 lower(p.name) like :keyword
                 or lower(p.description) like :keyword
-                or exists (select v.id from ProductVariant v where v.product=p and lower(v.sku)like :keyword))
-            and (:categoryId is null or p.category.id=:categoryId)
-            and (:status is null or p.status=:status)
+                or exists (
+                    select v.id
+                    from ProductVariant v
+                    where v.product = p
+                      and lower(v.sku) like :keyword
+                )
+            )
+            and (:categoryId is null or p.category.id = :categoryId)
+            and (:status is null or p.status = :status)
             """)
-    Page<Product> searchProducts(@Param("keyword") String keyword, @Param("categoryId") UUID categoryId, @Param("status") ProductStatus status, Pageable pageable);
+    Page<Product> searchProducts(
+            @Param("keyword") String keyword,
+            @Param("categoryId") UUID categoryId,
+            @Param("status") ProductStatus status,
+            Pageable pageable
+    );
 
 }
