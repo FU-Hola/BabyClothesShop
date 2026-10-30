@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -33,6 +34,8 @@ import java.util.List;
  */
 @Configuration(proxyBeanMethods = false)
 @RequiredArgsConstructor
+// Cho phép dùng @PreAuthorize tại controller/service để kiểm tra role trong GrantedAuthority.
+@EnableMethodSecurity
 // Đăng ký các record cấu hình để Spring ánh xạ giá trị từ application.yaml.
 @EnableConfigurationProperties({JwtProperties.class, CorsProperties.class})
 public class SecurityConfig {
@@ -71,11 +74,8 @@ public class SecurityConfig {
                                 "/api/v1/auth/logout"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories").permitAll()
-                        // hasRole tự thêm tiền tố ROLE_ khi đối chiếu authority của user.
-                        .requestMatchers("/api/v1/store-staff/**").hasRole("STORE_STAFF")
-                        .requestMatchers("/api/v1/warehouse-staff/**").hasRole("WAREHOUSE_STAFF")
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        // Các URL còn lại phải có Authentication trong SecurityContext.
+                        // SecurityConfig chỉ phân biệt public/protected. Role của từng chức năng
+                        // được kiểm tra bằng @PreAuthorize tại controller.
                         .anyRequest().authenticated())
                 // Đặt filter JWT vào security chain trước filter username/password.
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

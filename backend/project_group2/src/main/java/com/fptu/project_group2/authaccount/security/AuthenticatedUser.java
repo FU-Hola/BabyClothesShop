@@ -34,7 +34,8 @@ public record AuthenticatedUser(
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // hasRole("ADMIN") của Spring kiểm tra authority "ROLE_ADMIN".
+        // @PreAuthorize("hasRole('ADMIN')") sẽ tìm GrantedAuthority có tên ROLE_ADMIN.
+        // Role này được lấy từ database, không lấy từ dữ liệu client tự gửi.
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 

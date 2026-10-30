@@ -11,6 +11,7 @@ import com.fptu.project_group2.warehouse.service.IGoodsReceipt;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +23,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/warehouse-staff")
+@PreAuthorize("hasRole('WAREHOUSE_STAFF')")
 public class GoodsReceiptController {
     private final IGoodsReceipt goodsReceiptService;
 

@@ -13,6 +13,7 @@ import com.fptu.project_group2.common.http.ResponseBuilder;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,10 +28,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-// SecurityConfig đã yêu cầu ADMIN cho toàn bộ /api/v1/admin/**.
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin")
+// hasRole tự thêm tiền tố ROLE_ và đối chiếu với GrantedAuthority của user đăng nhập.
+@PreAuthorize("hasRole('ADMIN')")
 public class AccountController {
     private final AccountService accountService;
 
