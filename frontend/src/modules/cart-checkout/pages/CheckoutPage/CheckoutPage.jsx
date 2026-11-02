@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import Stepper from "../../components/Stepper/Stepper";
+import checkoutApi from "../../api/checkoutApi";
 import styles from "./CheckoutPage.module.css";
 
 const formatCurrency = (amount) => {
@@ -101,7 +102,7 @@ const CheckoutPage = () => {
   };
 
   // Xử lý khi nhấn nút Đặt hàng / Thanh toán (UC12)
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // 1. Kiểm tra validate form
@@ -113,53 +114,98 @@ const CheckoutPage = () => {
     setIsSubmitting(true);
     setStockIssue(null);
 
-    // 2. Mô phỏng hệ thống kiểm tra số lượng có thể bán (LẦN 1 - UC12)
-    setTimeout(() => {
-      setIsSubmitting(false);
+    let checkoutKey = "CK-" + Date.now();
+    let backendHandled = false;
 
-      // Nếu bật nút mô phỏng thiếu hàng HOẶC trong giỏ có món vượt tồn kho thật
+    // 2. Thử gọi API Backend kiểm tra tồn kho & validate thông tin
+    try {
+      const res = await checkoutApi.validateCheckout({
+        receiverName: formData.fullName.trim(),
+        receiverPhone: formData.phone.trim(),
+        receiverAddress: formData.address.trim(),
+        customerNote: formData.note ? formData.note.trim() : null,
+      });
+
+      if (res?.data) {
+        if (!res.data.isValid && res.data.outOfStockItems?.length > 0) {
+          const item = res.data.outOfStockItems[0];
+          setStockIssue({
+            name: item.productName,
+            size: item.size,
+            requested: item.requestedQuantity,
+            available: item.availableStock,
+          });
+          setIsSubmitting(false);
+          window.scrollTo({ top: 80, behavior: "smooth" });
+          return;
+        }
+        if (res.data.checkoutKey) {
+          checkoutKey = res.data.checkoutKey;
+          backendHandled = true;
+        }
+      }
+    } catch (err) {
+      if (err.response?.status === 400 && err.response?.data?.message) {
+        setStockIssue({
+          name: "Sản phẩm trong giỏ",
+          size: "Hiện tại",
+          requested: 1,
+          available: 0,
+        });
+        setIsSubmitting(false);
+        window.scrollTo({ top: 80, behavior: "smooth" });
+        return;
+      }
+      // Nếu Backend offline -> fallback sang kiểm tra local
+    }
+
+    // 3. Fallback kiểm tra tồn kho local (khi offline hoặc bật toggle test)
+    if (!backendHandled) {
       const outOfStockItem = cartItems.find((item) => item.quantity > item.maxStock);
-
       if (forceStockFail || outOfStockItem) {
         const itemFailed = outOfStockItem || cartItems[0];
         setStockIssue({
           name: itemFailed.name,
           size: itemFailed.size,
           requested: itemFailed.quantity,
-          available: Math.max(1, itemFailed.maxStock - 1),
+          available: Math.max(1, (itemFailed.maxStock || 1) - 1),
         });
+        setIsSubmitting(false);
         window.scrollTo({ top: 80, behavior: "smooth" });
         return;
       }
+    }
 
-      // 3. Nếu đủ hàng: Phân nhánh theo phương thức thanh toán đã chọn
-      const orderCode = "BCS-" + Math.floor(100000 + Math.random() * 900000);
-      const finalTotal = totalPrice + SHIPPING_FEE;
+    setIsSubmitting(false);
 
-      const orderData = {
-        orderCode,
-        createdAt: new Date().toLocaleString("vi-VN"),
-        customer: formData,
-        items: cartItems,
-        subTotal: totalPrice,
-        shippingFee: SHIPPING_FEE,
-        finalTotal,
-        paymentMethod, // 'cash' hoặc 'qr'
-      };
+    // 4. Nếu đủ hàng: Phân nhánh theo phương thức thanh toán đã chọn
+    const orderCode = "BCS-" + Math.floor(100000 + Math.random() * 900000);
+    const finalTotal = totalPrice + SHIPPING_FEE;
 
-      if (paymentMethod === "cash") {
-        // Nhánh TIỀN MẶT: Tạo đơn luôn -> Pending Confirmation, Chưa thanh toán -> Xóa giỏ -> Màn 4
-        orderData.orderStatus = "Chờ xác nhận (Pending Confirmation)";
-        orderData.paymentStatus = "Thanh toán khi nhận hàng (Chưa thanh toán)";
-        setLastOrder(orderData);
-        clearCart();
-        navigate("/checkout/result?status=success&method=cash");
-      } else if (paymentMethod === "qr") {
-        // Nhánh QUÉT QR: Chuyển sang Màn 3 (Thanh toán mô phỏng), CHƯA tạo đơn, CHƯA xóa giỏ
-        setLastOrder(orderData);
-        navigate("/checkout/payment");
-      }
-    }, 600);
+    const orderData = {
+      orderCode,
+      checkoutKey,
+      createdAt: new Date().toLocaleString("vi-VN"),
+      customer: formData,
+      items: cartItems,
+      subTotal: totalPrice,
+      shippingFee: SHIPPING_FEE,
+      finalTotal,
+      paymentMethod,
+    };
+
+    if (paymentMethod === "cash") {
+      // Nhánh TIỀN MẶT: Tạo đơn luôn -> Pending Confirmation, Chưa thanh toán -> Xóa giỏ -> Màn 4
+      orderData.orderStatus = "Chờ xác nhận (Pending Confirmation)";
+      orderData.paymentStatus = "Thanh toán khi nhận hàng (Chưa thanh toán)";
+      setLastOrder(orderData);
+      clearCart();
+      navigate("/checkout/result?status=success&method=cash");
+    } else if (paymentMethod === "qr") {
+      // Nhánh QUÉT QR: Chuyển sang Màn 3 (Thanh toán mô phỏng), CHƯA tạo đơn, CHƯA xóa giỏ
+      setLastOrder(orderData);
+      navigate("/checkout/payment");
+    }
   };
 
   return (

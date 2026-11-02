@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { CheckCircle2, XCircle, AlertTriangle, ArrowLeft, Copy, Check } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import Stepper from "../../components/Stepper/Stepper";
+import checkoutApi from "../../api/checkoutApi";
 import styles from "./PaymentPage.module.css";
 
 const formatCurrency = (amount) => {
@@ -48,15 +49,38 @@ const PaymentPage = () => {
   };
 
   // 1. Khách chọn: "Thanh toán thành công" (UC12)
-  const handleSimulateSuccess = () => {
+  const handleSimulateSuccess = async () => {
     setIsProcessing(true);
 
-    // Hệ thống kiểm tra số lượng có thể bán LẦN 2 trước khi tạo đơn và giữ hàng
-    setTimeout(() => {
+    if (forceStockFailRound2) {
       setIsProcessing(false);
+      setLastOrder({
+        ...lastOrder,
+        outOfStockItemName: lastOrder.items?.[0]?.name || "Sản phẩm",
+        outOfStockSize: lastOrder.items?.[0]?.size || "Tiêu chuẩn",
+      });
+      navigate("/checkout/result?status=out_of_stock");
+      return;
+    }
 
-      if (forceStockFailRound2) {
-        // Tình huống: Hết hàng ở lần kiểm tra cuối -> Không tạo đơn, không giữ hàng
+    // Gọi API Backend Spring Boot
+    let realOrderCode = lastOrder.orderCode;
+    try {
+      const res = await checkoutApi.simulatePayment({
+        checkoutKey: lastOrder.checkoutKey || ("CK-" + Date.now()),
+        isSuccess: true,
+        receiverName: lastOrder.customer?.fullName,
+        receiverPhone: lastOrder.customer?.phone,
+        receiverAddress: lastOrder.customer?.address,
+        customerNote: lastOrder.customer?.note,
+      });
+
+      if (res?.data?.orderCode) {
+        realOrderCode = res.data.orderCode;
+      }
+    } catch (err) {
+      if (err.response?.status === 400) {
+        setIsProcessing(false);
         setLastOrder({
           ...lastOrder,
           outOfStockItemName: lastOrder.items?.[0]?.name || "Sản phẩm",
@@ -65,21 +89,32 @@ const PaymentPage = () => {
         navigate("/checkout/result?status=out_of_stock");
         return;
       }
+    }
 
-      // Đủ hàng -> Tạo đơn thành công: Pending Confirmation, Paid, xóa giỏ hàng
-      const completedOrder = {
-        ...lastOrder,
-        orderStatus: "Chờ xác nhận (Pending Confirmation)",
-        paymentStatus: "Đã thanh toán (Theo mô phỏng)",
-      };
-      setLastOrder(completedOrder);
-      clearCart(); // Xóa sản phẩm khỏi giỏ hàng
-      navigate("/checkout/result?status=success&method=qr");
-    }, 700);
+    setIsProcessing(false);
+    const completedOrder = {
+      ...lastOrder,
+      orderCode: realOrderCode,
+      orderStatus: "Chờ xác nhận (Pending Confirmation)",
+      paymentStatus: "Đã thanh toán (Theo mô phỏng)",
+    };
+    setLastOrder(completedOrder);
+    clearCart();
+    navigate("/checkout/result?status=success&method=qr");
   };
 
   // 2. Khách chọn: "Thanh toán thất bại" (UC12)
-  const handleSimulateFail = () => {
+  const handleSimulateFail = async () => {
+    try {
+      if (lastOrder.checkoutKey) {
+        await checkoutApi.simulatePayment({
+          checkoutKey: lastOrder.checkoutKey,
+          isSuccess: false,
+        });
+      }
+    } catch {
+      // ignore
+    }
     // Không tạo đơn, không giữ hàng, GIỎ HÀNG GIỮ NGUYÊN
     navigate("/checkout/result?status=failed&method=qr");
   };
