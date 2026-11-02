@@ -1,168 +1,258 @@
-import "bootstrap-icons/font/bootstrap-icons.css";
-import "../styles/warehouse.css";
-import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Row, Col } from 'react-bootstrap';
-import PackingFilter from '../components/packing/PackingFilter.jsx';
-import PackingTableDetail from '../components/packing/PackingTableDetail.jsx';
+import { useParams } from "react-router-dom";
+import { Alert } from "react-bootstrap";
+import WarehouseDetail from "../components/WarehouseDetail.jsx";
+import { ActionForm, InputField } from "../components/WarehouseForms.jsx";
+import { DataTable, DetailFields, PageHeading, StatusBadge } from "../components/WarehouseUI.jsx";
+import {
+    cancelIssueSchema,
+    exportIssueSchema,
+    issueVersionSchema,
+    packIssueSchema,
+    pickingSchema,
+} from "../schema/warehouse.schemas.js";
+import { dateTime, display } from "../utils/warehouse.format.js";
 
-const MOCK_PACKING_ORDERS = {
-    "ORD-8821": {
-        orderCode: "ORD-8821",
-        orderStatus: "CONFIRMED",
-        deliveryName: "GHTK Nhanh",
-        paymentStatus: "Paid (Mô phỏng)",
-        customerName: "Nguyễn Thị Thu Trang - 0912 345 678",
-        customerAddress: "Số 25, Ngõ 102 Trường Chinh, Đống Đa, Hà Nội",
-        note: "Giao giờ hành chính, bọc kỹ tránh ướt mưa",
-        orderProducts: [
-            { id: 1, shelfLocation: "KỆ A1-02", categoryName: "Quần áo trẻ sơ sinh", productName: "Bộ Bodysuit Sợi Tre Cộc Tay", size: "0-3M", expectedQuantity: 2 },
-            { id: 2, shelfLocation: "KỆ G2-05", categoryName: "Giày dép", productName: "Giày Sneaker Tập Đi Đế Cao Su", size: "Size 16", expectedQuantity: 1 }
-        ]
-    },
-    "ORD-8824": {
-        orderCode: "ORD-8824",
-        orderStatus: "CONFIRMED",
-        deliveryName: "ViettelPost",
-        paymentStatus: "Paid (Mô phỏng)",
-        customerName: "Trần Văn Nam - 0988 776 655",
-        customerAddress: "Tòa S2.01 Vinhomes Smart City, Tây Mỗ, Hà Nội",
-        note: "Gọi trước khi giao 15 phút",
-        orderProducts: [
-            { id: 3, shelfLocation: "KỆ B2-01", categoryName: "Quần áo bé nam", productName: "Áo Polo Cổ Dệt Bé Trai", size: "2Y", expectedQuantity: 2 }
-        ]
-    },
-    "ORD-8830": {
-        orderCode: "ORD-8830",
-        orderStatus: "CONFIRMED",
-        deliveryName: "Shopee Xpress",
-        paymentStatus: "Paid (Mô phỏng)",
-        customerName: "Phạm Quốc Dũng - 0932 555 666",
-        customerAddress: "Số 12 Quang Trung, Hà Đông, Hà Nội",
-        note: "Giao vào buổi chiều",
-        orderProducts: [
-            { id: 4, shelfLocation: "KỆ A2-04", categoryName: "Quần áo trẻ sơ sinh", productName: "Bộ Ngủ Liền Thân Cotton Organic", size: "3-6M", expectedQuantity: 3 },
-            { id: 5, shelfLocation: "KỆ C1-03", categoryName: "Quần áo bé nữ", productName: "Váy Đầm Xòe Hoa Nhí", size: "1Y", expectedQuantity: 2 }
-        ]
-    }
-};
-
-function PackingPage() {
-    const { orderCode: selectedOrderCode } = useParams();
-    const navigate = useNavigate();
-    const [orders, setOrders] = useState(MOCK_PACKING_ORDERS);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const orderCodes = Object.keys(orders);
-    const currentOrder = orders[selectedOrderCode];
-    const onBackToList = () => navigate("/warehouse-staff/packing");
-    const handleSelectOrder = (code) => navigate("/warehouse-staff/packing/" + encodeURIComponent(code));
-
-    const handleConfirmPacking = () => {
-        setIsSubmitting(true);
-        setTimeout(() => {
-            setIsSubmitting(false);
-            alert(`✓ [THÀNH CÔNG] Đơn hàng ${selectedOrderCode} đã đóng gói xong!\n- Trạng thái đơn: Chuyển sang PACKED (Sẵn sàng giao cho shipper).\n- Quy tắc tồn kho: Hàng đã được giữ lúc khách đặt, chưa trừ tồn thực tế (chỉ xuất kho khi Sale Staff bàn giao shipper ở UC14).`);
-
-            // Cập nhật trạng thái đơn thành PACKED
-            setOrders(previous => ({
-                ...previous,
-                [selectedOrderCode]: { ...previous[selectedOrderCode], orderStatus: "PACKED" }
-            }));
-        }, 600);
+function IssueContent({ data, ...actions }) {
+    const common = { resource: "issue", id: data.id, ...actions };
+    const openOrder = ["CONFIRMED", "PACKED"].includes(data.orderStatus);
+    const fullyPicked =
+        data.items.length > 0 &&
+        data.items.every((item) => item.pickedQuantity === item.orderedQuantity);
+    const steps = ["PENDING", "PICKING", "PACKED", "EXPORTED"];
+    const labels = ["Chờ xử lý", "Soạn hàng", "Đóng gói", "Xuất kho"];
+    const orderStatusLabels = {
+        PENDING_CONFIRMATION: "Chờ xác nhận (dữ liệu cũ)",
+        CONFIRMED: "Đã xác nhận",
+        PACKED: "Đã đóng gói",
+        SHIPPING: "Đang giao hàng",
+        DELIVERED: "Đã giao hàng",
     };
-
-    if (!currentOrder) {
+    function lines(editable = false) {
         return (
-            <div className="goods-receipt-packing alert alert-warning">
-                Không tìm thấy đơn hàng {selectedOrderCode} trong dữ liệu đóng gói.
-                <Link className="ms-2" to="/warehouse-staff/packing">Quay lại danh sách đơn</Link>
-            </div>
+            <DataTable
+                headers={["Sản phẩm / SKU", "Màu / Kích thước", "Số lượng đặt", "Đã soạn"]}
+                empty={!data.items.length}
+            >
+                {data.items.map((item, index) => (
+                    <tr key={item.issueItemId}>
+                        <td>
+                            {item.productName}
+                            <small className="d-block">{item.sku}</small>
+                        </td>
+                        <td>
+                            {display(item.color)} / {display(item.size)}
+                        </td>
+                        <td>{item.orderedQuantity}</td>
+                        <td>
+                            {editable ? (
+                                <InputField
+                                    name={`items.${index}.pickedQuantity`}
+                                    label={`Đã soạn ${item.sku}`}
+                                    type="number"
+                                    min={0}
+                                    max={item.orderedQuantity}
+                                    step={1}
+                                />
+                            ) : (
+                                item.pickedQuantity
+                            )}
+                        </td>
+                    </tr>
+                ))}
+            </DataTable>
         );
     }
-
     return (
-        <div className="goods-receipt-packing">
-            {/* Header & Breadcrumb */}
-            <div className="page-breadcrumb">Kho hàng / Bàn đóng gói chi tiết</div>
-            <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
-                <div>
-                    <h2 className="page-title">Bàn đóng gói chi tiết</h2>
-                    <div className="page-subtitle">
-                        Kiểm tra vị trí kệ kho, nhặt đúng sản phẩm và xác nhận hoàn tất đóng gói đơn hàng (UC09 - Warehouse Staff).
-                    </div>
-                </div>
-            </div>
-
-            {/* 4 Card chỉ số của đơn */}
-            <Row className="g-3 mb-4">
-                <Col sm={6} lg={3}>
-                    <div className="stat-card">
-                        <div className="stat-icon-box stat-icon-blue">
-                            <i className="bi bi-upc-scan"></i>
-                        </div>
-                        <div>
-                            <div className="stat-label">Đơn đang xử lý</div>
-                            <div className="stat-value font-monospace fs-6">{selectedOrderCode || "N/A"}</div>
-                        </div>
-                    </div>
-                </Col>
-
-                <Col sm={6} lg={3}>
-                    <div className="stat-card">
-                        <div className="stat-icon-box stat-icon-purple">
-                            <i className="bi bi-layers"></i>
-                        </div>
-                        <div>
-                            <div className="stat-label">Số mặt hàng</div>
-                            <div className="stat-value">{currentOrder?.orderProducts?.length || 0} món</div>
-                        </div>
-                    </div>
-                </Col>
-
-                <Col sm={6} lg={3}>
-                    <div className="stat-card">
-                        <div className="stat-icon-box stat-icon-amber">
-                            <i className="bi bi-clock-history"></i>
-                        </div>
-                        <div>
-                            <div className="stat-label">Trạng thái đóng</div>
-                            <div className="stat-value fs-6">
-                                {currentOrder?.orderStatus === "PACKED" ? "Đã đóng gói" : "Cần đóng gói"}
-                            </div>
-                        </div>
-                    </div>
-                </Col>
-
-                <Col sm={6} lg={3}>
-                    <div className="stat-card">
-                        <div className="stat-icon-box stat-icon-green">
-                            <i className="bi bi-truck"></i>
-                        </div>
-                        <div>
-                            <div className="stat-label">Đơn vị vận chuyển</div>
-                            <div className="stat-value fs-6">{currentOrder?.deliveryName || "GHTK Nhanh"}</div>
-                        </div>
-                    </div>
-                </Col>
-            </Row>
-
-            {/* Bộ chọn đơn */}
-            <PackingFilter
-                orderCode={orderCodes}
-                selectedCode={selectedOrderCode}
-                onSelectedCode={handleSelectOrder}
-                onBackToList={onBackToList}
-            />
-
-            {/* Bảng chi tiết nhặt hàng */}
-            <PackingTableDetail
-                key={selectedOrderCode}
-                data={currentOrder}
-                isSubmit={isSubmitting}
-                onConfirm={handleConfirmPacking}
-            />
-        </div>
+        <>
+            <PageHeading
+                title={`Phiếu xuất ${data.code}`}
+                description={`Đơn hàng ${data.orderCode}. Hủy phiếu xuất không hủy đơn hàng.`}
+            >
+                <StatusBadge status={data.status} />
+            </PageHeading>
+            {data.status !== "CANCELLED" && (
+                <ol className="warehouse-steps admin-card">
+                    {steps.map((step, index) => (
+                        <li
+                            key={step}
+                            aria-current={data.status === step ? "step" : undefined}
+                            className={data.status === step ? "fw-bold text-dark" : ""}
+                        >
+                            {labels[index]}
+                        </li>
+                    ))}
+                </ol>
+            )}
+            <section className="admin-card p-4 mb-4">
+                <h2 className="h5">Thông tin giao hàng</h2>
+                <DetailFields
+                    fields={[
+                        ["Người nhận", display(data.receiverName)],
+                        ["Điện thoại", display(data.receiverPhone)],
+                        ["Địa chỉ", display(data.receiverAddress)],
+                        ["Ngày tạo", dateTime(data.createdAt)],
+                        ["Trạng thái đơn hàng", orderStatusLabels[data.orderStatus]],
+                        ...(data.pickingStartedAt
+                            ? [
+                                  ["Người soạn (ID)", data.assignedTo],
+                                  ["Bắt đầu soạn", dateTime(data.pickingStartedAt)],
+                              ]
+                            : []),
+                        ...(data.packedAt
+                            ? [
+                                  ["Người đóng gói (ID)", data.packedBy],
+                                  ["Đóng gói lúc", dateTime(data.packedAt)],
+                                  [
+                                      "Bao bì",
+                                      data.packagingType === "CARTON" ? "Thùng carton" : "Túi PE",
+                                  ],
+                              ]
+                            : []),
+                        ...(data.exportedAt
+                            ? [
+                                  ["Người xuất (ID)", data.exportedBy],
+                                  ["Xuất kho lúc", dateTime(data.exportedAt)],
+                                  ["Đơn vị vận chuyển", display(data.carrierName)],
+                                  ["Mã vận đơn", display(data.trackingNumber)],
+                              ]
+                            : []),
+                        ...(data.note ? [["Ghi chú", data.note]] : []),
+                        ...(data.status === "CANCELLED"
+                            ? [
+                                  ["Người hủy (ID)", data.cancelledBy],
+                                  ["Hủy lúc", dateTime(data.cancelledAt)],
+                                  ["Lý do hủy", display(data.cancellationReason)],
+                              ]
+                            : []),
+                    ]}
+                />
+            </section>
+            {!openOrder && !["EXPORTED", "CANCELLED"].includes(data.status) && (
+                <Alert variant="warning">
+                    Trạng thái đơn hàng hiện tại không cho phép tiếp tục xử lý phiếu xuất.
+                </Alert>
+            )}
+            {data.status === "PICKING" && openOrder ? (
+                <ActionForm
+                    {...common}
+                    action="picking"
+                    schema={pickingSchema(data)}
+                    defaultValues={{
+                        version: data.version,
+                        items: data.items.map((item) => ({
+                            issueItemId: item.issueItemId,
+                            pickedQuantity: item.pickedQuantity,
+                        })),
+                    }}
+                    title="Lưu số lượng đã soạn"
+                    description="Có thể lưu tiến độ. Chỉ đóng gói sau khi đã lưu đủ số lượng của tất cả các dòng."
+                >
+                    {lines(true)}
+                </ActionForm>
+            ) : (
+                lines()
+            )}
+            {data.status === "PENDING" && openOrder && (
+                <ActionForm
+                    {...common}
+                    action="start"
+                    schema={issueVersionSchema}
+                    defaultValues={{ version: data.version }}
+                    title="Bắt đầu soạn hàng"
+                    confirmText="Nhận soạn toàn bộ phiếu xuất này?"
+                />
+            )}
+            {data.status === "PICKING" && openOrder && (
+                <ActionForm
+                    {...common}
+                    disabled={actions.disabled || !fullyPicked}
+                    action="pack"
+                    schema={packIssueSchema}
+                    defaultValues={{ version: data.version, packagingType: "" }}
+                    title="Xác nhận đóng gói"
+                    description={
+                        fullyPicked
+                            ? "Đã lưu đủ hàng. Chọn bao bì trước khi đóng gói."
+                            : "Chưa lưu đủ số lượng soạn. Hoàn tất và lưu các dòng hàng ở trên trước."
+                    }
+                    confirmText="Xác nhận đã đóng gói đầy đủ các mặt hàng?"
+                >
+                    <InputField
+                        name="packagingType"
+                        label="Loại bao bì *"
+                        options={[
+                            ["", "Chọn bao bì"],
+                            ["CARTON", "Thùng carton"],
+                            ["PE_BAG", "Túi PE"],
+                        ]}
+                    />
+                </ActionForm>
+            )}
+            {data.status === "PACKED" && data.orderStatus === "PACKED" && fullyPicked && (
+                <ActionForm
+                    {...common}
+                    action="export"
+                    schema={exportIssueSchema}
+                    defaultValues={{
+                        version: data.version,
+                        carrierName: "",
+                        trackingNumber: "",
+                        note: "",
+                    }}
+                    title="Xác nhận xuất kho"
+                    description="Tồn kho được kiểm tra và trừ tại thời điểm xuất. Không giữ hàng trước."
+                    confirmText="Xác nhận xuất toàn bộ phiếu, trừ tồn kho và chuyển đơn sang đang giao?"
+                >
+                    <InputField name="carrierName" label="Đơn vị vận chuyển *" maxLength={255} />
+                    <InputField name="trackingNumber" label="Mã vận đơn" maxLength={100} />
+                    <InputField
+                        name="note"
+                        label="Ghi chú xuất kho"
+                        as="textarea"
+                        rows={3}
+                        maxLength={1000}
+                    />
+                </ActionForm>
+            )}
+            {openOrder && ["PENDING", "PICKING", "PACKED"].includes(data.status) && (
+                <ActionForm
+                    {...common}
+                    action="cancel"
+                    schema={cancelIssueSchema}
+                    defaultValues={{ version: data.version, reason: "" }}
+                    title="Hủy phiếu xuất"
+                    danger
+                    description="Không thay đổi đơn hàng hoặc tồn kho."
+                    confirmText="Hủy toàn bộ phiếu xuất? Đơn hàng vẫn được giữ nguyên."
+                >
+                    <InputField
+                        name="reason"
+                        label="Lý do hủy *"
+                        as="textarea"
+                        rows={3}
+                        maxLength={1000}
+                    />
+                </ActionForm>
+            )}
+            {data.status === "CANCELLED" && openOrder && (
+                <ActionForm
+                    {...common}
+                    action="recreate"
+                    schema={issueVersionSchema}
+                    defaultValues={{ version: data.version }}
+                    title="Tạo lại phiếu xuất"
+                    description="Tạo phiếu thay thế hoặc mở phiếu hiện tại đã được tạo cho đơn hàng."
+                    confirmText="Yêu cầu tạo lại phiếu xuất cho đơn hàng này?"
+                />
+            )}
+        </>
     );
 }
-
-export default PackingPage;
+export default function PackingPage() {
+    const { issueId } = useParams();
+    return (
+        <WarehouseDetail key={issueId} resource="issue" id={issueId}>
+            {(props) => <IssueContent {...props} />}
+        </WarehouseDetail>
+    );
+}
