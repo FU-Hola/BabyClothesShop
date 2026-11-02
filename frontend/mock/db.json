@@ -33,7 +33,7 @@
       "address": "12 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh",
       "createdAt": "2026-10-15T17:20:18.947Z",
       "updatedAt": "2026-10-15T17:20:18.947Z",
-      "lastLoginAt": null,
+      "lastLoginAt": "2026-11-02T08:08:49.584Z",
       "deletedAt": null
     },
     {
@@ -106,6 +106,24 @@
       "createdAt": "2026-10-05T14:20:00.000Z",
       "updatedAt": "2026-10-05T14:20:00.000Z",
       "lastLoginAt": null,
+      "deletedAt": null
+    },
+    {
+      "id": "1793604839223",
+      "fullName": "Nguyễn Thành Công",
+      "email": "1nguyencong15122005@gmail.com",
+      "password": "Abcd@1234",
+      "phone": null,
+      "role": "admin",
+      "status": "active",
+      "employeeCode": null,
+      "position": null,
+      "dateOfBirth": null,
+      "gender": null,
+      "address": null,
+      "createdAt": "2026-11-02T07:33:59.223Z",
+      "updatedAt": "2026-11-02T07:33:59.223Z",
+      "lastLoginAt": "2026-11-02T08:12:30.113Z",
       "deletedAt": null
     }
   ]
