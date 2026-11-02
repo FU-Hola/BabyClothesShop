@@ -100,7 +100,7 @@ public class ProductService implements IProduct {
                 .stream()
                 .collect(Collectors.toMap(ProductVariant::getId, variant -> variant));
 
-        validateUpdateVariants(product, request.getVariants(), existingVariants);
+        validateUpdateVariants(request.getVariants(), existingVariants);
 
         product.setName(request.getName().trim());
         product.setDescription(request.getDescription().trim());
@@ -285,11 +285,9 @@ public class ProductService implements IProduct {
     }
 
     private void validateUpdateVariants(
-            Product product,
             List<UpdateProductRequest.VariantRequest> requests,
             Map<UUID, ProductVariant> existingVariants
     ) {
-        Set<UUID> updatedIds = new HashSet<>();
         Set<String> requestSkus = new HashSet<>();
 
         for (UpdateProductRequest.VariantRequest request : requests) {
@@ -306,11 +304,6 @@ public class ProductService implements IProduct {
                 if (variant == null) {
                     throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED,
                             "Biến thể không thuộc sản phẩm đang cập nhật");
-                }
-
-                if (!updatedIds.add(request.getId())) {
-                    throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED,
-                            "Một biến thể được gửi nhiều lần trong request");
                 }
 
                 validateExistingVariant(variant, request);
@@ -335,7 +328,7 @@ public class ProductService implements IProduct {
                         "Biến thể bị trùng màu và size trong request");
             }
 
-            for (ProductVariant variant : product.getVariants()) {
+            for (ProductVariant variant : existingVariants.values()) {
                 if (Objects.equals(variant.getId(), request.getId())) {
                     continue;
                 }
