@@ -4,8 +4,9 @@ import { Package, ClipboardList, ShoppingBag, Store, ShieldCheck, ChevronRight, 
 
 const menuItems = [
     { label: "Tồn kho", path: "/warehouse-staff/stock", icon: Package },
-    { label: "Xác nhận nhập kho", path: "/warehouse-staff/pending-receipts", icon: ClipboardList },
-    { label: "Đóng gói", path: "/warehouse-staff/packing", icon: ShoppingBag }
+    { label: "Phiếu nhập kho", path: "/warehouse-staff/goods-receipts", icon: ClipboardList },
+    { label: "Nhập kho chờ xử lý", path: "/warehouse-staff/pending-receipts", icon: ClipboardList },
+    { label: "Phiếu xuất kho", path: "/warehouse-staff/issues", icon: ShoppingBag }
 ];
 
 const WarehouseStaffSidebar = () => {
@@ -23,9 +24,9 @@ const WarehouseStaffSidebar = () => {
                     <ShieldCheck size={22} aria-hidden="true" />
                 </div>
                 <div>
-                    <p className="fw-bold fs-6 mb-0">BaBy Warehouse Staff</p>
+                    <p className="fw-bold fs-6 mb-0">BaBy • Quản lý kho</p>
                     <p className="text-white-50 mb-0" style={{ fontSize: "0.7rem", letterSpacing: "0.8px" }}>
-                        MANAGEMENT CENTER
+                        NHÂN VIÊN KHO
                     </p>
                 </div>
             </div>
