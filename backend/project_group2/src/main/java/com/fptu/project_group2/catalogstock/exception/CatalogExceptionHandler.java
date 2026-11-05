@@ -10,12 +10,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestControllerAdvice(basePackageClasses = ProductController.class)
 public class CatalogExceptionHandler {
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSizeException(MaxUploadSizeExceededException exception) {
+        return ResponseBuilder.error(
+                HttpStatus.valueOf(413),
+                ErrorCode.VALIDATION_FAILED.getCode(),
+                "File ảnh hoặc tổng dung lượng request vượt quá giới hạn cho phép",
+                null
+        );
+    }
+
     @ExceptionHandler(BaseBusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(BaseBusinessException exception) {
         return ResponseBuilder.error(exception.getHttpStatus(), exception.getErrorCode().getCode(),

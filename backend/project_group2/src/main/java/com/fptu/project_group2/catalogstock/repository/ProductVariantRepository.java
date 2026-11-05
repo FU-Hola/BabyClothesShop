@@ -7,9 +7,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
+import java.util.List;
 
 @Repository
 public interface ProductVariantRepository extends JpaRepository<ProductVariant, UUID> {
+    List<ProductVariant> findAllByProductId(UUID productId);
+
     boolean existsBySkuIgnoreCase(String sku);
 
     @Query("""
