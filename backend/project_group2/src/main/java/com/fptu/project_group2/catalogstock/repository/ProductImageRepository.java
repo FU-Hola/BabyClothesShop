@@ -5,7 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductImageRepository extends JpaRepository<ProductImage, UUID> {
-    List<ProductImage> findAllByProductIdOrderBySortOrderAscIdAsc(UUID productId);
+    List<ProductImage> findAllByProductIdOrderBySortOrderAscCreatedAtAscIdAsc(UUID productId);
+
+    Optional<ProductImage> findByIdAndProductId(UUID id, UUID productId);
 }

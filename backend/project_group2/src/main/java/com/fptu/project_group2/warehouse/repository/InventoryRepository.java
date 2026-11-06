@@ -18,8 +18,8 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
     @Modifying
     @Query(value = """
         update inventory
-                set quantity = quantity + :receiveQuantity, updated_at = now()
+                set quantity = quantity + :receivedQuantity, updated_at = now()
                 where variant_id = :variantId;
         """, nativeQuery = true)
-    int increaseStock(@Param("variantId") UUID variantId, @Param("receiveQuantity") Integer receivedQuantity);
+    int increaseStock(@Param("variantId") UUID variantId, @Param("receivedQuantity") Integer receivedQuantity);
 }

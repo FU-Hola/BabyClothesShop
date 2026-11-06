@@ -11,4 +11,8 @@ public interface IProductImage {
     ProductImageResponse uploadImage(UUID productId, UploadProductImageRequest request, UUID userId);
 
     List<ProductImageResponse> getImages(UUID productId);
+
+    void deleteImage(UUID productId, UUID imageId, UUID userId);
+
+    ProductImageResponse updateSortOrder(UUID productId, UUID imageId, int sortOrder, UUID userId);
 }

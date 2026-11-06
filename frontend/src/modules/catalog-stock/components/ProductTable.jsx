@@ -1,5 +1,13 @@
 import {Table, Button, Image} from "react-bootstrap";
 
+const formatPrice = new Intl.NumberFormat("vi-VN");
+
+function formatPriceRange({minPrice, maxPrice}) {
+    if (minPrice == null) return "—";
+    if (maxPrice == null || minPrice === maxPrice) return `${formatPrice.format(minPrice)} VND`;
+    return `${formatPrice.format(minPrice)} – ${formatPrice.format(maxPrice)} VND`;
+}
+
 const ProductTable = ({products, onEdit}) => {
     if (products.length === 0) {
         return <p className="text-center text-muted py-4">Không có sản phẩm phù hợp.</p>;
@@ -12,7 +20,6 @@ const ProductTable = ({products, onEdit}) => {
                 <tr>
                     <th>Ảnh</th>
                     <th>Tên sản phẩm</th>
-                    <th>Mã SKU</th>
                     <th>Danh mục</th>
                     <th>Giá bán</th>
                     <th>Trạng thái</th>
@@ -34,13 +41,8 @@ const ProductTable = ({products, onEdit}) => {
                             />
                         </td>
                         <td>{product.name}</td>
-                        <td>
-                                <span className="badge bg-primary-subtle text-primary fw-semibold">
-                                    {product.sku}
-                                </span>
-                        </td>
-                        <td>{product.category}</td>
-                        <td className="text-nowrap">{product.price} VND</td>
+                        <td>{product.categoryName}</td>
+                        <td className="text-nowrap">{formatPriceRange(product)}</td>
                         <td>
                                 <span
                                     className={product.status === "ACTIVE" ? "text-success fw-medium" : "text-secondary fw-medium"}>

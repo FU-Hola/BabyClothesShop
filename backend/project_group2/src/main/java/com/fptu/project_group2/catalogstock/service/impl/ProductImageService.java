@@ -18,9 +18,11 @@ import com.fptu.project_group2.common.exception.NotFoundException;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -88,10 +90,42 @@ public class ProductImageService implements IProductImage {
             throw new NotFoundException("Không tìm thấy sản phẩm");
         }
 
-        return productImageRepository.findAllByProductIdOrderBySortOrderAscIdAsc(productId)
+        return productImageRepository.findAllByProductIdOrderBySortOrderAscCreatedAtAscIdAsc(productId)
                 .stream()
                 .map(this::toProductImageResponse)
                 .toList();
+    }
+
+    @Override
+    public void deleteImage(UUID productId, UUID imageId, UUID userId) {
+        validateStoreStaff(userId);
+
+        ProductImage image = findProductImage(productId, imageId);
+
+        if (StringUtils.hasText(image.getPublicId())) {
+            cloudinaryService.deleteImage(image.getPublicId());
+        }
+
+        try {
+            productImageRepository.deleteById(imageId);
+        } catch (DataAccessException exception) {
+            log.error("Không thể xóa bản ghi ảnh {}", imageId, exception);
+            throw new BaseBusinessException(ErrorCode.DATABASE_ERROR, "Không thể xóa thông tin ảnh sản phẩm");
+        }
+    }
+
+    @Override
+    @Transactional
+    public ProductImageResponse updateSortOrder(UUID productId, UUID imageId, int sortOrder, UUID userId) {
+        validateStoreStaff(userId);
+        ProductImage image = findProductImage(productId, imageId);
+        image.setSortOrder(sortOrder);
+        return toProductImageResponse(image);
+    }
+
+    private ProductImage findProductImage(UUID productId, UUID imageId) {
+        return productImageRepository.findByIdAndProductId(imageId, productId)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy ảnh của sản phẩm"));
     }
 
     private void validateStoreStaff(UUID userId) {

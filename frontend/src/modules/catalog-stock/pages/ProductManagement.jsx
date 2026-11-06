@@ -1,8 +1,8 @@
 import {Container, Form, Button, Row, Col, Card, Pagination} from "react-bootstrap";
 import {Package, CircleCheck, CirclePause, Tags, Plus, RotateCcw, Search} from "lucide-react";
 import ProductTable from "../components/ProductTable.jsx";
-import mockProducts from "../api/mockProducts.js";
-import {useState} from "react";
+import {catalogError, getCategories, getProducts} from "../api/catalog-stock.api.js";
+import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 
 const ProductManagement = () => {
@@ -14,59 +14,81 @@ const ProductManagement = () => {
     const [sortOrder, setSortOrder] = useState("desc");
     const pageSize = 4;
 
-    const categories = Array.from(new Set(mockProducts.map((product) => product.category)));
+    const [categories, setCategories] = useState([]);
+    const [counts, setCounts] = useState(null);
+    const [metadataError, setMetadataError] = useState("");
+    const [result, setResult] = useState(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        Promise.all([
+            getCategories(),
+            getProducts({size: 1, status: "ACTIVE"}),
+            getProducts({size: 1, status: "INACTIVE"})
+        ]).then(([categoryData, active, inactive]) => {
+            if (cancelled) return;
+            setCategories(categoryData);
+            setCounts({active: active.totalItems, inactive: inactive.totalItems});
+        }).catch((failure) => {
+            if (!cancelled) setMetadataError(catalogError(failure));
+        });
+        return () => { cancelled = true; };
+    }, []);
+
+    const requestKey = JSON.stringify({
+        page: currentPage,
+        size: pageSize,
+        keyword: searchTerm.trim() || undefined,
+        categoryId: selectedCategory || undefined,
+        status: selectedStatus || undefined,
+        sortDirection: sortOrder.toUpperCase()
+    });
+
+    useEffect(() => {
+        let cancelled = false;
+        getProducts(JSON.parse(requestKey)).then((data) => {
+            if (!cancelled) setResult({key: requestKey, data});
+        }).catch((failure) => {
+            if (!cancelled) setResult({key: requestKey, error: catalogError(failure)});
+        });
+        return () => { cancelled = true; };
+    }, [requestKey]);
+
+    const currentResult = result?.key === requestKey ? result : null;
+    const pageData = currentResult?.data;
+    const totalPages = pageData?.totalPages ?? 0;
+
 
     const statistics = [
         {
             label: "Tổng sản phẩm",
-            value: mockProducts.length,
+            value: counts ? counts.active + counts.inactive : "—",
             icon: Package,
             color: "#2563eb",
             background: "#eff6ff"
         },
         {
             label: "Đang kinh doanh",
-            value: mockProducts.filter((product) => product.status === "ACTIVE").length,
+            value: counts?.active ?? "—",
             icon: CircleCheck,
             color: "#16a34a",
             background: "#f0fdf4"
         },
         {
             label: "Ngừng kinh doanh",
-            value: mockProducts.filter((product) => product.status === "INACTIVE").length,
+            value: counts?.inactive ?? "—",
             icon: CirclePause,
             color: "#d97706",
             background: "#fffbeb"
         },
         {
-            label: "Danh mục có sản phẩm",
-            value: categories.length,
+            label: "Danh mục đang hoạt động",
+            value: counts ? categories.length : "—",
             icon: Tags,
             color: "#9333ea",
             background: "#faf5ff"
         }
     ];
-
-    const keyword = searchTerm.trim().toLowerCase();
-    const filteredProducts = mockProducts.filter((product) => {
-        const conditionKeyword =
-            product.name.toLowerCase().includes(keyword) ||
-            product.sku.toLowerCase().includes(keyword) ||
-            product.description.toLowerCase().includes(keyword);
-        const conditionCategory = selectedCategory === "" || product.category === selectedCategory;
-        const conditionStatus = selectedStatus === "" || product.status === selectedStatus;
-        return conditionKeyword && conditionCategory && conditionStatus;
-    });
-
-    const sortedProducts = [...filteredProducts].sort((a, b) => {
-        const dateA = new Date(a.createdAt).getTime();
-        const dateB = new Date(b.createdAt).getTime();
-        return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
-    });
-
-    const totalPages = Math.ceil(filteredProducts.length / pageSize);
-    const startIndex = (currentPage - 1) * pageSize;
-    const paginatedProducts = sortedProducts.slice(startIndex, startIndex + pageSize);
 
     const handleEdit = (productId) => {
         navigate(`/store-staff/products/${productId}/edit`);
@@ -105,6 +127,7 @@ const ProductManagement = () => {
                     <span>Thêm sản phẩm</span>
                 </Button>
             </div>
+            {metadataError && <p className="text-danger">Không tải được danh mục hoặc thống kê. {metadataError}</p>}
             <Row className="row-cols-4 g-3 mb-4">
                 {statistics.map((item) => {
                     const Icon = item.icon;
@@ -166,8 +189,8 @@ const ProductManagement = () => {
                             >
                                 <option value="">Tất cả danh mục</option>
                                 {categories.map((category) => (
-                                    <option key={category} value={category}>
-                                        {category}
+                                    <option key={category.id} value={category.id}>
+                                        {category.name}
                                     </option>
                                 ))}
                             </Form.Select>
@@ -219,11 +242,13 @@ const ProductManagement = () => {
                 </Row>
             </div>
             <div className="bg-white rounded-4 overflow-hidden shadow-sm p-1 mb-3">
-                <ProductTable products={paginatedProducts} onEdit={handleEdit}/>
+                {pageData && <ProductTable products={pageData.items} onEdit={handleEdit}/>}
+                {!currentResult && <p className="text-center py-4 mb-0">Đang tải sản phẩm…</p>}
+                {currentResult?.error && <p className="text-danger p-3 mb-0">{currentResult.error}</p>}
             </div>
             <div className="d-flex justify-content-between align-items-center gap-3 px-2 mb-4">
                 <div className="text-muted small">
-                    Tìm thấy <span className="fw-semibold text-dark">{filteredProducts.length}</span> sản phẩm
+                    {pageData && <>Tìm thấy <span className="fw-semibold text-dark">{pageData.totalItems}</span> sản phẩm</>}
                 </div>
                 {totalPages > 1 && (
                     <Pagination size="sm" className="mb-0">

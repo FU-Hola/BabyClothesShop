@@ -1,13 +1,8 @@
-import {Container, Form, Button, Row, Col, Card, Pagination} from "react-bootstrap";
-import {Boxes, CircleCheck, Clock, RotateCcw, Search} from "lucide-react";
-import mockStock from "../api/mockStock.js";
+import {Alert, Container, Form, Button, Row, Col, Card, Pagination} from "react-bootstrap";
+import {Boxes, RotateCcw, Search} from "lucide-react";
+import {catalogError, getCategories, getStocks, getStockSummary} from "../api/catalog-stock.api.js";
 import StockTable from "../components/StockTable.jsx";
-import {useState} from "react";
-
-const stockItems = mockStock.map((item) => ({
-    ...item,
-    availableStock: item.physicalStock - item.reservedStock
-}));
+import {useEffect, useState} from "react";
 
 const StockOverview = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -15,57 +10,48 @@ const StockOverview = () => {
     const [selectedSize, setSelectedSize] = useState("");
     const [selectedStatus, setSelectedStatus] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 4;
+    const [categories, setCategories] = useState([]);
+    const [categoryError, setCategoryError] = useState("");
+    const [totalQuantity, setTotalQuantity] = useState(null);
+    const [summaryError, setSummaryError] = useState("");
+    const [result, setResult] = useState(null);
+    const keyword = searchTerm.trim();
+    const requestKey = JSON.stringify([keyword, selectedCategory, selectedSize, selectedStatus, currentPage]);
 
-    const categories = Array.from(new Set(mockStock.map((item) => item.category)));
+    useEffect(() => {
+        let cancelled = false;
+        getCategories()
+            .then((data) => { if (!cancelled) setCategories(data); })
+            .catch((error) => { if (!cancelled) setCategoryError(catalogError(error)); });
+        getStockSummary()
+            .then((data) => { if (!cancelled) setTotalQuantity(data.totalQuantity); })
+            .catch((error) => { if (!cancelled) setSummaryError(catalogError(error)); });
+        return () => { cancelled = true; };
+    }, []);
 
-    const totalPhysical = stockItems.reduce((acc, curr) => acc + curr.physicalStock, 0);
-    const totalReserved = stockItems.reduce((acc, curr) => acc + curr.reservedStock, 0);
-    const totalAvailable = totalPhysical - totalReserved;
+    useEffect(() => {
+        const controller = new AbortController();
+        const params = {
+            keyword: keyword || undefined,
+            categoryId: selectedCategory || undefined,
+            variantSize: selectedSize.trim() || undefined,
+            status: selectedStatus || undefined,
+            page: currentPage,
+            size: 4
+        };
+        getStocks(params, controller.signal)
+            .then((data) => {
+                if (!controller.signal.aborted) setResult({key: requestKey, data});
+            })
+            .catch((error) => {
+                if (!controller.signal.aborted) setResult({key: requestKey, error: catalogError(error)});
+            });
+        return () => controller.abort();
+    }, [keyword, selectedCategory, selectedSize, selectedStatus, currentPage, requestKey]);
 
-    const statistics = [
-        {
-            label: "Tổng tồn thực tế",
-            value: totalPhysical,
-            icon: Boxes,
-            color: "#2563eb",
-            background: "#eff6ff"
-        },
-        {
-            label: "Đang giữ cho đơn",
-            value: totalReserved,
-            icon: Clock,
-            color: "#d97706",
-            background: "#fffbeb"
-        },
-        {
-            label: "Có thể bán",
-            value: totalAvailable,
-            icon: CircleCheck,
-            color: "#16a34a",
-            background: "#f0fdf4"
-        }
-    ];
-
-    const keyword = searchTerm.trim().toLowerCase();
-    const filteredStock = stockItems.filter((item) => {
-        const conditionKeyword =
-            item.productName.toLowerCase().includes(keyword) ||
-            item.sku.toLowerCase().includes(keyword);
-        const conditionCategory =
-            selectedCategory === "" || item.category === selectedCategory;
-        const conditionSize =
-            selectedSize === "" || item.size === selectedSize;
-        const stockStatus =
-            item.availableStock > 0 ? "IN_STOCK" : "OUT_OF_STOCK";
-        const conditionStatus =
-            selectedStatus === "" || stockStatus === selectedStatus;
-        return conditionKeyword && conditionCategory && conditionSize && conditionStatus;
-    });
-
-    const totalPages = Math.ceil(filteredStock.length / pageSize);
-    const startIndex = (currentPage - 1) * pageSize;
-    const paginatedStock = filteredStock.slice(startIndex, startIndex + pageSize);
+    const currentResult = result?.key === requestKey ? result : null;
+    const stockPage = currentResult?.data;
+    const totalPages = stockPage?.totalPages ?? 0;
 
     const handleReset = () => {
         setSearchTerm("");
@@ -81,39 +67,22 @@ const StockOverview = () => {
             <div className="mb-4">
                 <h1 className="h3 fw-bold text-dark mb-1">Quản lý tồn kho</h1>
                 <p className="text-muted small mb-0">
-                    Theo dõi tồn thực tế, đang giữ và có thể bán theo từng size.
+                    Theo dõi số lượng tồn kho theo từng biến thể.
                 </p>
             </div>
-            <Row className="row-cols-3 g-3 mb-4">
-                {statistics.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                        <Col key={item.label}>
-                            <Card className="border-0 rounded-4 h-100 shadow-sm">
-                                <Card.Body className="d-flex align-items-center gap-3 p-4">
-                                    <span
-                                        className="d-flex align-items-center justify-content-center rounded-3 flex-shrink-0"
-                                        style={{
-                                            width: "48px",
-                                            height: "48px",
-                                            backgroundColor: item.background,
-                                            color: item.color
-                                        }}
-                                    >
-                                        <Icon size={24} aria-hidden="true"/>
-                                    </span>
-                                    <div>
-                                        <p className="text-muted small mb-1 fw-medium">{item.label}</p>
-                                        <p className="h3 fw-bold text-dark mb-0">
-                                            {item.value} <span className="fs-6 fw-normal text-muted">sp</span>
-                                        </p>
-                                    </div>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    );
-                })}
-            </Row>
+            <Card className="border-0 rounded-4 shadow-sm mb-4">
+                <Card.Body className="d-flex align-items-center gap-3 p-4">
+                    <Boxes size={24} className="text-primary" aria-hidden="true"/>
+                    <div>
+                        <p className="text-muted small mb-1 fw-medium">Tổng tồn kho</p>
+                        <p className="h3 fw-bold text-dark mb-0">
+                            {totalQuantity === null ? "—" : `${totalQuantity} sp`}
+                        </p>
+                    </div>
+                </Card.Body>
+            </Card>
+            {summaryError && <Alert variant="warning">Không tải được tổng tồn kho. {summaryError}</Alert>}
+            {categoryError && <Alert variant="warning">Không tải được danh mục. {categoryError}</Alert>}
             <div className="bg-white rounded-4 p-3 mb-4 shadow-sm">
                 <Row className="g-3 align-items-center">
                     <Col xs={4}>
@@ -149,8 +118,8 @@ const StockOverview = () => {
                             >
                                 <option value="">Tất cả danh mục</option>
                                 {categories.map((category) => (
-                                    <option key={category} value={category}>
-                                        {category}
+                                    <option key={category.id} value={category.id}>
+                                        {category.name}
                                     </option>
                                 ))}
                             </Form.Select>
@@ -159,19 +128,13 @@ const StockOverview = () => {
                     <Col xs={2}>
                         <Form.Group controlId="stockSize">
                             <Form.Label visuallyHidden>Kích cỡ</Form.Label>
-                            <Form.Select
+                            <Form.Control
                                 value={selectedSize}
                                 onChange={(event) => {
                                     setSelectedSize(event.target.value);
                                     setCurrentPage(1);
                                 }}
-                                className="bg-light"
-                            >
-                                <option value="">Tất cả size</option>
-                                <option value="S">Size S</option>
-                                <option value="M">Size M</option>
-                                <option value="L">Size L</option>
-                            </Form.Select>
+                                className="bg-light" placeholder="Nhập size" />
                         </Form.Group>
                     </Col>
                     <Col xs={2}>
@@ -206,11 +169,13 @@ const StockOverview = () => {
                 </Row>
             </div>
             <div className="bg-white rounded-4 overflow-hidden shadow-sm p-1 mb-3">
-                <StockTable stockItems={paginatedStock}/>
+                {stockPage && <StockTable stockItems={stockPage.items}/>}
+                {!currentResult && <p className="text-center py-4 mb-0" role="status">Đang tải tồn kho…</p>}
+                {currentResult?.error && <Alert variant="danger" className="mb-0">{currentResult.error}</Alert>}
             </div>
             <div className="d-flex justify-content-between align-items-center gap-3 px-2 mb-4">
                 <div className="text-muted small">
-                    Tìm thấy <span className="fw-semibold text-dark">{filteredStock.length}</span> dòng tồn kho
+                    {stockPage && <>Tìm thấy <span className="fw-semibold text-dark">{stockPage.totalItems}</span> dòng tồn kho</>}
                 </div>
                 {totalPages > 1 && (
                     <Pagination size="sm" className="mb-0">

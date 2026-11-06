@@ -1,4 +1,4 @@
-import { Table, Image } from "react-bootstrap";
+import { Table } from "react-bootstrap";
 
 const StockTable = ({ stockItems }) => {
     if (stockItems.length === 0) {
@@ -10,32 +10,26 @@ const StockTable = ({ stockItems }) => {
             <Table hover className="align-middle mb-0 text-nowrap">
                 <thead className="table-light">
                     <tr>
-                        <th>Ảnh</th>
                         <th>Tên sản phẩm</th>
                         <th>Mã SKU</th>
+                        <th>Màu</th>
                         <th>Size</th>
                         <th>Danh mục</th>
-                        <th className="text-end">Tồn thực tế</th>
-                        <th className="text-end">Đang giữ</th>
-                        <th className="text-end">Có thể bán</th>
+                        <th className="text-end">Tồn kho</th>
                         <th>Trạng thái</th>
                     </tr>
                 </thead>
                 <tbody>
                     {stockItems.map((item) => (
-                        <tr key={item.id}>
-                            <td>
-                                <Image src="/images/products/sample-baby-romper.png" alt={item.productName} width={52} height={52} />
-                            </td>
+                        <tr key={item.variantId}>
                             <td>{item.productName}</td>
                             <td><span className="badge bg-primary-subtle text-primary">{item.sku}</span></td>
+                            <td>{item.color}</td>
                             <td>{item.size}</td>
-                            <td>{item.category}</td>
-                            <td className="text-end">{item.physicalStock}</td>
-                            <td className="text-end">{item.reservedStock}</td>
-                            <td className="text-end">{item.availableStock}</td>
-                            <td className={item.availableStock > 0 ? "text-success" : "text-danger"}>
-                                {item.availableStock > 0 ? "Còn hàng" : "Hết hàng"}
+                            <td>{item.categoryName}</td>
+                            <td className="text-end">{item.quantity}</td>
+                            <td className={item.stockStatus === "IN_STOCK" ? "text-success" : "text-danger"}>
+                                {item.stockStatus === "IN_STOCK" ? "Còn hàng" : "Hết hàng"}
                             </td>
                         </tr>
                     ))}
