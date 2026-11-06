@@ -4,6 +4,8 @@ import com.fptu.project_group2.common.exception.BadRequestException;
 import com.fptu.project_group2.common.exception.NotFoundException;
 import com.fptu.project_group2.common.http.PageResponse;
 import com.fptu.project_group2.ordermanagement.common.OrderStatus;
+import com.fptu.project_group2.ordermanagement.common.OrderConflictException;
+import com.fptu.project_group2.ordermanagement.common.PaymentStatus;
 import com.fptu.project_group2.ordermanagement.dto.response.OrderDetailResponse;
 import com.fptu.project_group2.ordermanagement.dto.response.OrderSummaryResponse;
 import com.fptu.project_group2.ordermanagement.entity.Order;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +70,28 @@ public class OrderService {
     public OrderDetailResponse getOrderDetail(UUID id) {
         Order order = orderRepository.findWithItemsById(id)
                 .orElseThrow(() -> new NotFoundException("Order", "id", id));
+        return orderMapper.toDetail(order);
+    }
+
+    @Transactional
+    public OrderDetailResponse confirmOrder(UUID id) {
+        Order order = orderRepository.findWithItemsById(id)
+                .orElseThrow(() -> new NotFoundException("Order", "id", id));
+
+        if (order.getStatus() != OrderStatus.PENDING_CONFIRMATION) {
+            throw new OrderConflictException("Chỉ được xác nhận đơn đang chờ xác nhận");
+        }
+        if (order.getPaymentStatus() != PaymentStatus.PAID) {
+            throw new OrderConflictException("Đơn hàng chưa thanh toán thành công");
+        }
+
+        order.setStatus(OrderStatus.CONFIRMED);
+        order.setConfirmedAt(Instant.now());
+        // TODO: Set confirmedBy from the authenticated staff account after Auth integration.
+        // Checkout already reserves stock; confirming an order does not deduct it.
+
+        // Flush now so @Version detects concurrent changes before returning the result.
+        orderRepository.saveAndFlush(order);
         return orderMapper.toDetail(order);
     }
 }

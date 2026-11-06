@@ -6,6 +6,7 @@ import com.fptu.project_group2.common.http.ApiResponse;
 import com.fptu.project_group2.common.http.PageResponse;
 import com.fptu.project_group2.common.http.ResponseBuilder;
 import com.fptu.project_group2.ordermanagement.common.OrderStatus;
+import com.fptu.project_group2.ordermanagement.common.OrderConflictException;
 import com.fptu.project_group2.ordermanagement.dto.response.OrderDetailResponse;
 import com.fptu.project_group2.ordermanagement.dto.response.OrderSummaryResponse;
 import com.fptu.project_group2.ordermanagement.services.OrderService;
@@ -33,6 +34,16 @@ public class OrderController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OrderDetailResponse>> getOrderDetail(@PathVariable UUID id) {
         return ResponseBuilder.ok(orderService.getOrderDetail(id));
+    }
+
+    @PatchMapping("/{id}/confirm")
+    public ResponseEntity<ApiResponse<OrderDetailResponse>> confirmOrder(@PathVariable UUID id) {
+        return ResponseBuilder.ok(orderService.confirmOrder(id), "Xác nhận đơn hàng thành công");
+    }
+
+    @ExceptionHandler(OrderConflictException.class)
+    public ResponseEntity<ApiResponse<Void>> handleOrderConflict(OrderConflictException exception) {
+        return ResponseBuilder.conflict(exception.getMessage());
     }
 
     @ExceptionHandler(NotFoundException.class)
