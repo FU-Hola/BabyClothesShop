@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import cartApi from "../api/cartApi";
 
-// Tạo Context cho Giỏ hàng để các trang dễ dàng sử dụng chung dữ liệu
 const CartContext = createContext();
 
-// Dữ liệu mẫu ban đầu để bạn dễ dàng chạy thử và kiểm tra ngay lập tức
 const INITIAL_CART = [
   {
     id: 1,
@@ -11,7 +10,7 @@ const INITIAL_CART = [
     size: "3-6M",
     price: 140000,
     quantity: 2,
-    maxStock: 3, // Tồn kho tối đa để kiểm tra logic vượt quá số lượng (UC11)
+    maxStock: 3,
     image: "https://images.unsplash.com/photo-1522771930-78848d9293e8?w=300&auto=format&fit=crop&q=80",
     sku: "BC-COTTON-01"
   },
@@ -28,7 +27,6 @@ const INITIAL_CART = [
 ];
 
 export const CartProvider = ({ children }) => {
-  // 1. Quản lý danh sách sản phẩm trong giỏ (lưu vào localStorage)
   const [cartItems, setCartItems] = useState(() => {
     try {
       const saved = localStorage.getItem("baby_cart_items");
@@ -38,7 +36,6 @@ export const CartProvider = ({ children }) => {
     }
   });
 
-  // 2. Lưu thông tin đơn hàng vừa đặt thành công/thất bại (cho Màn 4)
   const [lastOrder, setLastOrder] = useState(() => {
     try {
       const saved = localStorage.getItem("baby_last_order");
@@ -48,7 +45,41 @@ export const CartProvider = ({ children }) => {
     }
   });
 
-  // Tự động đồng bộ dữ liệu vào localStorage mỗi khi giỏ hàng thay đổi
+  const [backendSync, setBackendSync] = useState(false);
+
+  // Thử đồng bộ giỏ hàng từ Backend Spring Boot nếu server đang bật
+  const syncCartFromBackend = useCallback(async () => {
+    try {
+      const res = await cartApi.getCart();
+      if (res && res.data && Array.isArray(res.data.items)) {
+        if (res.data.items.length > 0) {
+          const mappedItems = res.data.items.map((i) => ({
+            id: i.id,
+            variantId: i.variantId,
+            productId: i.productId,
+            name: i.productName,
+            size: i.size,
+            color: i.color,
+            price: i.price,
+            quantity: i.quantity,
+            maxStock: i.availableStock,
+            image: i.imageUrl || "https://images.unsplash.com/photo-1522771930-78848d9293e8?w=300&auto=format&fit=crop&q=80",
+            sku: i.sku,
+          }));
+          setCartItems(mappedItems);
+        }
+        setBackendSync(true);
+      }
+    } catch {
+      // Backend chưa chạy hoặc offline -> dùng dữ liệu localStorage
+      setBackendSync(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    syncCartFromBackend();
+  }, [syncCartFromBackend]);
+
   useEffect(() => {
     localStorage.setItem("baby_cart_items", JSON.stringify(cartItems));
   }, [cartItems]);
@@ -60,18 +91,34 @@ export const CartProvider = ({ children }) => {
   }, [lastOrder]);
 
   // UC10: Thêm sản phẩm vào giỏ hàng
-  const addToCart = (product, size, quantityToAdd = 1) => {
-    // Tìm xem đã có sản phẩm cùng mã và cùng Size trong giỏ chưa
+  const addToCart = async (product, size, quantityToAdd = 1) => {
+    // 1. Thử gọi API Backend nếu có variantId
+    if (product.variantId) {
+      try {
+        const res = await cartApi.addToCart({
+          variantId: product.variantId,
+          quantity: quantityToAdd,
+        });
+        if (res?.data?.items) {
+          syncCartFromBackend();
+          return { success: true, message: "Đã thêm vào giỏ hàng thành công!" };
+        }
+      } catch (err) {
+        const msg = err.response?.data?.message || err.message;
+        return { success: false, message: msg || "Không thể thêm vào giỏ hàng" };
+      }
+    }
+
+    // 2. Fallback xử lý local state
     const existingIndex = cartItems.findIndex(
       (item) => item.id === product.id && item.size === size
     );
 
     if (existingIndex > -1) {
-      // Đã có -> cộng thêm số lượng nhưng không vượt maxStock
       const existingItem = cartItems[existingIndex];
       const newQty = existingItem.quantity + quantityToAdd;
 
-      if (newQty > existingItem.maxStock) {
+      if (existingItem.maxStock && newQty > existingItem.maxStock) {
         return {
           success: false,
           message: `Bạn đã có ${existingItem.quantity} sản phẩm trong giỏ. Chỉ có thể thêm tối đa ${existingItem.maxStock - existingItem.quantity} món nữa!`,
@@ -83,9 +130,9 @@ export const CartProvider = ({ children }) => {
       setCartItems(updated);
       return { success: true, message: "Đã cập nhật số lượng trong giỏ hàng!" };
     } else {
-      // Chưa có -> thêm mới vào giỏ
       const newItem = {
         id: product.id,
+        variantId: product.variantId,
         name: product.name,
         size: size,
         price: product.price,
@@ -99,17 +146,29 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // UC11: Cập nhật số lượng (tăng/giảm) trong giỏ hàng
-  const updateQuantity = (id, size, newQty) => {
+  // UC11: Cập nhật số lượng trong giỏ hàng
+  const updateQuantity = async (id, size, newQty) => {
     if (newQty <= 0) {
       removeFromCart(id, size);
       return { success: true };
     }
 
-    const item = cartItems.find((i) => i.id === id && i.size === size);
+    const item = cartItems.find((i) => i.id === id && (size ? i.size === size : true));
     if (!item) return { success: false, message: "Sản phẩm không tồn tại" };
 
-    if (newQty > item.maxStock) {
+    // Thử gọi Backend API nếu item có id dạng UUID
+    if (typeof id === "string" && id.length > 20) {
+      try {
+        await cartApi.updateQuantity(id, { quantity: newQty });
+        syncCartFromBackend();
+        return { success: true };
+      } catch (err) {
+        const msg = err.response?.data?.message || "Số lượng yêu cầu vượt quá tồn kho khả dụng";
+        return { success: false, message: msg };
+      }
+    }
+
+    if (item.maxStock && newQty > item.maxStock) {
       return {
         success: false,
         message: `Số lượng yêu cầu vượt quá tồn kho khả dụng (tối đa ${item.maxStock} sản phẩm).`,
@@ -118,20 +177,34 @@ export const CartProvider = ({ children }) => {
 
     setCartItems(
       cartItems.map((i) =>
-        i.id === id && i.size === size ? { ...i, quantity: newQty } : i
+        i.id === id && (size ? i.size === size : true) ? { ...i, quantity: newQty } : i
       )
     );
     return { success: true };
   };
 
   // Xóa một món khỏi giỏ hàng
-  const removeFromCart = (id, size) => {
-    setCartItems(cartItems.filter((i) => !(i.id === id && i.size === size)));
+  const removeFromCart = async (id, size) => {
+    if (typeof id === "string" && id.length > 20) {
+      try {
+        await cartApi.removeItem(id);
+        syncCartFromBackend();
+      } catch {
+        // Fallback xóa local
+      }
+    }
+    setCartItems(cartItems.filter((i) => !(i.id === id && (size ? i.size === size : true))));
   };
 
   // Xóa sạch giỏ hàng (sau khi đặt hàng thành công)
-  const clearCart = () => {
+  const clearCart = async () => {
+    try {
+      await cartApi.clearCart();
+    } catch {
+      // ignore
+    }
     setCartItems([]);
+    localStorage.removeItem("baby_cart_items");
   };
 
   // Khôi phục lại dữ liệu mẫu ban đầu (phục vụ lúc test)
@@ -139,10 +212,8 @@ export const CartProvider = ({ children }) => {
     setCartItems(INITIAL_CART);
   };
 
-  // Tổng số lượng món hàng
   const totalItemsCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
-  // Tổng tiền hàng
   const totalPrice = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
@@ -161,6 +232,8 @@ export const CartProvider = ({ children }) => {
         resetDemoCart,
         lastOrder,
         setLastOrder,
+        backendSync,
+        syncCartFromBackend,
       }}
     >
       {children}
@@ -168,7 +241,6 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-// Hook tùy chỉnh giúp các component dùng Cart dễ dàng hơn
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {

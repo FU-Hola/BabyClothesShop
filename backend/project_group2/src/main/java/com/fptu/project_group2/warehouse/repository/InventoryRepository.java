@@ -7,11 +7,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
 
+    Optional<Inventory> findByVariantId(UUID variantId);
 
     @Modifying
     @Query(value = """
@@ -19,7 +21,7 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
                 set quantity = quantity + :receiveQuantity, updated_at = now()
                 where variant_id = :variantId;
         """, nativeQuery = true)
-    int increaseStock(@Param("variantId") UUID variantId,@Param("receiveQuantity") Integer receivedQuantity);
+    int increaseStock(@Param("variantId") UUID variantId, @Param("receiveQuantity") Integer receivedQuantity);
 
     // Only deduct when enough stock remains; a missing row also returns zero.
     @Modifying

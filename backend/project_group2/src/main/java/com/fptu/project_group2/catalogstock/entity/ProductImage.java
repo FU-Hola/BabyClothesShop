@@ -20,6 +20,12 @@ public class ProductImage extends BaseEntity {
     @Column(name = "image_url", nullable = false, length = 2048)
     private String imageUrl;
 
+    @Column(name = "public_id", length = 255)
+    private String publicId;
+
+    @Column(name = "color", length = 100)
+    private String color;
+
     @Column(name = "sort_order", nullable = false)
     private int sortOrder = 0;
 }

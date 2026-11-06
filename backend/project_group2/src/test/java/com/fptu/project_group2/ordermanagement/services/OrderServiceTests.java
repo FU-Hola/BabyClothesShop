@@ -7,7 +7,7 @@ import com.fptu.project_group2.ordermanagement.common.OrderConflictException;
 import com.fptu.project_group2.ordermanagement.common.PaymentStatus;
 import com.fptu.project_group2.ordermanagement.entity.Order;
 import com.fptu.project_group2.ordermanagement.mapper.OrderResponseMapper;
-import com.fptu.project_group2.ordermanagement.repositories.OrderRepository;
+import com.fptu.project_group2.ordermanagement.repository.OrderRepository;
 import com.fptu.project_group2.warehouse.repository.GoodsIssueRepository;
 import com.fptu.project_group2.warehouse.repository.InventoryRepository;
 import org.junit.jupiter.api.Test;

@@ -1,28 +1,35 @@
-package com.fptu.project_group2.ordermanagement.repositories;
+package com.fptu.project_group2.ordermanagement.repository;
 
-import java.util.UUID;
-import java.util.List;
-import java.util.Optional;
-
+import com.fptu.project_group2.ordermanagement.entity.Order;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import com.fptu.project_group2.ordermanagement.common.OrderStatus;
 import com.fptu.project_group2.ordermanagement.common.QueryOrder;
-import com.fptu.project_group2.ordermanagement.entity.Order;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Repository
 public interface OrderRepository extends JpaRepository<Order, UUID> {
+    Optional<Order> findByCheckoutKey(String checkoutKey);
 
-    // Pass an empty search string when no search filter is requested.
+    Optional<Order> findByOrderCode(String orderCode);
+
+    boolean existsByOrderCode(String orderCode);
+
+    List<Order> findByCustomerIdOrderByCreatedAtDesc(UUID customerId);
+
     @Query(value = QueryOrder.FIND_PAGE_IDS, countQuery = QueryOrder.COUNT_PAGE_IDS)
     Page<UUID> findPageIds(@Param("status") OrderStatus status,
                            @Param("search") String search,
                            Pageable pageable);
 
-    // Fetch items only after paging IDs; collection fetch joins must not be paginated.
+    // Fetch items after paging IDs, not in the paginated query itself.
     @Query("select distinct o from Order o left join fetch o.items where o.id in :ids")
     List<Order> findAllWithItemsByIdIn(@Param("ids") List<UUID> ids);
 

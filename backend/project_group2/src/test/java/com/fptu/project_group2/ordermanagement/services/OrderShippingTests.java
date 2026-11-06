@@ -8,7 +8,7 @@ import com.fptu.project_group2.ordermanagement.dto.request.ShipOrderRequest;
 import com.fptu.project_group2.ordermanagement.entity.Order;
 import com.fptu.project_group2.ordermanagement.entity.OrderItem;
 import com.fptu.project_group2.ordermanagement.mapper.OrderResponseMapper;
-import com.fptu.project_group2.ordermanagement.repositories.OrderRepository;
+import com.fptu.project_group2.ordermanagement.repository.OrderRepository;
 import com.fptu.project_group2.warehouse.common.GoodsIssueStatus;
 import com.fptu.project_group2.warehouse.entity.GoodsIssue;
 import com.fptu.project_group2.warehouse.repository.GoodsIssueRepository;

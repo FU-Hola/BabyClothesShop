@@ -16,7 +16,7 @@ import com.fptu.project_group2.ordermanagement.dto.response.OrderDetailResponse;
 import com.fptu.project_group2.ordermanagement.dto.response.OrderSummaryResponse;
 import com.fptu.project_group2.ordermanagement.entity.Order;
 import com.fptu.project_group2.ordermanagement.mapper.OrderResponseMapper;
-import com.fptu.project_group2.ordermanagement.repositories.OrderRepository;
+import com.fptu.project_group2.ordermanagement.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
