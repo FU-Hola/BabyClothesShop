@@ -4,6 +4,8 @@ import com.fptu.project_group2.common.exception.NotFoundException;
 import com.fptu.project_group2.ordermanagement.common.OrderConflictException;
 import com.fptu.project_group2.ordermanagement.dto.response.OrderDetailResponse;
 import com.fptu.project_group2.ordermanagement.services.OrderService;
+import org.springframework.http.MediaType;
+import static org.mockito.ArgumentMatchers.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -54,6 +56,28 @@ class OrderControllerTests {
     @Test
     void malformedIdReturns400WithoutCallingService() throws Exception {
         mvc.perform(patch("/api/v1/store-staff/orders/invalid-id/confirm"))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void shipReturnsUpdatedOrder() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(service.shipOrder(eq(id), any())).thenReturn(OrderDetailResponse.builder()
+                .id(id.toString()).status("SHIPPING").build());
+
+        mvc.perform(patch("/api/v1/store-staff/orders/{id}/ship", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"carrierName\":\"Demo\",\"trackingNumber\":\"TRACK-001\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("SHIPPING"));
+    }
+
+    @Test
+    void shipRequiresCarrierAndTrackingNumber() throws Exception {
+        mvc.perform(patch("/api/v1/store-staff/orders/{id}/ship", UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"carrierName\":\" \",\"trackingNumber\":\"\"}"))
                 .andExpect(status().isBadRequest());
         verifyNoInteractions(service);
     }

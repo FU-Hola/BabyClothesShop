@@ -8,6 +8,8 @@ import com.fptu.project_group2.ordermanagement.common.PaymentStatus;
 import com.fptu.project_group2.ordermanagement.entity.Order;
 import com.fptu.project_group2.ordermanagement.mapper.OrderResponseMapper;
 import com.fptu.project_group2.ordermanagement.repositories.OrderRepository;
+import com.fptu.project_group2.warehouse.repository.GoodsIssueRepository;
+import com.fptu.project_group2.warehouse.repository.InventoryRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +26,8 @@ import static org.mockito.Mockito.*;
 
 class OrderServiceTests {
     private final OrderRepository repository = mock(OrderRepository.class);
-    private final OrderService service = new OrderService(repository, new OrderResponseMapper());
+    private final OrderService service = new OrderService(repository, new OrderResponseMapper(),
+            mock(GoodsIssueRepository.class), mock(InventoryRepository.class));
 
     @Test
     void listsOrdersInPageOrderAndTrimsSearch() {

@@ -10,6 +10,8 @@ import com.fptu.project_group2.ordermanagement.common.OrderConflictException;
 import com.fptu.project_group2.ordermanagement.dto.response.OrderDetailResponse;
 import com.fptu.project_group2.ordermanagement.dto.response.OrderSummaryResponse;
 import com.fptu.project_group2.ordermanagement.services.OrderService;
+import com.fptu.project_group2.ordermanagement.dto.request.ShipOrderRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,6 +46,12 @@ public class OrderController {
     @ExceptionHandler(OrderConflictException.class)
     public ResponseEntity<ApiResponse<Void>> handleOrderConflict(OrderConflictException exception) {
         return ResponseBuilder.conflict(exception.getMessage());
+    }
+
+    @PatchMapping("/{id}/ship")
+    public ResponseEntity<ApiResponse<OrderDetailResponse>> shipOrder(
+            @PathVariable UUID id, @Valid @RequestBody ShipOrderRequest request) {
+        return ResponseBuilder.ok(orderService.shipOrder(id, request), "Ghi nhận gửi hàng thành công");
     }
 
     @ExceptionHandler(NotFoundException.class)

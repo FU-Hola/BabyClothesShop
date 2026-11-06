@@ -6,6 +6,12 @@ import com.fptu.project_group2.common.http.PageResponse;
 import com.fptu.project_group2.ordermanagement.common.OrderStatus;
 import com.fptu.project_group2.ordermanagement.common.OrderConflictException;
 import com.fptu.project_group2.ordermanagement.common.PaymentStatus;
+import com.fptu.project_group2.ordermanagement.dto.request.ShipOrderRequest;
+import com.fptu.project_group2.ordermanagement.entity.OrderItem;
+import com.fptu.project_group2.warehouse.common.GoodsIssueStatus;
+import com.fptu.project_group2.warehouse.entity.GoodsIssue;
+import com.fptu.project_group2.warehouse.repository.GoodsIssueRepository;
+import com.fptu.project_group2.warehouse.repository.InventoryRepository;
 import com.fptu.project_group2.ordermanagement.dto.response.OrderDetailResponse;
 import com.fptu.project_group2.ordermanagement.dto.response.OrderSummaryResponse;
 import com.fptu.project_group2.ordermanagement.entity.Order;
@@ -33,6 +39,8 @@ import java.util.UUID;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderResponseMapper orderMapper;
+    private final GoodsIssueRepository goodsIssueRepository;
+    private final InventoryRepository inventoryRepository;
 
     public PageResponse<OrderSummaryResponse> getOrders(OrderStatus status, String search,
                                                        int page, int size) {
@@ -88,9 +96,46 @@ public class OrderService {
         order.setStatus(OrderStatus.CONFIRMED);
         order.setConfirmedAt(Instant.now());
         // TODO: Set confirmedBy from the authenticated staff account after Auth integration.
-        // Checkout already reserves stock; confirming an order does not deduct it.
+        // The demo deducts stock only when shipping, not when confirming.
 
         // Flush now so @Version detects concurrent changes before returning the result.
+        orderRepository.saveAndFlush(order);
+        return orderMapper.toDetail(order);
+    }
+
+    @Transactional
+    public OrderDetailResponse shipOrder(UUID id, ShipOrderRequest request) {
+        Order order = orderRepository.findWithItemsById(id)
+                .orElseThrow(() -> new NotFoundException("Order", "id", id));
+        if (order.getStatus() != OrderStatus.PACKED) {
+            throw new OrderConflictException("Chỉ được gửi đơn đã đóng gói");
+        }
+
+        GoodsIssue issue = goodsIssueRepository.findByOrderId(id)
+                .orElseThrow(() -> new OrderConflictException("Đơn hàng chưa có phiếu xuất kho"));
+        if (issue.getStatus() != GoodsIssueStatus.PACKED) {
+            throw new OrderConflictException("Phiếu xuất kho chưa đóng gói hoặc đã xuất kho");
+        }
+        if (order.getItems().isEmpty()) {
+            throw new OrderConflictException("Đơn hàng không có sản phẩm để xuất kho");
+        }
+
+        for (OrderItem item : order.getItems()) {
+            int updatedRows = inventoryRepository.decreaseStock(
+                    item.getVariant().getId(), item.getQuantity().longValue());
+            if (updatedRows != 1) {
+                throw new OrderConflictException("Tồn kho không đủ hoặc không hợp lệ: "
+                        + item.getProductNameSnapshot());
+            }
+        }
+
+        issue.setCarrierName(request.getCarrierName().trim());
+        issue.setTrackingNumber(request.getTrackingNumber().trim());
+        issue.setStatus(GoodsIssueStatus.EXPORTED);
+        issue.setExportedAt(Instant.now());
+        order.setStatus(OrderStatus.SHIPPING);
+
+        goodsIssueRepository.saveAndFlush(issue);
         orderRepository.saveAndFlush(order);
         return orderMapper.toDetail(order);
     }
