@@ -22,10 +22,10 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/store-staff/products")
-@PreAuthorize("hasRole('STORE_STAFF')")
 public class ProductController {
     private final IProduct productService;
 
+    @PreAuthorize("hasRole('STORE_STAFF')")
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<ProductListResponse>>> searchProducts(@ModelAttribute ProductSearchRequest request) {
         Page<ProductListResponse> products = productService.searchProducts(request);
@@ -34,6 +34,7 @@ public class ProductController {
         return ResponseBuilder.ok(response, "Lấy danh sách sản phẩm thành công");
     }
 
+    @PreAuthorize("hasRole('STORE_STAFF')")
     @PostMapping
     public ResponseEntity<ApiResponse<UUID>> createProduct(
             @Valid @RequestBody CreateProductRequest request,
@@ -43,6 +44,7 @@ public class ProductController {
         return ResponseBuilder.created(productId, "Tạo sản phẩm thành công");
     }
 
+    @PreAuthorize("hasRole('STORE_STAFF')")
     @GetMapping("/{productId}")
     public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductDetail(
             @PathVariable("productId") UUID productId) {

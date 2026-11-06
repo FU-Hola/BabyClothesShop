@@ -23,10 +23,10 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/warehouse-staff")
-@PreAuthorize("hasRole('WAREHOUSE_STAFF')")
 public class GoodsReceiptController {
     private final IGoodsReceipt goodsReceiptService;
 
+    @PreAuthorize("hasRole('WAREHOUSE_STAFF')")
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<Void>> createGoodsReceipt(
             @Valid @RequestBody CreateReceiptRequest request,
@@ -36,6 +36,7 @@ public class GoodsReceiptController {
         return ResponseBuilder.created(null, "Tạo phiếu nhập hàng thành công");
     }
 
+    @PreAuthorize("hasRole('WAREHOUSE_STAFF')")
     @PatchMapping("/confirm/{id}")
     public ResponseEntity<ApiResponse<Void>> confirmGoodsReceipt(
             @PathVariable UUID id,
@@ -47,6 +48,7 @@ public class GoodsReceiptController {
         return ResponseBuilder.ok(null, "Xác nhận phiếu nhập kho thành công");
     }
 
+    @PreAuthorize("hasRole('WAREHOUSE_STAFF')")
     @GetMapping("/status")
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> getAllReceiptStatus(){
         List<Map<String, String>> statuses = Arrays.stream(GoodsReceiptStatus.values())
