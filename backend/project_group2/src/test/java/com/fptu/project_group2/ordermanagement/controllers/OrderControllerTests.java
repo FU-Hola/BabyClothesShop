@@ -74,6 +74,45 @@ class OrderControllerTests {
     }
 
     @Test
+    void deliverReturnsUpdatedOrder() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(service.deliverOrder(id)).thenReturn(OrderDetailResponse.builder()
+                .id(id.toString()).status("DELIVERED").build());
+
+        mvc.perform(patch("/api/v1/store-staff/orders/{id}/deliver", id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.status").value("DELIVERED"));
+    }
+
+    @Test
+    void deliverMissingOrderReturns404() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(service.deliverOrder(id)).thenThrow(new NotFoundException("Order", "id", id));
+
+        mvc.perform(patch("/api/v1/store-staff/orders/{id}/deliver", id))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    void deliverWrongStatusReturns409() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(service.deliverOrder(id)).thenThrow(new OrderConflictException("Invalid state"));
+
+        mvc.perform(patch("/api/v1/store-staff/orders/{id}/deliver", id))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    void deliverInvalidIdReturns400() throws Exception {
+        mvc.perform(patch("/api/v1/store-staff/orders/invalid-id/deliver"))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(service);
+    }
+
+    @Test
     void shipRequiresCarrierAndTrackingNumber() throws Exception {
         mvc.perform(patch("/api/v1/store-staff/orders/{id}/ship", UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)

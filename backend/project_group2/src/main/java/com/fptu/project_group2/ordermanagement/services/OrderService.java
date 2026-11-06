@@ -104,6 +104,20 @@ public class OrderService {
     }
 
     @Transactional
+    public OrderDetailResponse deliverOrder(UUID id) {
+        Order order = orderRepository.findWithItemsById(id)
+                .orElseThrow(() -> new NotFoundException("Order", "id", id));
+        if (order.getStatus() != OrderStatus.SHIPPING) {
+            throw new OrderConflictException("Chỉ được xác nhận giao thành công cho đơn đang giao");
+        }
+
+        order.setStatus(OrderStatus.DELIVERED);
+        order.setDeliveredAt(Instant.now());
+        orderRepository.saveAndFlush(order);
+        return orderMapper.toDetail(order);
+    }
+
+    @Transactional
     public OrderDetailResponse shipOrder(UUID id, ShipOrderRequest request) {
         Order order = orderRepository.findWithItemsById(id)
                 .orElseThrow(() -> new NotFoundException("Order", "id", id));

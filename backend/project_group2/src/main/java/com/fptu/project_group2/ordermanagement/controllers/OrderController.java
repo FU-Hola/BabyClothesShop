@@ -43,6 +43,11 @@ public class OrderController {
         return ResponseBuilder.ok(orderService.confirmOrder(id), "Xác nhận đơn hàng thành công");
     }
 
+    @PatchMapping("/{id}/deliver")
+    public ResponseEntity<ApiResponse<OrderDetailResponse>> deliverOrder(@PathVariable UUID id) {
+        return ResponseBuilder.ok(orderService.deliverOrder(id), "Xác nhận giao hàng thành công");
+    }
+
     @ExceptionHandler(OrderConflictException.class)
     public ResponseEntity<ApiResponse<Void>> handleOrderConflict(OrderConflictException exception) {
         return ResponseBuilder.conflict(exception.getMessage());
