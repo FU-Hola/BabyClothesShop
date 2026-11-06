@@ -2,7 +2,9 @@
 package com.fptu.project_group2.ordermanagement.mapper;
 
 import java.math.BigDecimal;
+import org.springframework.stereotype.Component;
 
+import com.fptu.project_group2.ordermanagement.dto.response.OrderDetailResponse;
 import com.fptu.project_group2.ordermanagement.dto.response.OrderItemResponse;
 import com.fptu.project_group2.ordermanagement.dto.response.OrderPreviewItemResponse;
 import com.fptu.project_group2.ordermanagement.dto.response.OrderSummaryResponse;
@@ -12,6 +14,7 @@ import com.fptu.project_group2.ordermanagement.entity.OrderItem;
 /**
  * OrderResponseMapper
  */
+@Component
 public class OrderResponseMapper {
 
     public OrderItemResponse toItem(OrderItem item) {
@@ -34,11 +37,11 @@ public class OrderResponseMapper {
         BigDecimal subTotal = BigDecimal.ZERO;
 
         for (OrderItem item : order.getItems()) {
-            BigDecimal unitPrice = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
-            subTotal = subTotal.add(unitPrice);
+            BigDecimal lineTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+            subTotal = subTotal.add(lineTotal);
 
         }
-        BigDecimal totalaMount = subTotal.add(order.getShippingFee());
+        BigDecimal totalAmount = subTotal.add(order.getShippingFee());
 
         int totalQuantity = 0;
         for (OrderItem item : items) {
@@ -59,7 +62,7 @@ public class OrderResponseMapper {
                 .receiverName(order.getReceiverName())
                 .receiverPhone(order.getReceiverPhone())
                 .shippingFee(order.getShippingFee())
-                .totalAmount(totalaMount)
+                .totalAmount(totalAmount)
                 .lineCount(items.size())
                 .totalQuantity(totalQuantity)
                 .paymentStatus(order.getPaymentStatus().name())
@@ -75,6 +78,32 @@ public class OrderResponseMapper {
                 .size(item.getSizeSnapshot())
                 .quantity(item.getQuantity())
                 .imageUrl(item.getImageUrlSnapshot())
+                .build();
+    }
+
+    public OrderDetailResponse toDetail(Order order) {
+        OrderSummaryResponse summary = toSummary(order);
+
+        return OrderDetailResponse.builder()
+                .id(summary.getId())
+                .orderCode(summary.getOrderCode())
+                .createdAt(summary.getCreatedAt())
+                .receiverName(summary.getReceiverName())
+                .receiverPhone(summary.getReceiverPhone())
+                .totalAmount(summary.getTotalAmount())
+                .shippingFee(summary.getShippingFee())
+                .lineCount(summary.getLineCount())
+                .totalQuantity(summary.getTotalQuantity())
+                .paymentStatus(summary.getPaymentStatus())
+                .status(summary.getStatus())
+                .previewItem(summary.getPreviewItem())
+                .receiverAddress(order.getReceiverAddress())
+                .customerNote(order.getCustomerNote())
+                .paymentMethod(order.getPaymentMethod())
+                .items(order.getItems().stream().map(this::toItem).toList())
+                .confirmedAt(order.getConfirmedAt())
+                .deliveredAt(order.getDeliveredAt())
+                .paidAt(order.getPaidAt())
                 .build();
     }
 }
