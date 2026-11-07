@@ -3,16 +3,14 @@ import { Link, NavLink } from "react-router-dom";
 import { Package, ClipboardList, ShoppingBag, Store, ShieldCheck, ChevronRight, LogOut } from "lucide-react";
 
 const menuItems = [
+    { label: "Tồn kho vận hành", path: "/warehouse-staff/inventory", icon: Package },
     { label: "Tồn kho", path: "/warehouse-staff/stock", icon: Package },
-    { label: "Xác nhận nhập kho", path: "/warehouse-staff/pending-receipts", icon: ClipboardList },
-    { label: "Đóng gói", path: "/warehouse-staff/packing", icon: ShoppingBag }
+    { label: "Phiếu nhập kho", path: "/warehouse-staff/goods-receipts", icon: ClipboardList },
+    { label: "Nhập kho chờ xử lý", path: "/warehouse-staff/pending-receipts", icon: ClipboardList },
+    { label: "Phiếu xuất kho", path: "/warehouse-staff/issues", icon: ShoppingBag }
 ];
 
-const WarehouseStaffSidebar = () => {
-    const handleLogout = () => {
-        console.log("Yêu cầu đăng xuất — chưa tích hợp xác thực.");
-    };
-
+const WarehouseStaffSidebar = ({ onLogout }) => {
     return (
         <div className="d-flex flex-column h-100 p-3 text-white">
             <div className="d-flex align-items-center gap-3 border-bottom border-secondary border-opacity-25 pb-3 mb-3">
@@ -23,9 +21,9 @@ const WarehouseStaffSidebar = () => {
                     <ShieldCheck size={22} aria-hidden="true" />
                 </div>
                 <div>
-                    <p className="fw-bold fs-6 mb-0">BaBy Warehouse Staff</p>
+                    <p className="fw-bold fs-6 mb-0">BaBy • Quản lý kho</p>
                     <p className="text-white-50 mb-0" style={{ fontSize: "0.7rem", letterSpacing: "0.8px" }}>
-                        MANAGEMENT CENTER
+                        NHÂN VIÊN KHO
                     </p>
                 </div>
             </div>
@@ -87,7 +85,7 @@ const WarehouseStaffSidebar = () => {
                 </Link>
                 <Button
                     variant="link"
-                    onClick={handleLogout}
+                    onClick={onLogout}
                     className="d-flex align-items-center gap-3 px-3 py-2 text-white-50 text-decoration-none text-start border-0 shadow-none"
                     style={{ fontSize: "0.9rem" }}
                 >

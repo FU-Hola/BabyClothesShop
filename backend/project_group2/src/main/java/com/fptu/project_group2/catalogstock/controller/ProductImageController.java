@@ -1,5 +1,8 @@
 package com.fptu.project_group2.catalogstock.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.fptu.project_group2.authaccount.security.AuthenticatedUser;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.fptu.project_group2.catalogstock.dto.request.UploadProductImageRequest;
 import com.fptu.project_group2.catalogstock.dto.request.UpdateImageSortOrderRequest;
 import com.fptu.project_group2.catalogstock.dto.response.ProductImageResponse;
@@ -16,7 +19,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@PreAuthorize("hasRole('STORE_STAFF')")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/store-staff/products/{productId}/images")
 public class ProductImageController {
@@ -36,10 +39,10 @@ public class ProductImageController {
             @PathVariable("productId") UUID productId,
             @PathVariable("imageId") UUID imageId,
             @Valid @RequestBody UpdateImageSortOrderRequest request,
-            @RequestHeader("X-User-Id") UUID userId
+            @AuthenticationPrincipal AuthenticatedUser principal
     ) {
         ProductImageResponse response = productImageService.updateSortOrder(
-                productId, imageId, request.sortOrder(), userId);
+                productId, imageId, request.sortOrder(), principal.id());
         return ResponseBuilder.ok(response, "Cập nhật thứ tự ảnh thành công");
     }
 
@@ -47,9 +50,9 @@ public class ProductImageController {
     public ResponseEntity<ApiResponse<Void>> deleteImage(
             @PathVariable("productId") UUID productId,
             @PathVariable("imageId") UUID imageId,
-            @RequestHeader("X-User-Id") UUID userId
+            @AuthenticationPrincipal AuthenticatedUser principal
     ) {
-        productImageService.deleteImage(productId, imageId, userId);
+        productImageService.deleteImage(productId, imageId, principal.id());
         return ResponseBuilder.ok(null, "Xóa ảnh sản phẩm thành công");
     }
 
@@ -57,9 +60,9 @@ public class ProductImageController {
     public ResponseEntity<ApiResponse<ProductImageResponse>> uploadImage(
             @PathVariable("productId") UUID productId,
             @Valid @ModelAttribute UploadProductImageRequest request,
-            @RequestHeader("X-User-Id") UUID userId
+            @AuthenticationPrincipal AuthenticatedUser principal
     ) {
-        ProductImageResponse response = productImageService.uploadImage(productId, request, userId);
+        ProductImageResponse response = productImageService.uploadImage(productId, request, principal.id());
         return ResponseBuilder.created(response, "Upload ảnh sản phẩm thành công");
     }
 

@@ -1,5 +1,78 @@
-.modal { overflow: hidden; border: 0 !important; border-radius: 18px !important; box-shadow: 0 24px 65px rgba(23, 49, 71, 0.22) !important; }
-.header { display: flex; align-items: center !important; gap: 13px; padding: 20px 24px !important; background: #f8fafc; }
-.header p { margin: 3px 0 0; color: var(--ui-text-muted); font-size: 0.8rem; }
-.icon { display: grid; flex: 0 0 43px; width: 43px; height: 43px; place-items: center; border-radius: 12px; background: var(--ui-primary); color: #fff; }
-.footer { padding: 16px 24px !important; background: #fafbfd; }
+.modal {
+    max-height: calc(100vh - 2rem);
+    border: 0 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 24px 65px rgba(23, 49, 71, 0.22) !important;
+}
+
+/* Bootstrap xử lý flex/overflow; CSS chỉ bổ sung giới hạn viewport mà utility không có. */
+.form {
+    min-height: 0;
+    max-height: calc(100vh - 2rem);
+}
+
+.headerIcon {
+    display: grid;
+    flex: 0 0 43px;
+    width: 43px;
+    height: 43px;
+    place-items: center;
+    border-radius: 12px;
+    background: var(--ui-primary);
+    color: #fff;
+}
+
+.heading {
+    min-width: 0;
+}
+
+.body {
+    min-height: 0;
+    overscroll-behavior: contain;
+}
+
+.sectionHeader {
+    float: none;
+    width: 100%;
+    padding: 0;
+    color: var(--ui-text);
+    font-size: 1rem;
+    line-height: 1.25;
+}
+
+.sectionHeader small {
+    font-size: 0.78rem;
+}
+
+.sectionIcon {
+    display: grid;
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border-radius: 10px;
+    background: #eaf0f5;
+    color: var(--ui-primary);
+}
+
+.note {
+    border-color: var(--ui-border) !important;
+    color: var(--ui-text-muted);
+    font-size: 0.84rem;
+}
+
+.note svg {
+    flex: 0 0 auto;
+    margin-top: 2px;
+}
+
+@media (max-width: 575.98px) {
+    .modal,
+    .form {
+        max-height: calc(100vh - 1rem);
+    }
+
+    .body {
+        padding: 16px !important;
+    }
+}

@@ -1,0 +1,156 @@
+package com.fptu.project_group2.ordermanagement.services;
+
+import com.fptu.project_group2.common.exception.BadRequestException;
+import com.fptu.project_group2.common.exception.NotFoundException;
+import com.fptu.project_group2.common.http.PageResponse;
+import com.fptu.project_group2.ordermanagement.common.OrderStatus;
+import com.fptu.project_group2.ordermanagement.common.OrderConflictException;
+import com.fptu.project_group2.ordermanagement.common.PaymentStatus;
+import com.fptu.project_group2.ordermanagement.dto.request.ShipOrderRequest;
+import com.fptu.project_group2.ordermanagement.entity.OrderItem;
+import com.fptu.project_group2.warehouse.common.GoodsIssueStatus;
+import com.fptu.project_group2.warehouse.entity.GoodsIssue;
+import com.fptu.project_group2.warehouse.repository.GoodsIssueRepository;
+import com.fptu.project_group2.warehouse.repository.InventoryRepository;
+import com.fptu.project_group2.ordermanagement.dto.response.OrderDetailResponse;
+import com.fptu.project_group2.ordermanagement.dto.response.OrderSummaryResponse;
+import com.fptu.project_group2.ordermanagement.entity.Order;
+import com.fptu.project_group2.ordermanagement.mapper.OrderResponseMapper;
+import com.fptu.project_group2.ordermanagement.repository.OrderRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class OrderService {
+    private final OrderRepository orderRepository;
+    private final OrderResponseMapper orderMapper;
+    private final GoodsIssueRepository goodsIssueRepository;
+    private final InventoryRepository inventoryRepository;
+
+    public PageResponse<OrderSummaryResponse> getOrders(OrderStatus status, String search,
+                                                       int page, int size) {
+        if (page < 1 || size < 1 || size > 100) {
+            throw new BadRequestException("Trang phải từ 1, kích thước trang từ 1 đến 100");
+        }
+
+        String keyword = search == null ? "" : search.trim();
+        Pageable pageable = PageRequest.of(page - 1, size,
+                Sort.by(Sort.Direction.DESC, "createdAt", "id"));
+        Page<UUID> idPage = orderRepository.findPageIds(status, keyword, pageable);
+        List<OrderSummaryResponse> items = new ArrayList<>();
+
+        if (idPage.hasContent()) {
+            List<Order> orders = orderRepository.findAllWithItemsByIdIn(idPage.getContent());
+            Map<UUID, Order> ordersById = new HashMap<>();
+            for (Order order : orders) {
+                ordersById.put(order.getId(), order);
+            }
+
+            // SQL IN does not preserve the order of the paginated IDs.
+            for (UUID id : idPage.getContent()) {
+                Order order = ordersById.get(id);
+                if (order != null) {
+                    items.add(orderMapper.toSummary(order));
+                }
+            }
+        }
+
+        Page<OrderSummaryResponse> result = new PageImpl<>(items, pageable, idPage.getTotalElements());
+        // PageResponse uses zero-based page numbers, like Spring Data.
+        return PageResponse.of(result);
+    }
+
+    public OrderDetailResponse getOrderDetail(UUID id) {
+        Order order = orderRepository.findWithItemsById(id)
+                .orElseThrow(() -> new NotFoundException("Order", "id", id));
+        return orderMapper.toDetail(order);
+    }
+
+    @Transactional
+    public OrderDetailResponse confirmOrder(UUID id) {
+        Order order = orderRepository.findWithItemsById(id)
+                .orElseThrow(() -> new NotFoundException("Order", "id", id));
+
+        if (order.getStatus() != OrderStatus.PENDING_CONFIRMATION) {
+            throw new OrderConflictException("Chỉ được xác nhận đơn đang chờ xác nhận");
+        }
+        if (order.getPaymentStatus() != PaymentStatus.PAID) {
+            throw new OrderConflictException("Đơn hàng chưa thanh toán thành công");
+        }
+
+        order.setStatus(OrderStatus.CONFIRMED);
+        order.setConfirmedAt(Instant.now());
+        // TODO: Set confirmedBy from the authenticated staff account after Auth integration.
+        // The demo deducts stock only when shipping, not when confirming.
+
+        // Flush now so @Version detects concurrent changes before returning the result.
+        orderRepository.saveAndFlush(order);
+        return orderMapper.toDetail(order);
+    }
+
+    @Transactional
+    public OrderDetailResponse deliverOrder(UUID id) {
+        Order order = orderRepository.findWithItemsById(id)
+                .orElseThrow(() -> new NotFoundException("Order", "id", id));
+        if (order.getStatus() != OrderStatus.SHIPPING) {
+            throw new OrderConflictException("Chỉ được xác nhận giao thành công cho đơn đang giao");
+        }
+
+        order.setStatus(OrderStatus.DELIVERED);
+        order.setDeliveredAt(Instant.now());
+        orderRepository.saveAndFlush(order);
+        return orderMapper.toDetail(order);
+    }
+
+    @Transactional
+    public OrderDetailResponse shipOrder(UUID id, ShipOrderRequest request) {
+        Order order = orderRepository.findWithItemsById(id)
+                .orElseThrow(() -> new NotFoundException("Order", "id", id));
+        if (order.getStatus() != OrderStatus.PACKED) {
+            throw new OrderConflictException("Chỉ được gửi đơn đã đóng gói");
+        }
+
+        GoodsIssue issue = goodsIssueRepository.findByOrderId(id)
+                .orElseThrow(() -> new OrderConflictException("Đơn hàng chưa có phiếu xuất kho"));
+        if (issue.getStatus() != GoodsIssueStatus.PACKED) {
+            throw new OrderConflictException("Phiếu xuất kho chưa đóng gói hoặc đã xuất kho");
+        }
+        if (order.getItems().isEmpty()) {
+            throw new OrderConflictException("Đơn hàng không có sản phẩm để xuất kho");
+        }
+
+        for (OrderItem item : order.getItems()) {
+            int updatedRows = inventoryRepository.decreaseStock(
+                    item.getVariant().getId(), item.getQuantity().longValue());
+            if (updatedRows != 1) {
+                throw new OrderConflictException("Tồn kho không đủ hoặc không hợp lệ: "
+                        + item.getProductNameSnapshot());
+            }
+        }
+
+        issue.setCarrierName(request.getCarrierName().trim());
+        issue.setTrackingNumber(request.getTrackingNumber().trim());
+        issue.setStatus(GoodsIssueStatus.EXPORTED);
+        issue.setExportedAt(Instant.now());
+        order.setStatus(OrderStatus.SHIPPING);
+
+        goodsIssueRepository.saveAndFlush(issue);
+        orderRepository.saveAndFlush(order);
+        return orderMapper.toDetail(order);
+    }
+}

@@ -1,0 +1,61 @@
+services:
+  backend:
+    build: ./backend/project_group2
+    restart: unless-stopped
+    env_file:
+      - ./backend/project_group2/.env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      SERVER_PORT: "8080"
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx384m"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8081:8080"
+    mem_limit: 768m
+    logging: &deploy-logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  mock:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.mock
+    restart: unless-stopped
+    volumes:
+      - mock-data:/app/data
+    mem_limit: 128m
+    logging: *deploy-logging
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - mock
+    ports:
+      - "127.0.0.1:8088:80"
+    networks:
+      default:
+      proxy:
+        aliases:
+          - sba-web
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/healthz"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+    mem_limit: 128m
+    logging: *deploy-logging
+
+networks:
+  proxy:
+    external: true
+    name: proxy_net
+
+volumes:
+  mock-data:

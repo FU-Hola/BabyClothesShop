@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Form, InputGroup, Button, Alert, Badge, Spinner } from 'react-bootstrap';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
-import authApi from '../../api/authApi';
+import useAuth from '../../hooks/useAuth';
 import authBanner from '../../../../shared/assets/auth-banner.png';
+import { getRoleHomePath } from '../../../../shared/constants/auth';
 import styles from './LoginForm.module.css';
 
 const LoginForm = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { login } = useAuth();
 
     const registeredEmail = location.state?.email || '';
     const [notice, setNotice] = useState(location.state?.message || '');
@@ -61,21 +63,13 @@ const LoginForm = () => {
 
         setLoading(true);
         try {
-            const data = await authApi.login({
+            const user = await login({
                 email: formData.email.trim(),
                 password: formData.password,
             });
 
-            if (data.token) {
-                localStorage.setItem('accessToken', data.token);
-            }
-            if (data.user) {
-                localStorage.setItem('user', JSON.stringify(data.user));
-            }
-
-            const destination = data.user?.role === 'admin'
-                ? location.state?.from || '/admin/staff'
-                : '/';
+            // Sau khi đăng nhập luôn vào dashboard đúng role, không quay lại URL cũ.
+            const destination = getRoleHomePath(user.role);
             navigate(destination, { replace: true });
         } catch (err) {
             const msg =

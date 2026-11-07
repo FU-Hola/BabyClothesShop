@@ -1,5 +1,6 @@
 package com.fptu.project_group2.catalogstock.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import com.fptu.project_group2.catalogstock.dto.request.StockSearchRequest;
 import com.fptu.project_group2.catalogstock.dto.response.StockResponse;
 import com.fptu.project_group2.catalogstock.dto.response.StockSummaryResponse;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@PreAuthorize("hasRole('WAREHOUSE_STAFF')")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/warehouse-staff/stocks")
 public class StockController {

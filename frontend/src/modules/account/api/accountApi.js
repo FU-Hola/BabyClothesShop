@@ -5,17 +5,34 @@ const getResource = (accountType) => (
     accountType === 'staff' ? ADMIN_ENDPOINTS.STAFF : ADMIN_ENDPOINTS.CUSTOMERS
 );
 
+// Backend bọc dữ liệu trong ApiResponse; UI cần cả data và message nghiệp vụ.
+const unwrap = (response) => ({
+    ...(response.data || {}),
+    message: response.message,
+});
+
 const accountApi = {
-    getAccounts: (accountType, params) => axiosClient.get(getResource(accountType), { params }),
-    getAccount: (accountType, id) => axiosClient.get(`${getResource(accountType)}/${id}`),
-    createAccount: (accountType, data) => axiosClient.post(getResource(accountType), data),
-    updateAccount: (accountType, id, data) => axiosClient.put(`${getResource(accountType)}/${id}`, data),
-    updateStatus: (accountType, id, status) => axiosClient.patch(
-        `${getResource(accountType)}/${id}/status`,
-        { status }
+    getAccounts: async (accountType, params) => unwrap(
+        await axiosClient.get(getResource(accountType), { params })
     ),
-    softDelete: (accountType, id) => axiosClient.delete(`${getResource(accountType)}/${id}`),
-    restore: (accountType, id) => axiosClient.patch(`${getResource(accountType)}/${id}/restore`),
+    getAccount: async (accountType, id) => unwrap(
+        await axiosClient.get(`${getResource(accountType)}/${id}`)
+    ),
+    createAccount: async (accountType, data) => unwrap(
+        await axiosClient.post(getResource(accountType), data)
+    ),
+    updateAccount: async (accountType, id, data) => unwrap(
+        await axiosClient.put(`${getResource(accountType)}/${id}`, data)
+    ),
+    updateStatus: async (accountType, id, status) => unwrap(
+        await axiosClient.patch(`${getResource(accountType)}/${id}/status`, { status })
+    ),
+    softDelete: async (accountType, id) => unwrap(
+        await axiosClient.delete(`${getResource(accountType)}/${id}`)
+    ),
+    restore: async (accountType, id) => unwrap(
+        await axiosClient.patch(`${getResource(accountType)}/${id}/restore`)
+    ),
 };
 
 export default accountApi;

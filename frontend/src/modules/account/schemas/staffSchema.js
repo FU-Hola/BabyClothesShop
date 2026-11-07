@@ -10,12 +10,15 @@ const phoneSchema = z
 
 const staffSchema = (isEditing) => z.object({
     fullName: z.string().trim().min(2, 'Họ và tên phải có ít nhất 2 ký tự'),
-    email: z.string().trim().email('Email không hợp lệ'),
     phone: phoneSchema,
     employeeCode: z.string().trim().min(1, 'Vui lòng nhập mã nhân viên'),
     position: z.string().trim().min(1, 'Vui lòng nhập chức danh'),
     ...(!isEditing && {
+        email: z.string().trim().email('Email không hợp lệ'),
         password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+        role: z.enum(['STORE_STAFF', 'WAREHOUSE_STAFF'], {
+            error: 'Vui lòng chọn quyền nhân viên',
+        }),
     }),
 });
 

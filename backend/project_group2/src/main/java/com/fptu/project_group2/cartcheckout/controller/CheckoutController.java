@@ -1,5 +1,8 @@
 package com.fptu.project_group2.cartcheckout.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.fptu.project_group2.authaccount.security.AuthenticatedUser;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.fptu.project_group2.cartcheckout.dto.request.CheckoutRequest;
 import com.fptu.project_group2.cartcheckout.dto.request.SimulatePaymentRequest;
 import com.fptu.project_group2.cartcheckout.dto.response.CheckoutValidationResponse;
@@ -12,9 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
-
 @RestController
+@PreAuthorize("hasRole('CUSTOMER')")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/checkout")
 public class CheckoutController {
@@ -23,17 +25,17 @@ public class CheckoutController {
 
     @PostMapping("/validate")
     public ResponseEntity<ApiResponse<CheckoutValidationResponse>> validateCheckout(
-            @RequestHeader(value = "X-User-Id", required = false) UUID customerId,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @Valid @RequestBody CheckoutRequest request) {
-        CheckoutValidationResponse response = checkoutService.validateCheckout(customerId, request);
+        CheckoutValidationResponse response = checkoutService.validateCheckout(principal.id(), request);
         return ResponseBuilder.ok(response, "Kiểm tra thông tin đặt hàng thành công");
     }
 
     @PostMapping("/simulate-payment")
     public ResponseEntity<ApiResponse<OrderResultResponse>> simulatePayment(
-            @RequestHeader(value = "X-User-Id", required = false) UUID customerId,
+            @AuthenticationPrincipal AuthenticatedUser principal,
             @Valid @RequestBody SimulatePaymentRequest request) {
-        OrderResultResponse response = checkoutService.simulatePayment(customerId, request);
+        OrderResultResponse response = checkoutService.simulatePayment(principal.id(), request);
         return ResponseBuilder.ok(response, response.getMessage());
     }
 }

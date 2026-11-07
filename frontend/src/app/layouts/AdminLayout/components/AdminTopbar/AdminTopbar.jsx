@@ -23,7 +23,7 @@ const AdminTopbar = ({ user, onOpenSidebar }) => {
                 <Stack direction="horizontal" gap={2} className={styles.profile}>
                     <span className={styles.avatar}>{avatarText}</span>
                     <span className="d-none d-sm-block">
-                        <strong>{user?.fullName || 'Quản trị viên'}</strong>
+                        <strong>Xin chào, {user?.fullName || 'Quản trị viên'}</strong>
                         <small>Administrator</small>
                     </span>
                 </Stack>
