@@ -27,6 +27,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProductImageService implements IProductImage {
 
+    private static final int MAX_IMAGES_PER_COLOR = 3;
+
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
     private final ProductImageRepository productImageRepository;
@@ -46,6 +48,11 @@ public class ProductImageService implements IProductImage {
                         ErrorCode.VALIDATION_FAILED,
                         "Màu ảnh không thuộc các biến thể của sản phẩm"
                 ));
+
+        if (productImageRepository.countByProductIdAndColorIgnoreCase(productId, color) >= MAX_IMAGES_PER_COLOR) {
+            throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED,
+                    "Mỗi màu chỉ được tối đa " + MAX_IMAGES_PER_COLOR + " ảnh");
+        }
 
         CloudinaryUploadResponse uploaded = cloudinaryService.uploadImage(request.getFile());
 

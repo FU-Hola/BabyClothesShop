@@ -110,9 +110,9 @@ const ProductManagement = () => {
                 </div>
 
                 <Button
-                    variant="dark"
-                    className="d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-white border-0 shadow-sm"
-                    style={{backgroundColor: "#10152B"}}
+                    variant="primary"
+                    className="d-flex align-items-center gap-2 px-3 py-2 rounded-3 shadow-sm"
+
                     onClick={handleCreate}
                 >
                     <Plus size={18} aria-hidden="true"/>

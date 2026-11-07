@@ -51,6 +51,7 @@ import java.util.UUID;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -366,6 +367,27 @@ class CatalogStockIntegrationTests extends IntegrationTestSupport {
         verify(cloudinaryService).deleteImage("second");
         mvc.perform(get(images).with(user(storeStaff)))
                 .andExpect(jsonPath("$.data.length()").value(1));
+    }
+
+    @Test
+    void eachColorAcceptsAtMostThreeImages() throws Exception {
+        UUID productId = createProduct(createBody("Áo",
+                newVariant(randomCode(), "Đỏ", "M", 100000),
+                newVariant(randomCode(), "Xanh", "M", 100000)));
+        String images = PRODUCTS + "/" + productId + "/images";
+        when(cloudinaryService.uploadImage(any()))
+                .thenReturn(uploaded("one"), uploaded("two"), uploaded("three"), uploaded("four"));
+
+        for (int order = 0; order < 3; order++) {
+            uploadImage(images, "Đỏ", order).andExpect(status().isCreated());
+        }
+
+        uploadImage(images, "đỏ", 3)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Mỗi màu chỉ được tối đa 3 ảnh"));
+        verify(cloudinaryService, times(3)).uploadImage(any());
+
+        uploadImage(images, "Xanh", 0).andExpect(status().isCreated());
     }
 
     @Test

@@ -23,8 +23,6 @@
     --bs-body-font-family: var(--ui-font);
     --bs-body-color: var(--ui-text);
     --bs-body-bg: var(--ui-background);
-    --bs-primary: var(--ui-primary);
-    --bs-primary-rgb: 40, 78, 112;
     --bs-secondary-color: var(--ui-text-muted);
     --bs-secondary-rgb: 88, 109, 126;
     --bs-dark-rgb: 36, 55, 70;
@@ -82,6 +80,29 @@ body .form-check-label {
 body .form-text { color: var(--ui-text-muted); }
 body .input-group-text { border-color: var(--ui-control-border); }
 
+body .form-check-input:not(:checked) {
+    background-color: var(--ui-surface);
+    border-color: #64748b;
+}
+
+body .form-control[type="file"] {
+    padding-block: 0.6rem;
+}
+
+body .form-control::file-selector-button {
+    padding-block: 0.6rem;
+    margin-block: -0.6rem;
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+}
+
+body .form-control:hover:not(:disabled):not([readonly])::file-selector-button {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+    color: #fff;
+}
+
 body .form-control:focus,
 body .form-select:focus {
     border-color: var(--ui-primary);
@@ -98,41 +119,9 @@ body .form-select:disabled {
     color: var(--ui-text-muted);
 }
 
-body .form-check-input:checked {
-    background-color: var(--ui-primary);
-    border-color: var(--ui-primary);
-}
-
 body :is(a, button, input, select, textarea):focus-visible {
     outline: 2px solid var(--ui-primary);
     outline-offset: 3px;
-}
-
-body .btn-primary,
-body .btn-dark {
-    --bs-btn-bg: var(--ui-primary);
-    --bs-btn-border-color: var(--ui-primary);
-    --bs-btn-hover-bg: var(--ui-primary-hover);
-    --bs-btn-hover-border-color: var(--ui-primary-hover);
-    --bs-btn-active-bg: #132b40;
-    --bs-btn-active-border-color: #132b40;
-    --bs-btn-disabled-bg: var(--ui-primary);
-    --bs-btn-disabled-border-color: var(--ui-primary);
-    --bs-btn-focus-shadow-rgb: 40, 78, 112;
-    background-color: var(--bs-btn-bg) !important;
-}
-
-body :is(.btn-primary, .btn-dark):hover { background-color: var(--bs-btn-hover-bg) !important; }
-body :is(.btn-primary, .btn-dark):active { background-color: var(--bs-btn-active-bg) !important; }
-
-body .btn-outline-primary {
-    --bs-btn-color: var(--ui-primary);
-    --bs-btn-border-color: var(--ui-primary);
-    --bs-btn-hover-bg: var(--ui-primary);
-    --bs-btn-hover-border-color: var(--ui-primary);
-    --bs-btn-active-bg: var(--ui-primary-hover);
-    --bs-btn-active-border-color: var(--ui-primary-hover);
-    --bs-btn-disabled-color: var(--ui-text-muted);
 }
 
 body .modal-content {

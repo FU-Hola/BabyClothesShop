@@ -43,7 +43,7 @@ const ProductTable = ({products, onEdit}) => {
                         </td>
                         <td>
                             <Button
-                                variant="outline-secondary"
+                                variant="primary"
                                 size="sm"
                                 className="text-nowrap"
                                 onClick={() => onEdit(product.id)}
