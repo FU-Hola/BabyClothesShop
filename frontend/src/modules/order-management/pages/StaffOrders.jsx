@@ -41,6 +41,7 @@ export default function StaffOrders() {
     const [notFound, setNotFound] = useState(false);
     const [reload, setReload] = useState(0);
     const [confirmOrder, setConfirmOrder] = useState(null);
+    const [confirmAction, setConfirmAction] = useState("confirm");
     const [shippingOrder, setShippingOrder] = useState(null);
     const [saving, setSaving] = useState(false);
     const [confirmError, setConfirmError] = useState("");
@@ -105,8 +106,9 @@ export default function StaffOrders() {
         };
     }, [confirmOrder, saving]);
 
-    function openConfirm(item) {
+    function openConfirm(item, action = "confirm") {
         setConfirmError("");
+        setConfirmAction(action);
         setConfirmOrder(item);
     }
 
@@ -115,8 +117,13 @@ export default function StaffOrders() {
         setSaving(true);
         setConfirmError("");
         try {
-            const updated = await orderApi.confirmOrder(confirmOrder.id);
-            setNotice(`Đã xác nhận đơn ${updated.orderCode}.`);
+            if (confirmAction === "deliver") {
+                const updated = await orderApi.deliverOrder(confirmOrder.id);
+                setNotice(`Đã xác nhận giao thành công đơn ${updated.orderCode}.`);
+            } else {
+                const updated = await orderApi.confirmOrder(confirmOrder.id);
+                setNotice(`Đã xác nhận đơn ${updated.orderCode}.`);
+            }
             setConfirmOrder(null);
             setReload((value) => value + 1);
         } catch (err) {
@@ -152,6 +159,13 @@ export default function StaffOrders() {
         return <button className={styles.actionButton} onClick={() => openConfirm(item)}
             disabled={item.paymentStatus !== "PAID"}>
             Xác nhận đơn
+        </button>;
+    }
+
+    function deliverButton(item) {
+        if (item.status !== "SHIPPING") return null;
+        return <button className={styles.actionButton} onClick={() => openConfirm(item, "deliver")}>
+            Xác nhận đã giao
         </button>;
     }
 
@@ -203,6 +217,7 @@ export default function StaffOrders() {
                                     <Link className={styles.viewLink} to={`/store-staff/orders/${item.id}`}>Chi tiết</Link>
                                     {confirmButton(item)}
                                     {shipButton(item)}
+                                    {deliverButton(item)}
                                 </div></td>
                             </tr>)}</tbody>
                         </table></div>
@@ -260,6 +275,7 @@ export default function StaffOrders() {
                             {order.deliveredAt && <p>Đã giao: {formatDate(order.deliveredAt)}</p>}
                             {confirmButton(order)}
                             {shipButton(order)}
+                            {deliverButton(order)}
                             {order.status === "CONFIRMED" && <p>Chờ nhân viên kho đóng gói.</p>}
                         </section>
                         <section className={styles.panel}>
@@ -283,8 +299,10 @@ export default function StaffOrders() {
                 <div className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby="confirm-title"
                     aria-describedby="confirm-description" aria-busy={saving}>
                     <span className={styles.dialogIcon}><ClipboardList size={22} /></span>
-                    <h2 id="confirm-title">Xác nhận đơn hàng?</h2>
-                    <p id="confirm-description">Đơn <strong>{confirmOrder.orderCode}</strong> sẽ chuyển sang Đã xác nhận.</p>
+                    <h2 id="confirm-title">{confirmAction === "deliver" ? "Xác nhận giao thành công?" : "Xác nhận đơn hàng?"}</h2>
+                    <p id="confirm-description">Đơn <strong>{confirmOrder.orderCode}</strong> sẽ chuyển sang
+                        {confirmAction === "deliver" ? " Đã giao. Chỉ xác nhận sau khi đơn vị vận chuyển báo giao hàng thành công."
+                            : " Đã xác nhận."}</p>
                     {confirmError && <p className={styles.errorText} role="alert">{confirmError}</p>}
                     <div className={styles.dialogActions}>
                         <button ref={cancelButton} disabled={saving} onClick={() => setConfirmOrder(null)}>Quay lại</button>

@@ -23,6 +23,10 @@ const orderApi = {
         const response = await client.patch(`/store-staff/orders/${id}/ship`, data);
         return response.data.data;
     },
+    async deliverOrder(id) {
+        const response = await client.patch(`/store-staff/orders/${id}/deliver`);
+        return response.data.data;
+    },
 };
 
 export default orderApi;
