@@ -9,11 +9,12 @@ import RegisterPage from "../../modules/auth/pages/RegisterPage/RegisterPage.jsx
 import LoginPage from "../../modules/auth/pages/LoginPage/LoginPage.jsx";
 import cartCheckoutRoutes from "../../modules/cart-checkout/routes/cartCheckoutRoutes.jsx";
 import CartDemoProducts from "../../modules/cart-checkout/components/CartDemoProducts.jsx";
+import ExceptionPage from "../pages/ExceptionPage/ExceptionPage.jsx";
 
 const publicRoutes = [
     {
         element: <PublicLayout />,
-        errorElement: <div>404</div>,
+        errorElement: <ExceptionPage statusCode={404} />,
         children: [
             { path: "/", element: <Home /> },
             { path: "/register", element: <RegisterPage /> },

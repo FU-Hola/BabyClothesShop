@@ -2,25 +2,20 @@ import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import AdminSidebar from './components/AdminSidebar/AdminSidebar';
 import AdminTopbar from './components/AdminTopbar/AdminTopbar';
+import useAuth from '../../../modules/auth/hooks/useAuth';
 import styles from './AdminLayout.module.css';
-
-const getStoredUser = () => {
-    try {
-        return JSON.parse(localStorage.getItem('user'));
-    } catch {
-        return null;
-    }
-};
 
 const AdminLayout = () => {
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const user = getStoredUser();
+    const { user, logout } = useAuth();
 
-    const handleLogout = () => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('user');
-        navigate('/login');
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } finally {
+            navigate('/login', { replace: true });
+        }
     };
 
     return (
@@ -28,7 +23,7 @@ const AdminLayout = () => {
             <AdminSidebar
                 show={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
-                onLogout={handleLogout}
+                onLogout={() => void handleLogout()}
             />
 
             <div className={styles.mainArea}>

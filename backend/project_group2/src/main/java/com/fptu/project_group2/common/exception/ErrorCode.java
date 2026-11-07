@@ -17,6 +17,10 @@ public enum ErrorCode {
     VALIDATION_FAILED(1005, HttpStatus.BAD_REQUEST, "Dữ liệu đầu vào không hợp lệ"),
     RESOURCE_NOT_FOUND(1006, HttpStatus.NOT_FOUND, "Không tìm thấy tài nguyên yêu cầu"),
     BAD_REQUEST(1007, HttpStatus.BAD_REQUEST, "Yêu cầu không hợp lệ"),
+    EMAIL_ALREADY_EXISTS(1008, HttpStatus.CONFLICT, "Email đã được sử dụng"),
+    EMPLOYEE_CODE_ALREADY_EXISTS(1009, HttpStatus.CONFLICT, "Mã nhân viên đã được sử dụng"),
+    ACCOUNT_STATE_CONFLICT(1010, HttpStatus.CONFLICT, "Trạng thái tài khoản không cho phép thao tác này"),
+    ACCOUNT_DATA_CONFLICT(1011, HttpStatus.CONFLICT, "Email hoặc mã nhân viên đã được sử dụng"),
 
     // ─── 2000 - 2999: Tin đăng & Mua bán (Market Posts) ─────────────────────────
     POST_NOT_FOUND(2001, HttpStatus.NOT_FOUND, "Không tìm thấy bài đăng yêu cầu"),

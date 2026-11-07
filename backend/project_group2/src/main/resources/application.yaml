@@ -54,11 +54,22 @@ spring:
     multipart:
       max-file-size: ${UPLOAD_MAX_FILE_SIZE:5MB}
       max-request-size: ${UPLOAD_MAX_REQUEST_SIZE:10MB}
-  security:
-    user:
-      name: ${BOOTSTRAP_ADMIN_USERNAME}
-      password: ${BOOTSTRAP_ADMIN_PASSWORD}
-      roles: ADMIN
+
+app:
+  auth-cookie:
+    # false cho HTTP localhost; dùng true khi triển khai HTTPS.
+    secure: ${AUTH_COOKIE_SECURE:false}
+  jwt:
+    # Đọc khóa từ môi trường hoặc .env; không đặt khóa thật trong file được commit.
+    secret-base64: ${JWT_SECRET_BASE64}
+    # TTL là thời gian tồn tại tính bằng giây: 15 phút và 7 ngày.
+    access-ttl-seconds: ${JWT_ACCESS_TTL_SECONDS:900}
+    refresh-ttl-seconds: ${JWT_REFRESH_TTL_SECONDS:604800}
+    # Phải trùng giữa lúc cấp và xác minh JWT.
+    issuer: ${JWT_ISSUER:baby-clothes-shop-api}
+    audience: ${JWT_AUDIENCE:baby-clothes-shop}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
 
 server:
   port: ${SERVER_PORT:8080}
@@ -69,13 +80,6 @@ server:
     include-binding-errors: never
     include-stacktrace: never
     include-exception: false
-  servlet:
-    session:
-      timeout: 30m
-      cookie:
-        http-only: true
-        same-site: lax
-        secure: ${SESSION_COOKIE_SECURE:true}
   tomcat:
     connection-timeout: 20s
     max-http-form-post-size: 2MB
