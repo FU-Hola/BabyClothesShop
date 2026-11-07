@@ -93,6 +93,7 @@
 .searchForm { display:flex; align-items:stretch; gap:8px; }
 .pagination { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:16px; padding:20px; }
 .pagination button { min-height:44px; padding:8px 14px; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--ink); cursor:pointer; }
+.errorText { color:#a12626 !important; }
 .page button:disabled { opacity:.55; cursor:not-allowed; }
 .page button:focus-visible,.page a:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
 .searchForm .searchBox { min-width:0; flex:1; }

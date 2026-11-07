@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { ArrowLeft, Check, MapPin, Package, Search, Truck, Wallet } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, Check, ClipboardList, MapPin, Package, Search, Truck, Wallet } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import orderApi from "../api/orderApi";
 import styles from "./StaffOrders.module.css";
@@ -39,7 +39,11 @@ export default function StaffOrders() {
     const [error, setError] = useState("");
     const [notFound, setNotFound] = useState(false);
     const [reload, setReload] = useState(0);
-
+    const [confirmOrder, setConfirmOrder] = useState(null);
+    const [saving, setSaving] = useState(false);
+    const [confirmError, setConfirmError] = useState("");
+    const [notice, setNotice] = useState("");
+    const cancelButton = useRef(null);
 
     useEffect(() => {
         let active = true;
@@ -76,11 +80,64 @@ export default function StaffOrders() {
         return () => { active = false; };
     }, [orderId, page, search, status, reload]);
 
+    useEffect(() => {
+        if (!confirmOrder) return;
+        const previousFocus = document.activeElement;
+        cancelButton.current?.focus();
+        function onKeyDown(event) {
+            if (event.key === "Escape" && !saving) setConfirmOrder(null);
+            if (event.key === "Tab") {
+                const buttons = cancelButton.current?.parentElement?.querySelectorAll("button:not(:disabled)");
+                if (!buttons?.length) { event.preventDefault(); return; }
+                if (event.shiftKey && document.activeElement === buttons[0]) {
+                    event.preventDefault(); buttons[buttons.length - 1].focus();
+                } else if (!event.shiftKey && document.activeElement === buttons[buttons.length - 1]) {
+                    event.preventDefault(); buttons[0].focus();
+                }
+            }
+        }
+        document.addEventListener("keydown", onKeyDown);
+        return () => {
+            document.removeEventListener("keydown", onKeyDown);
+            previousFocus?.focus();
+        };
+    }, [confirmOrder, saving]);
+
+    function openConfirm(item) {
+        setConfirmError("");
+        setConfirmOrder(item);
+    }
+
+    async function handleConfirm() {
+        if (!confirmOrder || saving) return;
+        setSaving(true);
+        setConfirmError("");
+        try {
+            const updated = await orderApi.confirmOrder(confirmOrder.id);
+            setNotice(`Đã xác nhận đơn ${updated.orderCode}.`);
+            setConfirmOrder(null);
+            setReload((value) => value + 1);
+        } catch (err) {
+            setConfirmError(errorMessage(err));
+        } finally {
+            setSaving(false);
+        }
+    }
+
     function handleSearch(event) {
         event.preventDefault();
         setPage(1);
         setSearch(searchInput.trim());
         setReload((value) => value + 1);
+    }
+
+    // Only UC13 is connected here; packing belongs to Warehouse Staff.
+    function confirmButton(item) {
+        if (item.status !== "PENDING_CONFIRMATION") return null;
+        return <button className={styles.actionButton} onClick={() => openConfirm(item)}
+            disabled={item.paymentStatus !== "PAID"}>
+            Xác nhận đơn
+        </button>;
     }
 
     return (
@@ -129,6 +186,7 @@ export default function StaffOrders() {
                                 <td><StatusBadge status={item.status} /></td>
                                 <td><div className={styles.rowActions}>
                                     <Link className={styles.viewLink} to={`/store-staff/orders/${item.id}`}>Chi tiết</Link>
+                                    {confirmButton(item)}
                                 </div></td>
                             </tr>)}</tbody>
                         </table></div>
@@ -184,6 +242,7 @@ export default function StaffOrders() {
                                 </li>)}</ol>
                             {order.confirmedAt && <p>Đã xác nhận: {formatDate(order.confirmedAt)}</p>}
                             {order.deliveredAt && <p>Đã giao: {formatDate(order.deliveredAt)}</p>}
+                            {confirmButton(order)}
                             {order.status === "CONFIRMED" && <p>Chờ nhân viên kho đóng gói.</p>}
                         </section>
                         <section className={styles.panel}>
@@ -197,7 +256,25 @@ export default function StaffOrders() {
                 </div>
             </>}
 
-
+            {notice && <div className={styles.toast} role="status">{notice}
+                <button onClick={() => setNotice("")} aria-label="Đóng thông báo">×</button></div>}
+            {confirmOrder && <div className={styles.overlay} onClick={(e) => {
+                if (e.target === e.currentTarget && !saving) setConfirmOrder(null);
+            }}>
+                <div className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby="confirm-title"
+                    aria-describedby="confirm-description" aria-busy={saving}>
+                    <span className={styles.dialogIcon}><ClipboardList size={22} /></span>
+                    <h2 id="confirm-title">Xác nhận đơn hàng?</h2>
+                    <p id="confirm-description">Đơn <strong>{confirmOrder.orderCode}</strong> sẽ chuyển sang Đã xác nhận.</p>
+                    {confirmError && <p className={styles.errorText} role="alert">{confirmError}</p>}
+                    <div className={styles.dialogActions}>
+                        <button ref={cancelButton} disabled={saving} onClick={() => setConfirmOrder(null)}>Quay lại</button>
+                        <button className={styles.primaryButton} disabled={saving} onClick={handleConfirm}>
+                            {saving ? "Đang xác nhận..." : "Xác nhận"}
+                        </button>
+                    </div>
+                </div>
+            </div>}
         </div>
     );
 }

@@ -15,7 +15,10 @@ const orderApi = {
         const response = await client.get(`/store-staff/orders/${id}`);
         return response.data.data;
     },
-
+    async confirmOrder(id) {
+        const response = await client.patch(`/store-staff/orders/${id}/confirm`);
+        return response.data.data;
+    },
 };
 
 export default orderApi;
