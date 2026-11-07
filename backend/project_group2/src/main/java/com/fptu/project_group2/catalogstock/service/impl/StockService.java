@@ -7,7 +7,6 @@ import com.fptu.project_group2.catalogstock.dto.response.StockSummaryResponse;
 import com.fptu.project_group2.catalogstock.entity.Category;
 import com.fptu.project_group2.catalogstock.entity.Product;
 import com.fptu.project_group2.catalogstock.entity.ProductVariant;
-import com.fptu.project_group2.catalogstock.repository.ProductVariantRepository;
 import com.fptu.project_group2.catalogstock.repository.StockRepository;
 import com.fptu.project_group2.catalogstock.service.IStock;
 import com.fptu.project_group2.warehouse.entity.Inventory;
@@ -18,18 +17,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class StockService implements IStock {
 
     private final StockRepository stockRepository;
-    private final ProductVariantRepository productVariantRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -57,13 +51,7 @@ public class StockService implements IStock {
         Page<Inventory> inventories = stockRepository.searchStock(keyword, request.getCategoryId(), variantSize,
                 inStock, pageable);
 
-        List<UUID> variantIds = inventories.getContent().stream().map(Inventory::getVariantId).toList();
-
-        Map<UUID, ProductVariant> variants = productVariantRepository.findAllById(variantIds)
-                .stream()
-                .collect(Collectors.toMap(ProductVariant::getId, variant -> variant));
-
-        return inventories.map(inventory -> toStockResponse(inventory, variants.get(inventory.getVariantId())));
+        return inventories.map(this::toStockResponse);
     }
 
     @Override
@@ -76,10 +64,8 @@ public class StockService implements IStock {
                 .build();
     }
 
-    private StockResponse toStockResponse(
-            Inventory inventory,
-            ProductVariant variant
-    ) {
+    private StockResponse toStockResponse(Inventory inventory) {
+        ProductVariant variant = inventory.getVariant();
         Product product = variant.getProduct();
         Category category = product.getCategory();
 

@@ -16,6 +16,6 @@ public interface IProduct {
 
     ProductDetailResponse getProductDetail(UUID productId);
 
-    void updateProduct(UUID productId, UpdateProductRequest request, UUID userId);
+    void updateProduct(UUID productId, UpdateProductRequest request);
 
 }

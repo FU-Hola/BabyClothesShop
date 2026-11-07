@@ -29,14 +29,7 @@ public class StockController {
             @ModelAttribute StockSearchRequest request
     ) {
         Page<StockResponse> stocks = stockService.searchStock(request);
-
-        PageResponse<StockResponse> response = PageResponse.of(stocks);
-        response.setPage(stocks.getNumber() + 1);
-
-        return ResponseBuilder.ok(
-                response,
-                "Lấy danh sách tồn kho thành công"
-        );
+        return ResponseBuilder.ok(PageResponse.oneBased(stocks), "Lấy danh sách tồn kho thành công");
     }
 
     @GetMapping("/summary")

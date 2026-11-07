@@ -22,6 +22,7 @@ function ProductEditor({ productId, onSaved }) {
     const [categories, setCategories] = useState([]);
     const [loadError, setLoadError] = useState("");
     const [submitError, setSubmitError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState({});
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -65,16 +66,17 @@ function ProductEditor({ productId, onSaved }) {
         event.preventDefault();
         setSaving(true);
         setSubmitError("");
+        setFieldErrors({});
         try {
             const payload = {
                 name: product.name.trim(),
                 description: (product.description ?? "").trim(),
-                categoryId: product.categoryId,
+                categoryId: product.categoryId || null,
                 variants: product.variants.map((variant) => ({
                     sku: variant.sku.trim(),
                     color: variant.color.trim(),
                     size: variant.size.trim(),
-                    price: Number(variant.price),
+                    price: variant.price === "" ? null : Number(variant.price),
                     originalPrice: variant.originalPrice === "" ? null : Number(variant.originalPrice),
                     ...(productId ? { id: variant.id, active: variant.active } : {}),
                 })),
@@ -92,10 +94,19 @@ function ProductEditor({ productId, onSaved }) {
                 });
             }
         } catch (failure) {
-            setSubmitError(catalogError(failure));
+            const responseErrors = failure.response?.data?.errors;
+            const errors = typeof responseErrors === "object" && responseErrors !== null ? responseErrors : {};
+            setFieldErrors(errors);
+            setSubmitError(Object.keys(errors).length > 0
+                ? "Vui lòng kiểm tra lại các ô được đánh dấu đỏ."
+                : catalogError(failure));
         } finally {
             setSaving(false);
         }
+    }
+
+    function errorText(field) {
+        return <Form.Control.Feedback type="invalid">{fieldErrors[field]}</Form.Control.Feedback>;
     }
 
     if (loadError) return <Alert variant="danger">{loadError}</Alert>;
@@ -103,24 +114,29 @@ function ProductEditor({ productId, onSaved }) {
 
     return (
         <>
-            <Form onSubmit={submit} className="bg-white rounded-4 shadow-sm p-4">
+            <Form noValidate onSubmit={submit} className="bg-white rounded-4 shadow-sm p-4">
                 {submitError && <Alert variant="danger">{submitError}</Alert>}
                 <fieldset disabled={saving}>
                     <Form.Group controlId="productName" className="mb-3">
                         <Form.Label>Tên sản phẩm</Form.Label>
                         <Form.Control value={product.name} required maxLength={255}
+                                      isInvalid={Boolean(fieldErrors.name)}
                                       onChange={(event) => setField("name", event.target.value)} />
+                        {errorText("name")}
                     </Form.Group>
                     <Form.Group controlId="productDescription" className="mb-3">
                         <Form.Label>Mô tả sản phẩm</Form.Label>
-                        <Form.Control as="textarea" rows={3} value={product.description} required
+                        <Form.Control as="textarea" rows={3} value={product.description} required maxLength={1000}
+                                      isInvalid={Boolean(fieldErrors.description)}
                                       onChange={(event) => setField("description", event.target.value)} />
+                        {errorText("description")}
                     </Form.Group>
                     <Row className="g-3 mb-4">
                         <Col md={6}>
                             <Form.Group controlId="productCategory">
                                 <Form.Label>Danh mục</Form.Label>
                                 <Form.Select required value={product.categoryId}
+                                             isInvalid={Boolean(fieldErrors.categoryId)}
                                              onChange={(event) => setField("categoryId", event.target.value)}>
                                     <option value="">Chọn danh mục</option>
                                     {product.categoryId && !categories.some((category) => category.id === product.categoryId) && (
@@ -130,6 +146,7 @@ function ProductEditor({ productId, onSaved }) {
                                         <option key={category.id} value={category.id}>{category.name}</option>
                                     ))}
                                 </Form.Select>
+                                {errorText("categoryId")}
                             </Form.Group>
                         </Col>
                         {productId && (
@@ -160,22 +177,28 @@ function ProductEditor({ productId, onSaved }) {
                                             <Form.Label>{label}</Form.Label>
                                             <Form.Control value={variant[field]} maxLength={maxLength} required
                                                           readOnly={field === "sku" && Boolean(variant.id)}
+                                                          isInvalid={Boolean(fieldErrors[`variants[${index}].${field}`])}
                                                           onChange={(event) => setVariantField(variant.key, field, event.target.value)} />
+                                            {errorText(`variants[${index}].${field}`)}
                                         </Form.Group>
                                     </Col>
                                 ))}
                                 <Col md={4}>
                                     <Form.Group controlId={`price-${variant.key}`}>
                                         <Form.Label>Giá bán (VND)</Form.Label>
-                                        <Form.Control type="number" min="0.01" step="any" required value={variant.price}
+                                        <Form.Control type="number" min="1" step="1" required value={variant.price}
+                                                      isInvalid={Boolean(fieldErrors[`variants[${index}].price`])}
                                                       onChange={(event) => setVariantField(variant.key, "price", event.target.value)} />
+                                        {errorText(`variants[${index}].price`)}
                                     </Form.Group>
                                 </Col>
                                 <Col md={4}>
                                     <Form.Group controlId={`originalPrice-${variant.key}`}>
                                         <Form.Label>Giá trước giảm (VND)</Form.Label>
-                                        <Form.Control type="number" min="0" step="any" value={variant.originalPrice}
+                                        <Form.Control type="number" min="0" step="1" value={variant.originalPrice}
+                                                      isInvalid={Boolean(fieldErrors[`variants[${index}].originalPrice`])}
                                                       onChange={(event) => setVariantField(variant.key, "originalPrice", event.target.value)} />
+                                        {errorText(`variants[${index}].originalPrice`)}
                                     </Form.Group>
                                 </Col>
                                 <Col md={4} className="d-flex align-items-end gap-2">

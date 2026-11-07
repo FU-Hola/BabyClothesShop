@@ -1,10 +1,7 @@
 package com.fptu.project_group2.catalogstock.controller;
 
-import org.springframework.security.access.prepost.PreAuthorize;
-import com.fptu.project_group2.authaccount.security.AuthenticatedUser;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import com.fptu.project_group2.catalogstock.dto.request.UploadProductImageRequest;
 import com.fptu.project_group2.catalogstock.dto.request.UpdateImageSortOrderRequest;
+import com.fptu.project_group2.catalogstock.dto.request.UploadProductImageRequest;
 import com.fptu.project_group2.catalogstock.dto.response.ProductImageResponse;
 import com.fptu.project_group2.catalogstock.service.IProductImage;
 import com.fptu.project_group2.common.http.ApiResponse;
@@ -13,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -38,31 +36,27 @@ public class ProductImageController {
     public ResponseEntity<ApiResponse<ProductImageResponse>> updateSortOrder(
             @PathVariable("productId") UUID productId,
             @PathVariable("imageId") UUID imageId,
-            @Valid @RequestBody UpdateImageSortOrderRequest request,
-            @AuthenticationPrincipal AuthenticatedUser principal
+            @Valid @RequestBody UpdateImageSortOrderRequest request
     ) {
-        ProductImageResponse response = productImageService.updateSortOrder(
-                productId, imageId, request.sortOrder(), principal.id());
+        ProductImageResponse response = productImageService.updateSortOrder(productId, imageId, request.sortOrder());
         return ResponseBuilder.ok(response, "Cập nhật thứ tự ảnh thành công");
     }
 
     @DeleteMapping("/{imageId}")
     public ResponseEntity<ApiResponse<Void>> deleteImage(
             @PathVariable("productId") UUID productId,
-            @PathVariable("imageId") UUID imageId,
-            @AuthenticationPrincipal AuthenticatedUser principal
+            @PathVariable("imageId") UUID imageId
     ) {
-        productImageService.deleteImage(productId, imageId, principal.id());
+        productImageService.deleteImage(productId, imageId);
         return ResponseBuilder.ok(null, "Xóa ảnh sản phẩm thành công");
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ProductImageResponse>> uploadImage(
             @PathVariable("productId") UUID productId,
-            @Valid @ModelAttribute UploadProductImageRequest request,
-            @AuthenticationPrincipal AuthenticatedUser principal
+            @Valid @ModelAttribute UploadProductImageRequest request
     ) {
-        ProductImageResponse response = productImageService.uploadImage(productId, request, principal.id());
+        ProductImageResponse response = productImageService.uploadImage(productId, request);
         return ResponseBuilder.created(response, "Upload ảnh sản phẩm thành công");
     }
 

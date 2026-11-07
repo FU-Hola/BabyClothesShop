@@ -3,7 +3,10 @@ import {Alert, Container, Form, Button, Row, Col, Card} from "react-bootstrap";
 import {Boxes, RotateCcw, Search} from "lucide-react";
 import {catalogError, getCategories, getStocks, getStockSummary} from "../api/catalog-stock.api.js";
 import StockTable from "../components/StockTable.jsx";
-import {useEffect, useState} from "react";
+import {useState} from "react";
+import {keepPreviousData, useQuery} from "@tanstack/react-query";
+
+const PAGE_SIZE = 4;
 
 const StockOverview = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -11,48 +14,29 @@ const StockOverview = () => {
     const [selectedSize, setSelectedSize] = useState("");
     const [selectedStatus, setSelectedStatus] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const [categories, setCategories] = useState([]);
-    const [categoryError, setCategoryError] = useState("");
-    const [totalQuantity, setTotalQuantity] = useState(null);
-    const [summaryError, setSummaryError] = useState("");
-    const [result, setResult] = useState(null);
-    const keyword = searchTerm.trim();
-    const requestKey = JSON.stringify([keyword, selectedCategory, selectedSize, selectedStatus, currentPage]);
 
-    useEffect(() => {
-        let cancelled = false;
-        getCategories()
-            .then((data) => { if (!cancelled) setCategories(data); })
-            .catch((error) => { if (!cancelled) setCategoryError(catalogError(error)); });
-        getStockSummary()
-            .then((data) => { if (!cancelled) setTotalQuantity(data.totalQuantity); })
-            .catch((error) => { if (!cancelled) setSummaryError(catalogError(error)); });
-        return () => { cancelled = true; };
-    }, []);
+    const params = {
+        page: currentPage,
+        size: PAGE_SIZE,
+        keyword: searchTerm.trim() || undefined,
+        categoryId: selectedCategory || undefined,
+        variantSize: selectedSize.trim() || undefined,
+        status: selectedStatus || undefined
+    };
 
-    useEffect(() => {
-        const controller = new AbortController();
-        const params = {
-            keyword: keyword || undefined,
-            categoryId: selectedCategory || undefined,
-            variantSize: selectedSize.trim() || undefined,
-            status: selectedStatus || undefined,
-            page: currentPage,
-            size: 4
-        };
-        getStocks(params, controller.signal)
-            .then((data) => {
-                if (!controller.signal.aborted) setResult({key: requestKey, data});
-            })
-            .catch((error) => {
-                if (!controller.signal.aborted) setResult({key: requestKey, error: catalogError(error)});
-            });
-        return () => controller.abort();
-    }, [keyword, selectedCategory, selectedSize, selectedStatus, currentPage, requestKey]);
+    const stocksQuery = useQuery({
+        queryKey: ["stocks", params],
+        queryFn: () => getStocks(params),
+        staleTime: 0,
+        placeholderData: keepPreviousData
+    });
+    const summaryQuery = useQuery({queryKey: ["stock-summary"], queryFn: getStockSummary, staleTime: 0});
+    const categoriesQuery = useQuery({queryKey: ["categories"], queryFn: getCategories});
 
-    const currentResult = result?.key === requestKey ? result : null;
-    const stockPage = currentResult?.data;
+    const stockPage = stocksQuery.data;
     const totalPages = stockPage?.totalPages ?? 0;
+    const categories = categoriesQuery.data ?? [];
+    const totalQuantity = summaryQuery.data?.totalQuantity;
 
     const handleReset = () => {
         setSearchTerm("");
@@ -77,13 +61,13 @@ const StockOverview = () => {
                     <div>
                         <p className="text-muted small mb-1 fw-medium">Tổng tồn kho</p>
                         <p className="h3 fw-bold text-dark mb-0">
-                            {totalQuantity === null ? "—" : `${totalQuantity} sp`}
+                            {totalQuantity == null ? "—" : `${totalQuantity} sp`}
                         </p>
                     </div>
                 </Card.Body>
             </Card>
-            {summaryError && <Alert variant="warning">Không tải được tổng tồn kho. {summaryError}</Alert>}
-            {categoryError && <Alert variant="warning">Không tải được danh mục. {categoryError}</Alert>}
+            {summaryQuery.isError && <Alert variant="warning">Không tải được tổng tồn kho. {catalogError(summaryQuery.error)}</Alert>}
+            {categoriesQuery.isError && <Alert variant="warning">Không tải được danh mục. {catalogError(categoriesQuery.error)}</Alert>}
             <div className="bg-white rounded-4 p-3 mb-4 shadow-sm">
                 <Row className="g-3 align-items-center">
                     <Col xs={4}>
@@ -169,10 +153,11 @@ const StockOverview = () => {
                     </Col>
                 </Row>
             </div>
-            <div className="bg-white rounded-4 overflow-hidden shadow-sm p-1 mb-3">
+            <div className="bg-white rounded-4 overflow-hidden shadow-sm p-1 mb-3"
+                 style={{opacity: stocksQuery.isPlaceholderData ? 0.6 : 1}}>
                 {stockPage && <StockTable stockItems={stockPage.items}/>}
-                {!currentResult && <p className="text-center py-4 mb-0" role="status">Đang tải tồn kho…</p>}
-                {currentResult?.error && <Alert variant="danger" className="mb-0">{currentResult.error}</Alert>}
+                {stocksQuery.isPending && <p className="text-center py-4 mb-0" role="status">Đang tải tồn kho…</p>}
+                {stocksQuery.isError && <Alert variant="danger" className="mb-0">{catalogError(stocksQuery.error)}</Alert>}
             </div>
             <div className="d-flex justify-content-between align-items-center gap-3 flex-wrap px-2 mb-4">
                 <div className="text-muted small">
