@@ -25,7 +25,7 @@ const storeStaffRoutes = [
     },
     {
         path: "/warehouse-operations",
-        element: <Navigate to="/store-staff/goods-receipts" replace />
+        element: <Navigate to="/warehouse-staff/goods-receipts" replace />
     }
 ];
 

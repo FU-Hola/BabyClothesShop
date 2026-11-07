@@ -1,0 +1,7 @@
+*
+!dist/
+!dist/**
+!docker/
+!docker/nginx.conf
+!mock/
+!mock/**
