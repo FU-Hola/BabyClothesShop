@@ -47,7 +47,7 @@ public class CheckoutServiceImpl implements ICheckoutService {
     @Override
     @Transactional(readOnly = true)
     public CheckoutValidationResponse validateCheckout(UUID customerId, CheckoutRequest request) {
-        User customer = cartService.getOrCreateCustomer(customerId);
+        User customer = cartService.requireCustomer(customerId);
         Cart cart = cartRepository.findByCustomerId(customer.getId())
                 .orElseThrow(() -> new BadRequestException("Giỏ hàng của bạn đang trống"));
 
@@ -106,7 +106,7 @@ public class CheckoutServiceImpl implements ICheckoutService {
     @Override
     @Transactional
     public OrderResultResponse simulatePayment(UUID customerId, SimulatePaymentRequest request) {
-        User customer = cartService.getOrCreateCustomer(customerId);
+        User customer = cartService.requireCustomer(customerId);
 
         // Trường hợp 1: Khách hàng chọn "Thanh toán thất bại"
         if (!Boolean.TRUE.equals(request.getIsSuccess())) {

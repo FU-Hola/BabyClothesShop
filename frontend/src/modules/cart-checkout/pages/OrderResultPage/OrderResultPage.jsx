@@ -1,4 +1,4 @@
-import React from "react";
+import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from "react-router-dom";
 import {
   CheckCircle2,
@@ -6,11 +6,11 @@ import {
   AlertTriangle,
   ShoppingBag,
   RotateCcw,
-  ArrowRight,
   Home,
-  FileCheck,
 } from "lucide-react";
-import { useCart } from "../../context/CartContext";
+import useAuth from '../../../auth/hooks/useAuth.js';
+import { getMyOrder } from '../../../../app/pages/Orders/customerOrderApi.js';
+import { useCart } from "../../hooks/useCart.js";
 import Stepper from "../../components/Stepper/Stepper";
 import styles from "./OrderResultPage.module.css";
 
@@ -20,10 +20,41 @@ const formatCurrency = (amount) => {
 
 const OrderResultPage = () => {
   const [searchParams] = useSearchParams();
-  const status = searchParams.get("status") || "success";
-  const method = searchParams.get("method") || "cash";
+  const status = searchParams.get('status');
+  const orderId = searchParams.get('order');
+  const { user } = useAuth();
+  const { lastOrder: checkoutSession } = useCart();
+  const result = useQuery({
+    queryKey: ['checkout-result', user.id, orderId],
+    queryFn: () => getMyOrder(orderId),
+    enabled: status === 'success' && Boolean(orderId),
+    staleTime: 0,
+    retry: false,
+  });
+  const order = result.data;
+  const lastOrder = order ? {
+    orderCode: order.orderCode,
+    createdAt: new Date(order.createdAt).toLocaleString('vi-VN'),
+    orderStatus: {
+      PENDING_CONFIRMATION: 'Chờ xác nhận',
+      CONFIRMED: 'Đã xác nhận',
+      PACKED: 'Đã đóng gói',
+      SHIPPING: 'Đang giao',
+      DELIVERED: 'Đã giao',
+    }[order.status] || order.status,
+    customer: { fullName: order.receiverName, phone: order.receiverPhone, address: order.receiverAddress, note: order.customerNote },
+    items: order.items.map(item => ({ id: item.id, name: item.productNameSnapshot, size: item.sizeSnapshot, image: item.imageUrlSnapshot || '/images/products/sample-baby-romper.png', quantity: item.quantity, price: Number(item.unitPrice) })),
+    subTotal: order.items.reduce((sum, item) => sum + Number(item.unitPrice) * item.quantity, 0),
+    shippingFee: Number(order.shippingFee),
+    finalTotal: Number(order.totalAmount),
+  } : checkoutSession;
 
-  const { lastOrder } = useCart();
+  if (status === 'success' && orderId && result.isPending) {
+    return <div className={styles.resultPage}><p role="status">Đang xác nhận đơn hàng...</p></div>;
+  }
+  if ((status === 'success' && (!orderId || result.isError || !order?.id)) || !['success', 'failed', 'out_of_stock'].includes(status)) {
+    return <div className={styles.resultPage}><h1>Chưa xác nhận được đơn hàng</h1><p>{result.error?.response?.data?.message || 'Vui lòng kiểm tra đơn hàng của bạn.'}</p><Link to="/don-hang">Xem đơn hàng của tôi</Link></div>;
+  }
 
   // ----------------------------------------------------
   // BIẾN THỂ 2: THANH TOÁN THẤT BẠI (Mô phỏng QR thất bại)
@@ -128,7 +159,7 @@ const OrderResultPage = () => {
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>Mã đơn hàng:</span>
             <span className={styles.metaValue} style={{ fontSize: "16px" }}>
-              #{lastOrder?.orderCode || "BCS-849204"}
+              #{lastOrder.orderCode}
             </span>
           </div>
 
@@ -151,7 +182,7 @@ const OrderResultPage = () => {
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>Trạng thái thanh toán:</span>
             <div>
-              {method === "qr" ? (
+              {order.paymentStatus === 'PAID' ? (
                 <span className={styles.badgePaid}>Đã thanh toán (Theo mô phỏng)</span>
               ) : (
                 <span className={styles.badgeUnpaid}>Thanh toán khi nhận hàng (Chưa thanh toán)</span>
@@ -161,7 +192,7 @@ const OrderResultPage = () => {
         </div>
 
         {/* LƯU Ý DÀNH CHO KHÁCH CHỌN TIỀN MẶT */}
-        {method === "cash" && (
+        {order.paymentStatus !== 'PAID' && (
           <div className={styles.cashReminderBox}>
             <strong>Lưu ý giao nhận tiền mặt (COD):</strong>
             <p className="mb-0 mt-1">
@@ -177,19 +208,19 @@ const OrderResultPage = () => {
           <li className={styles.infoItem}>
             <span className={styles.infoLabel}>Người nhận:</span>
             <span className={styles.infoValue}>
-              {lastOrder?.customer?.fullName || "Nguyễn Văn A"} - {lastOrder?.customer?.phone || "0912345678"}
+              {lastOrder.customer.fullName} - {lastOrder.customer.phone}
             </span>
           </li>
           <li className={styles.infoItem}>
             <span className={styles.infoLabel}>Địa chỉ giao:</span>
             <span className={styles.infoValue}>
-              {lastOrder?.customer?.address || "Hà Nội"}
+              {lastOrder.customer.address}
             </span>
           </li>
           <li className={styles.infoItem}>
             <span className={styles.infoLabel}>Phương thức:</span>
             <span className={styles.infoValue}>
-              {method === "qr" ? "Quét mã QR chuyển khoản ngân hàng" : "Thanh toán tiền mặt khi nhận hàng (COD)"}
+              {order.paymentMethod === 'SIMULATED' ? 'Thanh toán mô phỏng' : order.paymentMethod}
             </span>
           </li>
           {lastOrder?.customer?.note && (
@@ -241,7 +272,7 @@ const OrderResultPage = () => {
           </div>
           <div className="d-flex justify-content-between mb-2 small text-muted">
             <span>Phí vận chuyển:</span>
-            <span>{formatCurrency(lastOrder?.shippingFee || 30000)}</span>
+            <span>{formatCurrency(lastOrder.shippingFee)}</span>
           </div>
           <div className="d-flex justify-content-between fs-5 fw-bold" style={{ color: "#284e70" }}>
             <span>Tổng thanh toán:</span>

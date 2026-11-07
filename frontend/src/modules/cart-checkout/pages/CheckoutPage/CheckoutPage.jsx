@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Banknote,
@@ -8,11 +8,8 @@ import {
   CheckCircle,
   AlertTriangle,
   User,
-  Phone,
-  MapPin,
-  FileText,
 } from "lucide-react";
-import { useCart } from "../../context/CartContext";
+import { useCart } from "../../hooks/useCart.js";
 import Stepper from "../../components/Stepper/Stepper";
 import checkoutApi from "../../api/checkoutApi";
 import styles from "./CheckoutPage.module.css";
@@ -21,11 +18,11 @@ const formatCurrency = (amount) => {
   return new Intl.NumberFormat("vi-VN").format(amount) + " đ";
 };
 
-const SHIPPING_FEE = 30000; // Phí giao hàng cố định 30.000 đ
+const SHIPPING_FEE = 0; // Đồng bộ chính sách miễn phí giao hàng hiện tại của backend.
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { cartItems, totalPrice, clearCart, setLastOrder } = useCart();
+  const { cartItems, totalPrice, completeCheckout, setLastOrder, cartLoading, cartError } = useCart();
 
   // 1. Quản lý 4 trường thông tin người nhận theo đúng UC12
   const [formData, setFormData] = useState({
@@ -48,10 +45,11 @@ const CheckoutPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  // Toggle mô phỏng để dễ dàng test nhánh "thiếu hàng khi bấm thanh toán"
-  const [forceStockFail, setForceStockFail] = useState(false);
-
   // Nếu giỏ hàng trống, chuyển hướng về trang giỏ hàng
+  if (cartLoading || cartError) {
+    return <div className={styles.checkoutPage}><p role="status">{cartError || 'Đang tải giỏ hàng...'}</p><Link to="/cart">Quay lại giỏ hàng</Link></div>;
+  }
+
   if (cartItems.length === 0) {
     return (
       <div className={styles.checkoutPage}>
@@ -105,138 +103,60 @@ const CheckoutPage = () => {
   // Xử lý khi nhấn nút Đặt hàng / Thanh toán (UC12)
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // 1. Kiểm tra validate form
-    if (!validateForm()) {
-      window.scrollTo({ top: 120, behavior: "smooth" });
-      return;
-    }
+    if (isSubmitting || !validateForm()) return;
 
     setIsSubmitting(true);
     setStockIssue(null);
-    setSubmitError("");
-
-    let checkoutKey = "CK-" + Date.now();
-    let backendHandled = false;
-
-    // 2. Thử gọi API Backend kiểm tra tồn kho & validate thông tin
+    setSubmitError('');
     try {
-      const res = await checkoutApi.validateCheckout({
+      const receiver = {
         receiverName: formData.fullName.trim(),
         receiverPhone: formData.phone.trim(),
         receiverAddress: formData.address.trim(),
-        customerNote: formData.note ? formData.note.trim() : null,
-      });
-
-      if (res?.data) {
-        if (!res.data.isValid && res.data.outOfStockItems?.length > 0) {
-          const item = res.data.outOfStockItems[0];
-          setStockIssue({
-            name: item.productName,
-            size: item.size,
-            requested: item.requestedQuantity,
-            available: item.availableStock,
-          });
-          setIsSubmitting(false);
-          window.scrollTo({ top: 80, behavior: "smooth" });
+        customerNote: formData.note.trim() || null,
+      };
+      const validation = await checkoutApi.validateCheckout(receiver);
+      const validated = validation?.data;
+      if (!validation?.success || !validated?.checkoutKey) {
+        throw new Error(validation?.message || 'Không xác thực được phiên đặt hàng.');
+      }
+      if ((validated.valid ?? validated.isValid) !== true) {
+        const item = validated.outOfStockItems?.[0];
+        if (item) {
+          setStockIssue({ name: item.productName, size: item.size, requested: item.requestedQuantity, available: item.availableStock });
           return;
         }
-        if (res.data.checkoutKey) {
-          checkoutKey = res.data.checkoutKey;
-          backendHandled = true;
-        }
+        throw new Error('Giỏ hàng không hợp lệ. Vui lòng kiểm tra lại.');
       }
-    } catch (err) {
-      if (err.response?.status === 400 && err.response?.data?.message) {
-        setStockIssue({
-          name: "Sản phẩm trong giỏ",
-          size: "Hiện tại",
-          requested: 1,
-          available: 0,
-        });
-        setIsSubmitting(false);
-        window.scrollTo({ top: 80, behavior: "smooth" });
+
+      const orderData = {
+        checkoutKey: validated.checkoutKey,
+        customer: formData,
+        items: cartItems,
+        subTotal: Number(validated.subtotal),
+        shippingFee: Number(validated.shippingFee),
+        finalTotal: Number(validated.totalAmount),
+        paymentMethod,
+      };
+
+      if (paymentMethod === 'qr') {
+        setLastOrder(orderData);
+        navigate('/checkout/payment');
         return;
       }
-      // Nếu Backend offline -> fallback sang kiểm tra local
-    }
 
-    // 3. Fallback kiểm tra tồn kho local (khi offline hoặc bật toggle test)
-    if (!backendHandled) {
-      const outOfStockItem = cartItems.find((item) => item.quantity > item.maxStock);
-      if (forceStockFail || outOfStockItem) {
-        const itemFailed = outOfStockItem || cartItems[0];
-        setStockIssue({
-          name: itemFailed.name,
-          size: itemFailed.size,
-          requested: itemFailed.quantity,
-          available: Math.max(1, (itemFailed.maxStock || 1) - 1),
-        });
-        setIsSubmitting(false);
-        window.scrollTo({ top: 80, behavior: "smooth" });
-        return;
+      const payment = await checkoutApi.simulatePayment({ ...receiver, checkoutKey: validated.checkoutKey, isSuccess: true });
+      const created = payment?.data;
+      if (!payment?.success || created?.success !== true || !created.orderId || !created.orderCode) {
+        throw new Error(created?.message || payment?.message || 'Đặt hàng chưa thành công.');
       }
-    }
-
-    // 4. Nếu đủ hàng: Phân nhánh theo phương thức thanh toán đã chọn
-    const orderCode = "BCS-" + Math.floor(100000 + Math.random() * 900000);
-    const finalTotal = totalPrice + SHIPPING_FEE;
-
-    const orderData = {
-      orderCode,
-      checkoutKey,
-      createdAt: new Date().toLocaleString("vi-VN"),
-      customer: formData,
-      items: cartItems,
-      subTotal: totalPrice,
-      shippingFee: SHIPPING_FEE,
-      finalTotal,
-      paymentMethod,
-    };
-
-    if (paymentMethod === "cash") {
-      if (!backendHandled) {
-        setSubmitError("Không tạo được đơn. Vui lòng đăng nhập bằng tài khoản khách hàng rồi thử lại.");
-        setIsSubmitting(false);
-        return;
-      }
-      try {
-        const payment = await checkoutApi.simulatePayment({
-          checkoutKey,
-          isSuccess: true,
-          receiverName: formData.fullName.trim(),
-          receiverPhone: formData.phone.trim(),
-          receiverAddress: formData.address.trim(),
-          customerNote: formData.note ? formData.note.trim() : null,
-        });
-        const created = payment?.data;
-        if (!created?.success || !created.orderCode) {
-          setSubmitError(created?.message || payment?.message || "Đặt hàng chưa thành công.");
-          setIsSubmitting(false);
-          return;
-        }
-        setLastOrder({
-          ...orderData,
-          orderCode: created.orderCode,
-          orderId: created.orderId,
-          orderStatus: "Chờ xác nhận",
-          paymentStatus: "Đã thanh toán",
-        });
-        await clearCart();
-        navigate(`/checkout/result?status=success&method=cash&order=${created.orderCode}`);
-      } catch (err) {
-        setSubmitError(err.response?.data?.message || "Đặt hàng thất bại. Giỏ hàng vẫn được giữ nguyên.");
-        setIsSubmitting(false);
-      }
-      return;
-    }
-
-    setIsSubmitting(false);
-
-    if (paymentMethod === "qr") {
-      // Nhánh QUÉT QR: Chuyển sang Màn 3 (Thanh toán mô phỏng), CHƯA tạo đơn, CHƯA xóa giỏ
-      setLastOrder(orderData);
-      navigate("/checkout/payment");
+      setLastOrder(null);
+      completeCheckout();
+      navigate('/checkout/result?status=success&order=' + encodeURIComponent(created.orderId));
+    } catch (error) {
+      setSubmitError(error.response?.data?.message || error.message || 'Không thể đặt hàng. Vui lòng thử lại.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

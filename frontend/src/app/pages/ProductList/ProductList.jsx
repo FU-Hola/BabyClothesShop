@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button, Form, Modal } from "react-bootstrap";
 import { Minus, Plus, RotateCcw } from "lucide-react";
 import { getCatalogProducts } from "../../../shared/api/catalogApi.js";
-import { useCart } from "../../../modules/cart-checkout/context/CartContext.jsx";
+import { useCart } from "../../../modules/cart-checkout/hooks/useCart.js";
 import categories from "../../../shared/constants/categories.js";
 import CatalogPagination from "../../../modules/catalog-stock/components/CatalogPagination.jsx";
 import styles from "./ProductList.module.css";
@@ -306,7 +306,7 @@ const ProductList = ({ slug, preview = false }) => {
                     )}
                     <div className={styles.grid}>
                         {visibleProducts.map((product) => (
-                            <ProductCard key={product.id} product={product} />
+                            <ProductCard key={`${requestKey}-${product.id}`} product={product} />
                         ))}
                     </div>
                     {!preview && !loading && !error && <div className={styles.pagination}>

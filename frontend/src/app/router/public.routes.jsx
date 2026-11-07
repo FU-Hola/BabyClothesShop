@@ -8,7 +8,7 @@ import categories from "../../shared/constants/categories.js";
 import RegisterPage from "../../modules/auth/pages/RegisterPage/RegisterPage.jsx";
 import LoginPage from "../../modules/auth/pages/LoginPage/LoginPage.jsx";
 import cartCheckoutRoutes from "../../modules/cart-checkout/routes/cartCheckoutRoutes.jsx";
-import CartDemoProducts from "../../modules/cart-checkout/components/CartDemoProducts.jsx";
+import RoleRoute from './RoleRoute.jsx';
 import ExceptionPage from "../pages/ExceptionPage/ExceptionPage.jsx";
 
 const publicRoutes = [
@@ -25,10 +25,14 @@ const publicRoutes = [
             })),
             { path: "/search", element: <ProductList /> },
             { path: "/san-pham/:productId", element: <ProductDetail /> },
-            { path: "/don-hang", element: <OrderHistory /> },
-            { path: "/don-hang/:orderId", element: <OrderDetail /> },
-            { path: "/demo/cart-products", element: <CartDemoProducts /> },
-            ...cartCheckoutRoutes
+            {
+                element: <RoleRoute allowedRoles={['CUSTOMER']} />,
+                children: [
+                    { path: '/don-hang', element: <OrderHistory /> },
+                    { path: '/don-hang/:orderId', element: <OrderDetail /> },
+                    ...cartCheckoutRoutes,
+                ],
+            },
         ]
     }
 ];

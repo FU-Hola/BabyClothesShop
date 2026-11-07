@@ -35,35 +35,28 @@ const formatDate = (value) => {
 const OrderHistory = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const status = searchParams.get("status") || "";
-    const [orders, setOrders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [result, setResult] = useState(null);
     const cancelledView = status === "CANCELLED";
+    const currentResult = result?.status === status ? result : null;
+    const orders = !cancelledView ? currentResult?.data || [] : [];
+    const loading = !cancelledView && !currentResult;
+    const error = !cancelledView ? currentResult?.error : '';
 
     useEffect(() => {
         if (cancelledView) {
-            setOrders([]);
-            setError("");
-            setLoading(false);
             return undefined;
         }
         let cancelled = false;
-        setLoading(true);
         getMyOrders(status || undefined)
             .then((data) => {
                 if (!cancelled) {
-                    setOrders(Array.isArray(data) ? data : []);
-                    setError("");
+                    setResult({ status, data: Array.isArray(data) ? data : [] });
                 }
             })
             .catch((failure) => {
                 if (!cancelled) {
-                    setOrders([]);
-                    setError(failure.response?.data?.message || "Không tải được đơn hàng. Hãy đăng nhập bằng tài khoản khách hàng.");
+                    setResult({ status, error: failure.response?.data?.message || 'Không tải được đơn hàng.' });
                 }
-            })
-            .finally(() => {
-                if (!cancelled) setLoading(false);
             });
         return () => {
             cancelled = true;
