@@ -90,7 +90,7 @@ dependency-reduced-pom.xml
 # Keep Maven wrapper scripts, properties and wrapper JAR for reproducible builds.
 # Keep application.yaml and profile configs; only local/secrets overrides are ignored.
 
-# Runtime storage / database dumps; keep SQL migrations and mock fixtures
+# Runtime storage / database dumps; keep mock fixtures
 /backend/**/data/
 /backend/**/uploads/
 /backend/**/storage/

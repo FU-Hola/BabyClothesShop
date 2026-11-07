@@ -11,6 +11,7 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/catalog-api/, '/api/v1'),
       },
+      '/api/v1': 'http://localhost:8080',
     },
   },
 })

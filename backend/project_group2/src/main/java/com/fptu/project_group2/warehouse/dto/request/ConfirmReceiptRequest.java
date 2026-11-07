@@ -10,8 +10,8 @@ public record ConfirmReceiptRequest(
         @NotNull @PositiveOrZero Long version,
         @Size(max = 1000) String discrepancyNote,
         @NotNull String goodsReceiptStatus,
-        @NotEmpty @Size(max = 200) List<@NotNull @Valid Line> items
-) {
+        @NotEmpty @Size(max = 200) List<@NotNull @Valid Line> items) {
     public record Line(@NotNull @Positive Long receiptItemId,
-                       @NotNull @PositiveOrZero Integer receivedQuantity) {}
+            @NotNull @PositiveOrZero Integer receivedQuantity) {
+    }
 }

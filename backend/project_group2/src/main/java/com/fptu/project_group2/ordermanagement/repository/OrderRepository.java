@@ -3,6 +3,12 @@ package com.fptu.project_group2.ordermanagement.repository;
 import com.fptu.project_group2.ordermanagement.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import com.fptu.project_group2.ordermanagement.common.OrderStatus;
+import com.fptu.project_group2.ordermanagement.common.QueryOrder;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,5 +23,16 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     boolean existsByOrderCode(String orderCode);
 
     List<Order> findByCustomerIdOrderByCreatedAtDesc(UUID customerId);
-}
 
+    @Query(value = QueryOrder.FIND_PAGE_IDS, countQuery = QueryOrder.COUNT_PAGE_IDS)
+    Page<UUID> findPageIds(@Param("status") OrderStatus status,
+                           @Param("search") String search,
+                           Pageable pageable);
+
+    // Fetch items after paging IDs, not in the paginated query itself.
+    @Query("select distinct o from Order o left join fetch o.items where o.id in :ids")
+    List<Order> findAllWithItemsByIdIn(@Param("ids") List<UUID> ids);
+
+    @Query("select o from Order o left join fetch o.items where o.id = :id")
+    Optional<Order> findWithItemsById(@Param("id") UUID id);
+}
