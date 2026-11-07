@@ -94,6 +94,14 @@
 .pagination { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:16px; padding:20px; }
 .pagination button { min-height:44px; padding:8px 14px; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--ink); cursor:pointer; }
 .errorText { color:#a12626 !important; }
+.shippingDialog { margin:auto; max-height:calc(100dvh - 40px); overflow-y:auto; border:0; color:var(--ui-text); }
+.shippingDialog::backdrop { background:#172b39a6; }
+.shippingDialog h2 { margin-top:0; }
+.shippingFields { display:grid; gap:8px; margin:20px 0; padding:0; border:0; }
+.shippingFields label { margin-top:8px; font-weight:600; }
+.shippingFields input { width:100%; min-height:44px; padding:10px 12px; border:1px solid #cddde7; border-radius:6px; font:inherit; }
+.shippingFields input:focus-visible { outline:2px solid var(--ui-primary); outline-offset:2px; }
+.shippingDialog button:disabled { opacity:.55; cursor:not-allowed; }
 .page button:disabled { opacity:.55; cursor:not-allowed; }
 .page button:focus-visible,.page a:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
 .searchForm .searchBox { min-width:0; flex:1; }

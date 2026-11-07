@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Check, ClipboardList, MapPin, Package, Search, Truck, Wallet } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import orderApi from "../api/orderApi";
+import ShipOrderModal from "../components/ShipOrderModal";
 import styles from "./StaffOrders.module.css";
 
 const statuses = {
@@ -40,6 +41,7 @@ export default function StaffOrders() {
     const [notFound, setNotFound] = useState(false);
     const [reload, setReload] = useState(0);
     const [confirmOrder, setConfirmOrder] = useState(null);
+    const [shippingOrder, setShippingOrder] = useState(null);
     const [saving, setSaving] = useState(false);
     const [confirmError, setConfirmError] = useState("");
     const [notice, setNotice] = useState("");
@@ -131,7 +133,20 @@ export default function StaffOrders() {
         setReload((value) => value + 1);
     }
 
-    // Only UC13 is connected here; packing belongs to Warehouse Staff.
+    function handleShipped(updated) {
+        setShippingOrder(null);
+        setNotice(`Đã gửi đơn ${updated.orderCode}.`);
+        setReload((value) => value + 1);
+    }
+
+    // Packing belongs to Warehouse Staff; Store Staff can ship only PACKED orders.
+    function shipButton(item) {
+        if (item.status !== "PACKED") return null;
+        return <button className={styles.actionButton} onClick={() => setShippingOrder(item)}>
+            Đã gửi hàng
+        </button>;
+    }
+
     function confirmButton(item) {
         if (item.status !== "PENDING_CONFIRMATION") return null;
         return <button className={styles.actionButton} onClick={() => openConfirm(item)}
@@ -187,6 +202,7 @@ export default function StaffOrders() {
                                 <td><div className={styles.rowActions}>
                                     <Link className={styles.viewLink} to={`/store-staff/orders/${item.id}`}>Chi tiết</Link>
                                     {confirmButton(item)}
+                                    {shipButton(item)}
                                 </div></td>
                             </tr>)}</tbody>
                         </table></div>
@@ -243,6 +259,7 @@ export default function StaffOrders() {
                             {order.confirmedAt && <p>Đã xác nhận: {formatDate(order.confirmedAt)}</p>}
                             {order.deliveredAt && <p>Đã giao: {formatDate(order.deliveredAt)}</p>}
                             {confirmButton(order)}
+                            {shipButton(order)}
                             {order.status === "CONFIRMED" && <p>Chờ nhân viên kho đóng gói.</p>}
                         </section>
                         <section className={styles.panel}>
@@ -256,6 +273,8 @@ export default function StaffOrders() {
                 </div>
             </>}
 
+            {shippingOrder && <ShipOrderModal order={shippingOrder}
+                onClose={() => setShippingOrder(null)} onShipped={handleShipped} />}
             {notice && <div className={styles.toast} role="status">{notice}
                 <button onClick={() => setNotice("")} aria-label="Đóng thông báo">×</button></div>}
             {confirmOrder && <div className={styles.overlay} onClick={(e) => {

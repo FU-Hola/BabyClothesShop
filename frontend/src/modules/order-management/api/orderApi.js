@@ -19,6 +19,10 @@ const orderApi = {
         const response = await client.patch(`/store-staff/orders/${id}/confirm`);
         return response.data.data;
     },
+    async shipOrder(id, data) {
+        const response = await client.patch(`/store-staff/orders/${id}/ship`, data);
+        return response.data.data;
+    },
 };
 
 export default orderApi;
