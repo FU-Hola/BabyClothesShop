@@ -40,6 +40,7 @@
 .status { display:inline-block; padding:7px 10px; border-radius:5px; font-size:12px; font-weight:700; white-space:nowrap; }
 .pending { background:#fff3df; color:#86570e; }
 .confirmed { background:#e8f0fa; color:#305c8c; }
+.packed { background:#f0eafa; color:#62418a; }
 .shipping { background:#e9f4f4; color:#24676b; }
 .delivered { background:#e6f4ec; color:#246a43; }
 .cancelled { background:#f0f1f3; color:#606a72; }
@@ -89,6 +90,12 @@
 .dialogActions>button:first-child { padding:10px 16px; border:1px solid var(--line); border-radius:6px; background:#fff; cursor:pointer; }
 .toast { position:fixed; z-index:10; right:24px; bottom:24px; display:flex; align-items:center; gap:16px; max-width:calc(100vw - 48px); padding:14px 18px; border-radius:7px; background:#284a5f; color:#fff; box-shadow:0 8px 25px #172b3940; }
 .toast button { border:0; background:none; color:#fff; font-size:24px; cursor:pointer; }
+.searchForm { display:flex; align-items:stretch; gap:8px; }
+.pagination { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:16px; padding:20px; }
+.pagination button { min-height:44px; padding:8px 14px; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--ink); cursor:pointer; }
+.page button:disabled { opacity:.55; cursor:not-allowed; }
+.page button:focus-visible,.page a:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
+.searchForm .searchBox { min-width:0; flex:1; }
 @media(max-width:1180px) { .toolbar { align-items:stretch; flex-direction:column; } .searchBox { max-width:340px; } }
 @media(max-width:800px) { .stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .detailGrid { grid-template-columns:1fr; } }
 @media(max-width:600px) { .pageHeader,.headingRow { align-items:flex-start; flex-direction:column; } .dateTag { padding:8px 12px; } .stats { gap:9px; } .stat { min-height:94px; padding:12px; grid-template-columns:35px 1fr; gap:7px; } .statIcon { width:34px; height:34px; } .stat strong { font-size:23px; } .statLabel { font-size:11px; } .listIntro,.toolbar { padding-inline:16px; } .filters { flex-wrap:nowrap; max-width:100%; overflow-x:auto; padding-bottom:5px; } .searchBox { max-width:none; } .listFooter { padding-inline:16px; } .listFooter span { display:none; } .panel { padding:16px; } .product { flex-wrap:wrap; } .productPrice { width:100%; padding-left:77px; } }
