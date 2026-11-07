@@ -1,76 +1,176 @@
+import { useEffect, useState } from "react";
 import { ChevronRight, Package } from "lucide-react";
-import { Link } from "react-router-dom";
-import { formatPrice, orders, subtotalOf } from "./orders";
+import { Link, useSearchParams } from "react-router-dom";
+import { getMyOrders } from "./customerOrderApi.js";
 import styles from "./Orders.module.css";
 
-const OrderHistory = () => (
-    <div className={styles.page}>
-        <nav className={styles.breadcrumb} aria-label="Đường dẫn trang">
-            <Link to="/">Trang chủ</Link>
-            <ChevronRight size={14} aria-hidden="true" />
-            <span aria-current="page">Đơn hàng của tôi</span>
-        </nav>
+const FALLBACK_IMAGE = "/images/products/sample-baby-romper.png";
 
-        <header className={styles.pageHeading}>
-            <span className={styles.eyebrow}>Tài khoản khách hàng</span>
-            <h1>Đơn hàng của tôi</h1>
-            <p>Xem lại các đơn đã đặt và theo dõi thông tin từng đơn hàng.</p>
-        </header>
+const STATUS_FILTERS = [
+    { value: "", label: "Đã đặt" },
+    { value: "PENDING_CONFIRMATION", label: "Chờ xác nhận" },
+    { value: "CONFIRMED", label: "Đã xác nhận" },
+    { value: "PACKED", label: "Đã đóng gói" },
+    { value: "SHIPPING", label: "Đang giao" },
+    { value: "DELIVERED", label: "Đã giao" },
+    { value: "CANCELLED", label: "Đã hủy" },
+];
 
-        <div className={styles.historyLayout}>
-            <aside className={styles.accountSidebar} aria-label="Tài khoản">
-                <Package size={24} aria-hidden="true" />
-                <span>Đơn hàng của tôi</span>
-            </aside>
+const STATUS_LABELS = {
+    PENDING_CONFIRMATION: "Chờ xác nhận",
+    CONFIRMED: "Đã xác nhận",
+    PACKED: "Đã đóng gói",
+    SHIPPING: "Đang giao",
+    DELIVERED: "Đã giao",
+};
 
-            <section className={styles.orderList} aria-label="Lịch sử đơn hàng">
-                <div className={styles.listHeading}>
-                    <h2>Đơn đã đặt</h2>
-                    <span>{orders.length} đơn hàng</span>
-                </div>
+const formatPrice = (price) => `${new Intl.NumberFormat("vi-VN").format(price || 0)} đ`;
 
-                {orders.length === 0 ? (
-                    <div className={styles.emptyState}>
-                        <p>Bạn chưa có đơn hàng nào.</p>
-                        <Link to="/ao-so-mi">Khám phá sản phẩm</Link>
+const formatDate = (value) => {
+    if (!value) return "";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleString("vi-VN");
+};
+
+const OrderHistory = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const status = searchParams.get("status") || "";
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const cancelledView = status === "CANCELLED";
+
+    useEffect(() => {
+        if (cancelledView) {
+            setOrders([]);
+            setError("");
+            setLoading(false);
+            return undefined;
+        }
+        let cancelled = false;
+        setLoading(true);
+        getMyOrders(status || undefined)
+            .then((data) => {
+                if (!cancelled) {
+                    setOrders(Array.isArray(data) ? data : []);
+                    setError("");
+                }
+            })
+            .catch((failure) => {
+                if (!cancelled) {
+                    setOrders([]);
+                    setError(failure.response?.data?.message || "Không tải được đơn hàng. Hãy đăng nhập bằng tài khoản khách hàng.");
+                }
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [status, cancelledView]);
+
+    return (
+        <div className={styles.page}>
+            <nav className={styles.breadcrumb} aria-label="Đường dẫn trang">
+                <Link to="/">Trang chủ</Link>
+                <ChevronRight size={14} aria-hidden="true" />
+                <Link to="/cart">Giỏ hàng</Link>
+                <ChevronRight size={14} aria-hidden="true" />
+                <span aria-current="page">Đơn hàng của tôi</span>
+            </nav>
+
+            <header className={styles.pageHeading}>
+                <span className={styles.eyebrow}>Tài khoản khách hàng</span>
+                <h1>Đơn hàng của tôi</h1>
+                <p>Xem lại các đơn đã đặt và lọc theo trạng thái xử lý.</p>
+            </header>
+
+            <div className={styles.historyLayout}>
+                <aside className={styles.accountSidebar} aria-label="Tài khoản">
+                    <Package size={24} aria-hidden="true" />
+                    <span>Đơn hàng của tôi</span>
+                </aside>
+
+                <section className={styles.orderList} aria-label="Lịch sử đơn hàng">
+                    <div className={styles.filters} role="tablist" aria-label="Lọc theo trạng thái">
+                        {STATUS_FILTERS.map((filter) => (
+                            <button
+                                key={filter.value || "all"}
+                                type="button"
+                                role="tab"
+                                aria-selected={status === filter.value}
+                                className={status === filter.value ? styles.filterActive : styles.filter}
+                                onClick={() => setSearchParams(filter.value ? { status: filter.value } : {})}
+                            >
+                                {filter.label}
+                            </button>
+                        ))}
                     </div>
-                ) : (
-                    orders.map((order) => (
+
+                    <div className={styles.listHeading}>
+                        <h2>{STATUS_FILTERS.find((filter) => filter.value === status)?.label || "Đã đặt"}</h2>
+                        <span>{loading ? "Đang tải..." : `${orders.length} đơn hàng`}</span>
+                    </div>
+
+                    {cancelledView ? (
+                        <div className={styles.emptyState}>
+                            <p>Phiên bản này chưa có chức năng hủy đơn, nên không có đơn đã hủy.</p>
+                            <Link to="/don-hang">Xem đơn đã đặt</Link>
+                        </div>
+                    ) : null}
+                    {error ? <p>{error}</p> : null}
+                    {!loading && !error && !cancelledView && orders.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            <p>Chưa có đơn hàng ở trạng thái này.</p>
+                            <Link to="/ao-thun">Khám phá sản phẩm</Link>
+                        </div>
+                    ) : null}
+                    {!cancelledView && orders.map((order) => (
                         <article className={styles.orderCard} key={order.id}>
                             <div className={styles.orderCardHeader}>
                                 <div>
                                     <span className={styles.smallLabel}>Mã đơn hàng</span>
-                                    <h3>{order.id}</h3>
-                                    <p>Đặt ngày {order.placedAt}</p>
+                                    <h3>{order.orderCode}</h3>
+                                    <p>Đặt ngày {formatDate(order.createdAt)}</p>
                                 </div>
-                                <span className={`${styles.status} ${styles[order.statusType]}`}>{order.status}</span>
+                                <span className={`${styles.status} ${styles[order.status] || ""}`}>
+                                    {STATUS_LABELS[order.status] || order.status}
+                                </span>
                             </div>
 
                             <div className={styles.orderPreview}>
-                                <div className={styles.previewImage} role="img" aria-label={order.items[0].name} style={{ backgroundImage: `url("${order.items[0].image}")` }} />
+                                <div
+                                    className={styles.previewImage}
+                                    role="img"
+                                    aria-label={order.previewItem?.productName || order.orderCode}
+                                    style={{ backgroundImage: `url("${order.previewItem?.imageUrl || FALLBACK_IMAGE}")` }}
+                                />
                                 <div className={styles.previewInfo}>
-                                    <strong>{order.items[0].name}</strong>
-                                    <span>{order.items[0].brand} · {order.items[0].color} · Size {order.items[0].size}</span>
-                                    <span>Số lượng: {order.items[0].quantity}</span>
-                                    {order.items.length > 1 ? <span>+ {order.items.length - 1} sản phẩm khác</span> : null}
+                                    <strong>{order.previewItem?.productName || "Sản phẩm"}</strong>
+                                    <span>
+                                        {order.previewItem?.color || "—"} · Size {order.previewItem?.size || "—"}
+                                    </span>
+                                    <span>Số lượng: {order.previewItem?.quantity || order.totalQuantity || 0}</span>
+                                    {order.lineCount > 1 ? <span>+ {order.lineCount - 1} sản phẩm khác</span> : null}
                                 </div>
                             </div>
 
                             <div className={styles.orderCardFooter}>
                                 <div>
                                     <span>Tổng thanh toán</span>
-                                    <strong>{formatPrice(subtotalOf(order) + order.shippingFee)}</strong>
+                                    <strong>{formatPrice(order.totalAmount)}</strong>
                                 </div>
                                 <Link className={styles.detailLink} to={`/don-hang/${order.id}`}>
                                     Xem chi tiết <ChevronRight size={16} aria-hidden="true" />
                                 </Link>
                             </div>
                         </article>
-                    ))
-                )}
-            </section>
+                    ))}
+                </section>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 export default OrderHistory;

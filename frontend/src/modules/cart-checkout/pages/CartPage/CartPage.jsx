@@ -104,9 +104,12 @@ const CartPage = () => {
           <p className={styles.emptyText}>
             Bạn chưa chọn món đồ nào cho bé. Hãy dạo quanh cửa hàng và chọn những bộ đồ xinh xắn nhé!
           </p>
-          <div>
+          <div className={styles.emptyActions}>
             <Link to="/" className={styles.continueShoppingBtn}>
               Tiếp tục mua sắm
+            </Link>
+            <Link to="/don-hang" className={styles.ordersBtn}>
+              Xem đơn đã đặt
             </Link>
           </div>
         </div>
@@ -268,6 +271,9 @@ const CartPage = () => {
                 <span>Tiến hành thanh toán</span>
                 <ArrowRight size={18} />
               </button>
+              <Link to="/don-hang" className={styles.ordersBtn}>
+                Xem đơn đã đặt
+              </Link>
 
               <div className={styles.trustBadges}>
                 <div className={styles.trustItem}>

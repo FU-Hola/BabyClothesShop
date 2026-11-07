@@ -16,6 +16,8 @@ import com.fptu.project_group2.catalogstock.entity.Product;
 import com.fptu.project_group2.catalogstock.entity.ProductImage;
 import com.fptu.project_group2.catalogstock.entity.ProductVariant;
 import com.fptu.project_group2.common.exception.BadRequestException;
+import com.fptu.project_group2.common.exception.BaseBusinessException;
+import com.fptu.project_group2.common.exception.ErrorCode;
 import com.fptu.project_group2.ordermanagement.common.OrderStatus;
 import com.fptu.project_group2.ordermanagement.common.PaymentMethod;
 import com.fptu.project_group2.ordermanagement.common.PaymentStatus;
@@ -121,6 +123,11 @@ public class CheckoutServiceImpl implements ICheckoutService {
         Optional<Order> existingOrder = orderRepository.findByCheckoutKey(request.getCheckoutKey());
         if (existingOrder.isPresent()) {
             Order o = existingOrder.get();
+            if (!o.getCustomer().getId().equals(customer.getId())) {
+                throw new BaseBusinessException(
+                        ErrorCode.ACCESS_DENIED,
+                        "Bạn không có quyền xem đơn hàng này");
+            }
             return mapToOrderResultResponse(o, "Đơn hàng này đã được thanh toán thành công trước đó.");
         }
 
@@ -159,7 +166,6 @@ public class CheckoutServiceImpl implements ICheckoutService {
         order.setPaymentMethod(PaymentMethod.SIMULATED);
         order.setPaymentStatus(PaymentStatus.PAID);
         order.setPaidAt(Instant.now());
-        order.setVersion(0L);
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 

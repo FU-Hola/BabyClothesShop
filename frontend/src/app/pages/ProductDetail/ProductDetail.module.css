@@ -65,7 +65,8 @@
 
 .thumbnailImage,
 .heroImage,
-.cardImage {
+.cardImage,
+.mainImage img {
     display: block;
     width: 100%;
     height: 100%;
@@ -76,9 +77,15 @@
 }
 
 .mainImage {
+    grid-column: 1 / -1;
     width: 100%;
     aspect-ratio: 3 / 4;
+    overflow: hidden;
     background: #f7f7f7;
+}
+
+.mainImage img {
+    object-fit: cover;
 }
 
 .details {
@@ -148,6 +155,12 @@
     border: 1px solid #dedede;
     background: #fff;
     color: #222;
+}
+
+.sizeButtonActive {
+    border-color: #284e70;
+    background: #284e70;
+    color: #fff;
 }
 
 .quantity {

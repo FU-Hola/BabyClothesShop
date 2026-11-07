@@ -23,7 +23,8 @@ const publicRoutes = [
                 path: category.path,
                 element: <ProductList slug={category.slug} />
             })),
-            { path: "/test", element: <ProductDetail /> },
+            { path: "/search", element: <ProductList /> },
+            { path: "/san-pham/:productId", element: <ProductDetail /> },
             { path: "/don-hang", element: <OrderHistory /> },
             { path: "/don-hang/:orderId", element: <OrderDetail /> },
             { path: "/demo/cart-products", element: <CartDemoProducts /> },

@@ -46,6 +46,7 @@ const CheckoutPage = () => {
 
   // 5. Trạng thái nút bấm đang loading
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   // Toggle mô phỏng để dễ dàng test nhánh "thiếu hàng khi bấm thanh toán"
   const [forceStockFail, setForceStockFail] = useState(false);
@@ -113,6 +114,7 @@ const CheckoutPage = () => {
 
     setIsSubmitting(true);
     setStockIssue(null);
+    setSubmitError("");
 
     let checkoutKey = "CK-" + Date.now();
     let backendHandled = false;
@@ -176,8 +178,6 @@ const CheckoutPage = () => {
       }
     }
 
-    setIsSubmitting(false);
-
     // 4. Nếu đủ hàng: Phân nhánh theo phương thức thanh toán đã chọn
     const orderCode = "BCS-" + Math.floor(100000 + Math.random() * 900000);
     const finalTotal = totalPrice + SHIPPING_FEE;
@@ -195,13 +195,45 @@ const CheckoutPage = () => {
     };
 
     if (paymentMethod === "cash") {
-      // Nhánh TIỀN MẶT: Tạo đơn luôn -> Pending Confirmation, Chưa thanh toán -> Xóa giỏ -> Màn 4
-      orderData.orderStatus = "Chờ xác nhận (Pending Confirmation)";
-      orderData.paymentStatus = "Thanh toán khi nhận hàng (Chưa thanh toán)";
-      setLastOrder(orderData);
-      clearCart();
-      navigate("/checkout/result?status=success&method=cash");
-    } else if (paymentMethod === "qr") {
+      if (!backendHandled) {
+        setSubmitError("Không tạo được đơn. Vui lòng đăng nhập bằng tài khoản khách hàng rồi thử lại.");
+        setIsSubmitting(false);
+        return;
+      }
+      try {
+        const payment = await checkoutApi.simulatePayment({
+          checkoutKey,
+          isSuccess: true,
+          receiverName: formData.fullName.trim(),
+          receiverPhone: formData.phone.trim(),
+          receiverAddress: formData.address.trim(),
+          customerNote: formData.note ? formData.note.trim() : null,
+        });
+        const created = payment?.data;
+        if (!created?.success || !created.orderCode) {
+          setSubmitError(created?.message || payment?.message || "Đặt hàng chưa thành công.");
+          setIsSubmitting(false);
+          return;
+        }
+        setLastOrder({
+          ...orderData,
+          orderCode: created.orderCode,
+          orderId: created.orderId,
+          orderStatus: "Chờ xác nhận",
+          paymentStatus: "Đã thanh toán",
+        });
+        await clearCart();
+        navigate(`/checkout/result?status=success&method=cash&order=${created.orderCode}`);
+      } catch (err) {
+        setSubmitError(err.response?.data?.message || "Đặt hàng thất bại. Giỏ hàng vẫn được giữ nguyên.");
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    setIsSubmitting(false);
+
+    if (paymentMethod === "qr") {
       // Nhánh QUÉT QR: Chuyển sang Màn 3 (Thanh toán mô phỏng), CHƯA tạo đơn, CHƯA xóa giỏ
       setLastOrder(orderData);
       navigate("/checkout/payment");
@@ -442,6 +474,9 @@ const CheckoutPage = () => {
               </div>
 
               {/* Nút hành động chính đổi nhãn linh hoạt theo phương thức đã chọn */}
+              {submitError ? (
+                <div className="alert alert-danger py-2 small" role="alert">{submitError}</div>
+              ) : null}
               <button
                 type="submit"
                 className={styles.submitBtn}
