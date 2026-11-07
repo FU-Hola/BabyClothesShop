@@ -74,6 +74,7 @@ public class SecurityConfig {
                                 "/api/v1/auth/logout"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/catalog/**").permitAll()
                         // SecurityConfig chỉ phân biệt public/protected. Role của từng chức năng
                         // được kiểm tra bằng @PreAuthorize tại controller.
                         .anyRequest().authenticated())

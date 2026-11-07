@@ -276,6 +276,40 @@
   color: #fff;
 }
 
+.ordersBtn {
+  width: 100%;
+  height: 46px;
+  margin-top: 10px;
+  border: 1px solid var(--ui-primary);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ui-primary);
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.ordersBtn:hover {
+  background: #f3f7fa;
+  color: var(--ui-primary);
+}
+
+.emptyActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.emptyActions .ordersBtn {
+  width: auto;
+  margin-top: 0;
+  padding: 0 24px;
+}
+
 .trustBadges {
   margin-top: 20px;
   padding-top: 16px;

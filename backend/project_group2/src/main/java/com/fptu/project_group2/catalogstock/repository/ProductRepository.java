@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -37,7 +38,26 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
             Pageable pageable
     );
 
-    @Override
-    @EntityGraph(attributePaths = "category")
-    Page<Product> findAll(Specification<Product> specification, Pageable pageable);
+    @Query("""
+            select p
+            from Product p
+            join p.category c
+            where p.status = com.fptu.project_group2.catalogstock.common.ProductStatus.ACTIVE
+              and c.active = true
+              and (:slug is null or c.slug = :slug)
+              and (
+                :keyword = ''
+                or lower(p.name) like concat('%', :keyword, '%')
+                or lower(p.description) like concat('%', :keyword, '%')
+                or exists (
+                    select v.id
+                    from ProductVariant v
+                    where v.product = p
+                      and v.active = true
+                      and lower(v.sku) like concat('%', :keyword, '%')
+                )
+              )
+            order by p.createdAt desc, p.id desc
+            """)
+    List<Product> findPublicCatalog(@Param("slug") String slug, @Param("keyword") String keyword);
 }

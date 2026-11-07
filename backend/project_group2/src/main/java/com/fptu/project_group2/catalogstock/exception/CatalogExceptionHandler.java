@@ -1,5 +1,6 @@
 package com.fptu.project_group2.catalogstock.exception;
 
+import com.fptu.project_group2.catalogstock.controller.CatalogController;
 import com.fptu.project_group2.catalogstock.controller.ProductController;
 import com.fptu.project_group2.common.exception.BaseBusinessException;
 import com.fptu.project_group2.common.exception.ErrorCode;
@@ -15,7 +16,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@RestControllerAdvice(basePackageClasses = ProductController.class)
+@RestControllerAdvice(basePackageClasses = {ProductController.class, CatalogController.class})
 public class CatalogExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiResponse<Void>> handleMaxUploadSizeException(MaxUploadSizeExceededException exception) {

@@ -142,10 +142,38 @@
     white-space: nowrap;
 }
 
-.shipping {
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.filter,
+.filterActive {
+    min-height: 36px;
+    padding: 6px 12px;
+    border: 1px solid #d7dee3;
+    background: #fff;
+    color: #31404c;
+    font-size: 14px;
+}
+
+.filterActive {
+    border-color: var(--ui-primary);
+    background: var(--ui-primary);
+    color: #fff;
+}
+
+.PENDING_CONFIRMATION,
+.CONFIRMED,
+.PACKED,
+.shipping,
+.SHIPPING {
     background: #fff3e2;
     color: #855008;
 }
+
+.DELIVERED,
 
 .delivered {
     background: #eaf5ed;

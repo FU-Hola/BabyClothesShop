@@ -1,6 +1,8 @@
 package com.fptu.project_group2.ordermanagement.services;
 
 import com.fptu.project_group2.common.exception.BadRequestException;
+import com.fptu.project_group2.common.exception.BaseBusinessException;
+import com.fptu.project_group2.common.exception.ErrorCode;
 import com.fptu.project_group2.common.exception.NotFoundException;
 import com.fptu.project_group2.common.http.PageResponse;
 import com.fptu.project_group2.ordermanagement.common.OrderStatus;
@@ -78,6 +80,23 @@ public class OrderService {
     public OrderDetailResponse getOrderDetail(UUID id) {
         Order order = orderRepository.findWithItemsById(id)
                 .orElseThrow(() -> new NotFoundException("Order", "id", id));
+        return orderMapper.toDetail(order);
+    }
+
+    public List<OrderSummaryResponse> getCustomerOrders(UUID customerId, OrderStatus status) {
+        return orderRepository.findByCustomerIdOrderByCreatedAtDesc(customerId).stream()
+                .filter(order -> status == null || order.getStatus() == status)
+                .map(order -> orderRepository.findWithItemsById(order.getId()).orElse(order))
+                .map(orderMapper::toSummary)
+                .toList();
+    }
+
+    public OrderDetailResponse getCustomerOrder(UUID customerId, UUID orderId) {
+        Order order = orderRepository.findWithItemsById(orderId)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy đơn hàng"));
+        if (order.getCustomer() == null || !customerId.equals(order.getCustomer().getId())) {
+            throw new BaseBusinessException(ErrorCode.ACCESS_DENIED, "Bạn không có quyền xem đơn hàng này");
+        }
         return orderMapper.toDetail(order);
     }
 
