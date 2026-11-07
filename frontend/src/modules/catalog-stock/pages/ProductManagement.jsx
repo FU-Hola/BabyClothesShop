@@ -1,4 +1,5 @@
-import {Container, Form, Button, Row, Col, Card, Pagination} from "react-bootstrap";
+import CatalogPagination from "../components/CatalogPagination.jsx";
+import {Container, Form, Button, Row, Col, Card} from "react-bootstrap";
 import {Package, CircleCheck, CirclePause, Tags, Plus, RotateCcw, Search} from "lucide-react";
 import ProductTable from "../components/ProductTable.jsx";
 import {catalogError, getCategories, getProducts} from "../api/catalog-stock.api.js";
@@ -246,39 +247,12 @@ const ProductManagement = () => {
                 {!currentResult && <p className="text-center py-4 mb-0">Đang tải sản phẩm…</p>}
                 {currentResult?.error && <p className="text-danger p-3 mb-0">{currentResult.error}</p>}
             </div>
-            <div className="d-flex justify-content-between align-items-center gap-3 px-2 mb-4">
+            <div className="d-flex justify-content-between align-items-center gap-3 flex-wrap px-2 mb-4">
                 <div className="text-muted small">
                     {pageData && <>Tìm thấy <span className="fw-semibold text-dark">{pageData.totalItems}</span> sản phẩm</>}
                 </div>
-                {totalPages > 1 && (
-                    <Pagination size="sm" className="mb-0">
-                        <Pagination.Prev
-                            disabled={currentPage === 1}
-                            onClick={() => setCurrentPage(currentPage - 1)}
-                        >
-                            Trước
-                        </Pagination.Prev>
-                        {Array.from({length: totalPages}, (_, index) => {
-                            const pageNumber = index + 1;
-
-                            return (
-                                <Pagination.Item
-                                    key={pageNumber}
-                                    active={currentPage === pageNumber}
-                                    onClick={() => setCurrentPage(pageNumber)}
-                                >
-                                    {pageNumber}
-                                </Pagination.Item>
-                            );
-                        })}
-                        <Pagination.Next
-                            disabled={currentPage === totalPages}
-                            onClick={() => setCurrentPage(currentPage + 1)}
-                        >
-                            Sau
-                        </Pagination.Next>
-                    </Pagination>
-                )}
+                <CatalogPagination currentPage={currentPage} totalPages={totalPages}
+                                   onPageChange={setCurrentPage} />
             </div>
         </Container>
     );
