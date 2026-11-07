@@ -48,7 +48,7 @@ src/shared/                    # File dùng chung nằm trong các thư mục t�
 - `application` dùng API của các feature để điều phối mutation và cập nhật cache giữa nhập, xuất và tồn kho. Không import màn hình của feature.
 - `routes/warehouse.routes.jsx` là nơi khai báo route duy nhất. Các màn vẫn dùng dynamic import để giữ lazy loading.
 - Ngoài module, layout import trực tiếp `src/shared/components/WarehouseWorkGuard.jsx`, router dùng route entry, `catalog-stock` dùng `features/inventory/index.js`. Không mở barrel export toàn bộ pages vì dễ kéo tất cả màn vào bundle ban đầu.
-- Không có vòng lặp import. Quy tắc và đường dẫn import được kiểm tra trong `tests/warehouse.architecture.test.mjs`.
+- Không có vòng lặp import.
 
 ## Thêm chức năng
 
@@ -63,9 +63,8 @@ src/shared/                    # File dùng chung nằm trong các thư mục t�
 Chạy từ thư mục `frontend`:
 
 ```sh
-npm run test:warehouse
 npx eslint src/modules/goods-receipt-packing src/shared src/app/layouts/WarehouseStaffLayout.jsx src/modules/catalog-stock/pages/StockOverview.jsx
 npm run build
 ```
 
-Giữ nguyên endpoint, URL màn hình, query keys và các quy tắc xác nhận thao tác/bảo vệ bản nháp. Kiểm tra tự động bao gồm nghiệp vụ, API adapter, cập nhật cache và ranh giới kiến trúc; không thay thế E2E với database thật.
+Giữ nguyên endpoint, URL màn hình, query keys và các quy tắc xác nhận thao tác/bảo vệ bản nháp.

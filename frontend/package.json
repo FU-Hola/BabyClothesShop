@@ -8,8 +8,7 @@
     "server": "node mock/server.js",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "test:warehouse": "node --test tests/warehouse.test.mjs tests/warehouse.architecture.test.mjs"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

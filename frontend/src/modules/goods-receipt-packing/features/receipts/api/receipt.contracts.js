@@ -13,8 +13,7 @@ export const receiptSummarySchema = z.looseObject({
     version: versionSchema,
 });
 
-// Kiểm tra các field trong contract, cho phép BE bổ sung field mới.
-
+// Kiểm tra các field trong contract
 export const receiptDetailSchema = z.looseObject({
     goodsReceiptId: uuidSchema,
     code: z.string(),

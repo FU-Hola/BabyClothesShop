@@ -9,9 +9,6 @@ import {
 
 export const issueStatusSchema = z.enum(["PENDING", "PICKING", "PACKED", "EXPORTED", "CANCELLED"]);
 
-// Java @Size đo độ dài String theo UTF-16.
-// Dùng value.length để khớp giới hạn phía BE.
-
 export const issueVersionSchema = z.object({
     version: versionSchema,
 });

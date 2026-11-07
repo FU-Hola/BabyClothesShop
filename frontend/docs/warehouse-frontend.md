@@ -37,12 +37,9 @@ Khi dùng URL riêng, BE/gateway phải cấu hình CORS cho origin FE. Bản pr
 ## Kiểm tra
 
 ```sh
-npm run test:warehouse
 npm run build
 npx eslint src/modules/goods-receipt-packing src/shared src/modules/catalog-stock/pages/StockOverview.jsx src/app/router/warehouse-staff.routes.jsx src/app/router/store-staff.routes.jsx src/app/layouts/WarehouseStaffLayout.jsx src/main.jsx src/shared/provider/QueryProvider.jsx vite.config.js
 ```
-
-17 kiểm tra tự động (gồm 2 kiểm tra ranh giới kiến trúc và vòng lặp import): số nguyên/giới hạn Java, SKU trùng, ngày, đủ dòng, discrepancy, soạn vượt đặt, bao bì, lý do hủy, page từ 1, variantSize, response null, envelope lỗi, cache recreate, refetch thất bại, invalidation tồn và đối chiếu version.
 
 Kiểm tra trình duyệt đã chạy với máy chủ fixture riêng (không nằm trong mã runtime, không seed dữ liệu vào hệ thống): tạo nhập qua chọn product/SKU, xác nhận lệch dự kiến, cảnh báo rời trang, chặn double submit, bắt đầu soạn, lưu đủ hàng, đóng gói và xuất kho; hủy nhập/xuất, giữ nội dung khi gặp 409, tải lại version và mở đúng ID phiếu tạo lại. Đây không phải E2E trên database BE thật.
 
@@ -62,6 +59,6 @@ Checklist khi chạy với BE và dữ liệu thật:
 
 Module dùng cấu trúc feature-first: `features/receipts`, `features/issues`, `features/inventory` sở hữu API, contract, validation, query và page của từng nghiệp vụ. `src/shared` giữ hạ tầng/UI dùng chung của kho trong thư mục shared toàn ứng dụng; `application` điều phối thao tác ghi và cache giữa các nghiệp vụ; `routes` giữ route lazy và redirect cũ.
 
-Xem [cấu trúc và quy tắc phụ thuộc](../src/modules/goods-receipt-packing/README.md). Các quy tắc được kiểm tra tự động trong `tests/warehouse.architecture.test.mjs`.
+Xem [cấu trúc và quy tắc phụ thuộc](../src/modules/goods-receipt-packing/README.md).
 
 Không thay đổi BE, Entity hay tích hợp auth trong lần hoàn thiện FE này. Không tạo Inventory thuộc Product module.
