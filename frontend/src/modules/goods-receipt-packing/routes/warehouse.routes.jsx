@@ -1,10 +1,9 @@
 import { Navigate } from "react-router-dom";
 import WarehouseStaffLayout from "../../../app/layouts/WarehouseStaffLayout.jsx";
-import WarehouseRouteError from "../components/WarehouseRouteError.jsx";
-import WarehouseLoading from "../components/WarehouseLoading.jsx";
-import LegacyPackingRedirect from "../components/LegacyPackingRedirect.jsx";
+import WarehouseRouteError from "../../../shared/components/WarehouseRouteError.jsx";
+import WarehouseLoading from "../../../shared/components/WarehouseLoading.jsx";
+import LegacyPackingRedirect from "./LegacyPackingRedirect.jsx";
 
-// Chỉ tải code màn đang mở; không đưa toàn bộ biểu mẫu kho vào bundle cửa hàng.
 const warehouseRoutes = [
     {
         path: "/warehouse-staff",
@@ -16,43 +15,43 @@ const warehouseRoutes = [
             {
                 path: "stock",
                 lazy: async () => ({
-                    Component: (await import("../pages/InventoryPage.jsx")).default,
+                    Component: (await import("../features/inventory/pages/InventoryPage.jsx")).default,
                 }),
             },
             {
                 path: "goods-receipts",
                 lazy: async () => ({
-                    Component: (await import("../pages/GoodsReceiptListPage.jsx")).default,
+                    Component: (await import("../features/receipts/pages/GoodsReceiptListPage.jsx")).default,
                 }),
             },
             {
                 path: "goods-receipts/new",
                 lazy: async () => ({
-                    Component: (await import("../pages/CreateGoodsReceiptPage.jsx")).default,
+                    Component: (await import("../features/receipts/pages/CreateGoodsReceiptPage.jsx")).default,
                 }),
             },
             {
                 path: "goods-receipts/:receiptId",
                 lazy: async () => ({
-                    Component: (await import("../pages/GoodsReceiptDetailPage.jsx")).default,
+                    Component: (await import("../features/receipts/pages/GoodsReceiptDetailPage.jsx")).default,
                 }),
             },
             {
                 path: "pending-receipts",
                 lazy: async () => ({
-                    Component: (await import("../pages/PendingReceiptPage.jsx")).default,
+                    Component: (await import("../features/receipts/pages/PendingReceiptPage.jsx")).default,
                 }),
             },
             {
                 path: "issues",
                 lazy: async () => ({
-                    Component: (await import("../pages/PackingListPage.jsx")).default,
+                    Component: (await import("../features/issues/pages/GoodsIssueListPage.jsx")).default,
                 }),
             },
             {
                 path: "issues/:issueId",
                 lazy: async () => ({
-                    Component: (await import("../pages/PackingPage.jsx")).default,
+                    Component: (await import("../features/issues/pages/GoodsIssueDetailPage.jsx")).default,
                 }),
             },
             { path: "packing", element: <Navigate to="/warehouse-staff/issues" replace /> },

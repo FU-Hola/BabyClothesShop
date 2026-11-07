@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DB_PATH = path.join(__dirname, 'db.json');
+const DB_PATH = process.env.MOCK_DB_PATH || path.join(__dirname, 'db.json');
 const PORT = Number(process.env.MOCK_PORT) || 3000;
 const ACCOUNT_STATUSES = ['active', 'blocked'];
 

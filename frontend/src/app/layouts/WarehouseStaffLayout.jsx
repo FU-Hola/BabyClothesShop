@@ -3,7 +3,7 @@ import WarehouseStaffSidebar from "../../shared/components/WarehouseStaff/Wareho
 import WarehouseStaffHeader from "../../shared/components/WarehouseStaff/WarehouseStaffHeader.jsx";
 import WarehouseStaffFooter from "../../shared/components/WarehouseStaff/WarehouseStaffFooter.jsx";
 
-import WarehouseWorkGuard from "../../modules/goods-receipt-packing/components/WarehouseWorkGuard.jsx";
+import WarehouseWorkGuard from "../../shared/components/WarehouseWorkGuard.jsx";
 
 const WarehouseStaffLayout = () => {
     return (
