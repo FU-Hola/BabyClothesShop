@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CheckCircle2, XCircle, AlertTriangle, ArrowLeft, Copy, Check } from "lucide-react";
-import { useCart } from "../../context/CartContext";
+import { useCart } from "../../hooks/useCart.js";
 import Stepper from "../../components/Stepper/Stepper";
 import checkoutApi from "../../api/checkoutApi";
 import styles from "./PaymentPage.module.css";
@@ -12,19 +12,20 @@ const formatCurrency = (amount) => {
 
 const PaymentPage = () => {
   const navigate = useNavigate();
-  const { lastOrder, setLastOrder, clearCart } = useCart();
+  const { lastOrder, setLastOrder, completeCheckout } = useCart();
 
   // State thông báo đã sao chép STK hoặc nội dung CK
   const [copiedField, setCopiedField] = useState("");
 
   // State loading khi bấm nút mô phỏng
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
 
   // Toggle mô phỏng: Giả lập tình huống hết hàng ở lần kiểm tra tồn kho thứ hai (UC12)
   const [forceStockFailRound2, setForceStockFailRound2] = useState(false);
 
   // Nếu không có thông tin đơn hàng tạm từ bước Checkout, quay về giỏ hàng
-  if (!lastOrder) {
+  if (!lastOrder?.checkoutKey) {
     return (
       <div className={styles.paymentPage}>
         <Stepper currentStep={3} />
@@ -39,7 +40,7 @@ const PaymentPage = () => {
     );
   }
 
-  const { orderCode, finalTotal } = lastOrder;
+  const { checkoutKey: orderCode, finalTotal } = lastOrder;
 
   // Sao chép thông tin vào clipboard
   const handleCopy = (text, fieldName) => {
@@ -50,73 +51,53 @@ const PaymentPage = () => {
 
   // 1. Khách chọn: "Thanh toán thành công" (UC12)
   const handleSimulateSuccess = async () => {
+    if (isProcessing) return;
     setIsProcessing(true);
-
+    setPaymentError('');
     if (forceStockFailRound2) {
+      setLastOrder({ ...lastOrder, outOfStockItemName: lastOrder.items?.[0]?.name });
+      navigate('/checkout/result?status=out_of_stock');
       setIsProcessing(false);
-      setLastOrder({
-        ...lastOrder,
-        outOfStockItemName: lastOrder.items?.[0]?.name || "Sản phẩm",
-        outOfStockSize: lastOrder.items?.[0]?.size || "Tiêu chuẩn",
-      });
-      navigate("/checkout/result?status=out_of_stock");
       return;
     }
-
-    // Gọi API Backend Spring Boot
-    let realOrderCode = lastOrder.orderCode;
     try {
-      const res = await checkoutApi.simulatePayment({
-        checkoutKey: lastOrder.checkoutKey || ("CK-" + Date.now()),
+      const response = await checkoutApi.simulatePayment({
+        checkoutKey: lastOrder.checkoutKey,
         isSuccess: true,
-        receiverName: lastOrder.customer?.fullName,
-        receiverPhone: lastOrder.customer?.phone,
-        receiverAddress: lastOrder.customer?.address,
-        customerNote: lastOrder.customer?.note,
+        receiverName: lastOrder.customer.fullName,
+        receiverPhone: lastOrder.customer.phone,
+        receiverAddress: lastOrder.customer.address,
+        customerNote: lastOrder.customer.note,
       });
-
-      if (res?.data?.orderCode) {
-        realOrderCode = res.data.orderCode;
+      const created = response?.data;
+      if (!response?.success || created?.success !== true || !created.orderId || !created.orderCode) {
+        throw new Error(created?.message || response?.message || 'Chưa xác nhận được đơn hàng.');
       }
-    } catch (err) {
-      if (err.response?.status === 400) {
-        setIsProcessing(false);
-        setLastOrder({
-          ...lastOrder,
-          outOfStockItemName: lastOrder.items?.[0]?.name || "Sản phẩm",
-          outOfStockSize: lastOrder.items?.[0]?.size || "Tiêu chuẩn",
-        });
-        navigate("/checkout/result?status=out_of_stock");
-        return;
-      }
+      setLastOrder(null);
+      completeCheckout();
+      navigate('/checkout/result?status=success&order=' + encodeURIComponent(created.orderId));
+    } catch (error) {
+      setPaymentError(error.response?.data?.message || error.message || 'Không thể xác nhận thanh toán. Vui lòng thử lại.');
+    } finally {
+      setIsProcessing(false);
     }
-
-    setIsProcessing(false);
-    const completedOrder = {
-      ...lastOrder,
-      orderCode: realOrderCode,
-      orderStatus: "Chờ xác nhận (Pending Confirmation)",
-      paymentStatus: "Đã thanh toán (Theo mô phỏng)",
-    };
-    setLastOrder(completedOrder);
-    clearCart();
-    navigate("/checkout/result?status=success&method=qr");
   };
 
-  // 2. Khách chọn: "Thanh toán thất bại" (UC12)
   const handleSimulateFail = async () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    setPaymentError('');
     try {
-      if (lastOrder.checkoutKey) {
-        await checkoutApi.simulatePayment({
-          checkoutKey: lastOrder.checkoutKey,
-          isSuccess: false,
-        });
+      const response = await checkoutApi.simulatePayment({ checkoutKey: lastOrder.checkoutKey, isSuccess: false });
+      if (!response?.success || response.data?.success !== false) {
+        throw new Error('Không xác nhận được kết quả thanh toán.');
       }
-    } catch {
-      // ignore
+      navigate('/checkout/result?status=failed');
+    } catch (error) {
+      setPaymentError(error.response?.data?.message || error.message || 'Không thể kết nối máy chủ.');
+    } finally {
+      setIsProcessing(false);
     }
-    // Không tạo đơn, không giữ hàng, GIỎ HÀNG GIỮ NGUYÊN
-    navigate("/checkout/result?status=failed&method=qr");
   };
 
   // Tạo URL mã VietQR mô phỏng ngân hàng MB Bank
@@ -231,6 +212,7 @@ const PaymentPage = () => {
         </div>
 
         {/* 2 NÚT MÔ PHỎNG THEO USE CASE UC12 */}
+        {paymentError && <div className="alert alert-danger" role="alert">{paymentError}</div>}
         <div className={styles.simActions}>
           <button
             type="button"

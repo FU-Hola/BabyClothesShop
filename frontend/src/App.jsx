@@ -1,5 +1,5 @@
 import { RouterProvider } from "react-router-dom";
-import { CartProvider } from "./modules/cart-checkout/context/CartContext";
+import { CartProvider } from './modules/cart-checkout/context/CartProvider.jsx';
 import AuthProvider from "./modules/auth/context/AuthProvider";
 import routes from "./app/router/routes.js";
 

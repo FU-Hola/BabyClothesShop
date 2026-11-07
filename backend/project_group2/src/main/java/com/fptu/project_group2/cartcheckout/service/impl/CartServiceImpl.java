@@ -19,6 +19,8 @@ import com.fptu.project_group2.catalogstock.entity.ProductImage;
 import com.fptu.project_group2.catalogstock.entity.ProductVariant;
 import com.fptu.project_group2.catalogstock.repository.ProductVariantRepository;
 import com.fptu.project_group2.common.exception.BadRequestException;
+import com.fptu.project_group2.common.exception.BaseBusinessException;
+import com.fptu.project_group2.common.exception.ErrorCode;
 import com.fptu.project_group2.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,7 +45,7 @@ public class CartServiceImpl implements ICartService {
     @Override
     @Transactional
     public CartResponse getCart(UUID customerId) {
-        User customer = getOrCreateCustomer(customerId);
+        User customer = requireCustomer(customerId);
         Cart cart = getOrCreateCart(customer);
         return mapToCartResponse(cart);
     }
@@ -51,7 +53,7 @@ public class CartServiceImpl implements ICartService {
     @Override
     @Transactional
     public CartResponse addToCart(UUID customerId, AddToCartRequest request) {
-        User customer = getOrCreateCustomer(customerId);
+        User customer = requireCustomer(customerId);
         Cart cart = getOrCreateCart(customer);
 
         ProductVariant variant = productVariantRepository.findById(request.getVariantId())
@@ -97,7 +99,7 @@ public class CartServiceImpl implements ICartService {
     @Override
     @Transactional
     public CartResponse updateCartItem(UUID customerId, UUID cartItemId, UpdateCartItemRequest request) {
-        User customer = getOrCreateCustomer(customerId);
+        User customer = requireCustomer(customerId);
         Cart cart = getOrCreateCart(customer);
 
         CartItem item = cartItemRepository.findById(cartItemId)
@@ -122,7 +124,7 @@ public class CartServiceImpl implements ICartService {
     @Override
     @Transactional
     public CartResponse removeCartItem(UUID customerId, UUID cartItemId) {
-        User customer = getOrCreateCustomer(customerId);
+        User customer = requireCustomer(customerId);
         Cart cart = getOrCreateCart(customer);
 
         CartItem item = cartItemRepository.findById(cartItemId)
@@ -141,32 +143,25 @@ public class CartServiceImpl implements ICartService {
     @Override
     @Transactional
     public void clearCart(UUID customerId) {
-        User customer = getOrCreateCustomer(customerId);
+        User customer = requireCustomer(customerId);
         Cart cart = getOrCreateCart(customer);
         cartItemRepository.deleteAllByCartId(cart.getId());
         cart.getItems().clear();
     }
 
-    public User getOrCreateCustomer(UUID customerId) {
-        if (customerId != null) {
-            return userRepository.findById(customerId)
-                    .orElseGet(this::resolveDefaultCustomer);
+    public User requireCustomer(UUID customerId) {
+        if (customerId == null) {
+            throw new BaseBusinessException(ErrorCode.UNAUTHENTICATED);
         }
-        return resolveDefaultCustomer();
-    }
-
-    private User resolveDefaultCustomer() {
-        return userRepository.findFirstByRole(UserRole.CUSTOMER)
-                .orElseGet(() -> {
-                    User demo = new User();
-                    demo.setEmail("customer.demo@shop.com");
-                    demo.setPasswordHash("demo123");
-                    demo.setFullName("Khách Hàng Mặc Định");
-                    demo.setPhone("0987654321");
-                    demo.setRole(UserRole.CUSTOMER);
-                    demo.setStatus(UserStatus.ACTIVE);
-                    return userRepository.save(demo);
-                });
+        User customer = userRepository.findById(customerId)
+                .orElseThrow(() -> new BaseBusinessException(ErrorCode.UNAUTHENTICATED));
+        if (customer.getStatus() != UserStatus.ACTIVE || customer.getDeletedAt() != null) {
+            throw new BaseBusinessException(ErrorCode.UNAUTHENTICATED);
+        }
+        if (customer.getRole() != UserRole.CUSTOMER) {
+            throw new BaseBusinessException(ErrorCode.ACCESS_DENIED);
+        }
+        return customer;
     }
 
     private Cart getOrCreateCart(User customer) {

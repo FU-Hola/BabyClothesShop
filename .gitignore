@@ -141,6 +141,12 @@ CLAUDE.md
 
 # Local project documentation
 /docs/
+/scripts
+
+# Local test files and demo/seed tooling
+/backend/project_group2/scripts/
+/backend/project_group2/src/test/
+*.postman_collection.json
 
 # Python cache produced by local tooling
 __pycache__/

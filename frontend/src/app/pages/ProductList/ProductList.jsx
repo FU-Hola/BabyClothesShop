@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Button, Form } from "react-bootstrap";
 import { Minus, Plus, SlidersHorizontal } from "lucide-react";
 import { getCatalogProducts } from "../../../shared/api/catalogApi.js";
-import { useCart } from "../../../modules/cart-checkout/context/CartContext.jsx";
+import { useCart } from "../../../modules/cart-checkout/hooks/useCart.js";
 import categories from "../../../shared/constants/categories.js";
 import styles from "./ProductList.module.css";
 
@@ -21,12 +21,6 @@ const ProductCard = ({ product }) => {
     const [adding, setAdding] = useState(false);
     const variant = product.variants.find((item) => item.id === variantId) ?? product.variants[0];
     const available = Number(variant?.availableStock ?? 0);
-
-    useEffect(() => {
-        setVariantId(product.variants.find((item) => Number(item.availableStock) > 0)?.id ?? product.variants[0]?.id ?? "");
-        setQuantity(1);
-        setMessage("");
-    }, [product.id, product.variants]);
 
     const changeQuantity = (next) => {
         const limit = Math.max(available, 1);
@@ -104,13 +98,15 @@ const ProductList = ({ slug }) => {
     const keyword = searchParams.get("q") || "";
     const category = categories.find((item) => item.slug === slug);
     const [sort, setSort] = useState("default");
-    const [products, setProducts] = useState([]);
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(true);
+    const [result, setResult] = useState(null);
+    const requestKey = JSON.stringify([slug, keyword, sort]);
+    const currentResult = result?.key === requestKey ? result : null;
+    const products = currentResult?.data || [];
+    const error = currentResult?.error;
+    const loading = !currentResult;
 
     useEffect(() => {
         let cancelled = false;
-        setLoading(true);
         getCatalogProducts({
             slug: slug || undefined,
             keyword: keyword || undefined,
@@ -118,20 +114,16 @@ const ProductList = ({ slug }) => {
         })
             .then((data) => {
                 if (!cancelled) {
-                    setProducts(Array.isArray(data) ? data : []);
-                    setError("");
+                    setResult({ key: requestKey, data: Array.isArray(data) ? data : [] });
                 }
             })
             .catch((failure) => {
-                if (!cancelled) setError(failure.response?.data?.message || "Không tải được danh sách sản phẩm.");
-            })
-            .finally(() => {
-                if (!cancelled) setLoading(false);
+                if (!cancelled) setResult({ key: requestKey, error: failure.response?.data?.message || 'Không tải được danh sách sản phẩm.' });
             });
         return () => {
             cancelled = true;
         };
-    }, [slug, keyword, sort]);
+    }, [slug, keyword, sort, requestKey]);
 
     const title = keyword ? `Kết quả cho “${keyword}”` : (category?.label || "Sản phẩm");
 
@@ -159,7 +151,7 @@ const ProductList = ({ slug }) => {
             ) : null}
             <div className={styles.grid}>
                 {products.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard key={`${requestKey}-${product.id}`} product={product} />
                 ))}
             </div>
         </div>

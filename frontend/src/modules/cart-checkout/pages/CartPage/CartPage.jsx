@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Trash2,
@@ -10,7 +10,7 @@ import {
   RotateCcw,
   AlertCircle,
 } from "lucide-react";
-import { useCart } from "../../context/CartContext";
+import { useCart } from "../../hooks/useCart.js";
 import Stepper from "../../components/Stepper/Stepper";
 import styles from "./CartPage.module.css";
 
@@ -27,15 +27,17 @@ const CartPage = () => {
     totalPrice,
     updateQuantity,
     removeFromCart,
-    resetDemoCart,
+    cartLoading,
+    cartError,
+    syncCartFromBackend,
   } = useCart();
 
   // State thông báo lỗi tồn kho tạm thời (khi bấm tăng quá số lượng cho phép)
   const [stockErrorMap, setStockErrorMap] = useState({});
 
   // Xử lý tăng số lượng (UC11)
-  const handleIncrease = (item) => {
-    const res = updateQuantity(item.id, item.size, item.quantity + 1);
+  const handleIncrease = async (item) => {
+    const res = await updateQuantity(item.id, item.size, item.quantity + 1);
     if (!res.success) {
       setStockErrorMap((prev) => ({
         ...prev,
@@ -52,18 +54,23 @@ const CartPage = () => {
   };
 
   // Xử lý giảm số lượng (UC11)
-  const handleDecrease = (item) => {
+  const handleDecrease = async (item) => {
     if (item.quantity === 1) {
       const confirmDelete = window.confirm(
         `Bạn có muốn xóa "${item.name} (Size: ${item.size})" khỏi giỏ hàng?`
       );
       if (confirmDelete) {
-        removeFromCart(item.id, item.size);
+        const result = await removeFromCart(item.id, item.size);
+        if (!result.success) setStockErrorMap(prev => ({ ...prev, [`${item.id}-${item.size}`]: result.message }));
       }
       return;
     }
 
-    updateQuantity(item.id, item.size, item.quantity - 1);
+    const result = await updateQuantity(item.id, item.size, item.quantity - 1);
+    if (!result.success) {
+      setStockErrorMap(prev => ({ ...prev, [`${item.id}-${item.size}`]: result.message }));
+      return;
+    }
     // Xóa cảnh báo tồn nếu có
     setStockErrorMap((prev) => {
       const copy = { ...prev };
@@ -73,14 +80,19 @@ const CartPage = () => {
   };
 
   // Xóa sản phẩm
-  const handleDelete = (item) => {
+  const handleDelete = async (item) => {
     const confirmDelete = window.confirm(
       `Xác nhận xóa "${item.name}" khỏi giỏ hàng?`
     );
     if (confirmDelete) {
-      removeFromCart(item.id, item.size);
+      const result = await removeFromCart(item.id, item.size);
+      if (!result.success) setStockErrorMap(prev => ({ ...prev, [`${item.id}-${item.size}`]: result.message }));
     }
   };
+
+  if (cartLoading || cartError) {
+    return <div className={styles.cartPage}><p role="status">{cartError || 'Đang tải giỏ hàng...'}</p>{cartError && <button type="button" onClick={syncCartFromBackend}>Thử lại</button>}</div>;
+  }
 
   return (
     <div className={styles.cartPage}>
@@ -226,12 +238,6 @@ const CartPage = () => {
               <Link to="/" className="text-decoration-none text-muted small">
                 &larr; Tiếp tục chọn thêm sản phẩm khác
               </Link>
-              <button
-                onClick={resetDemoCart}
-                className="btn btn-sm btn-link text-secondary text-decoration-none"
-              >
-                Đặt lại giỏ hàng mẫu
-              </button>
             </div>
           </div>
 

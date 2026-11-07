@@ -24,19 +24,18 @@ const formatDate = (value) => {
 
 const OrderDetail = () => {
     const { orderId } = useParams();
-    const [order, setOrder] = useState(null);
-    const [error, setError] = useState("");
+    const [result, setResult] = useState(null);
+    const order = result?.id === orderId ? result.data : null;
+    const error = result?.id === orderId ? result.error : '';
 
     useEffect(() => {
         let cancelled = false;
-        setOrder(null);
-        setError("");
         getMyOrder(orderId)
             .then((data) => {
-                if (!cancelled) setOrder(data);
+                if (!cancelled) setResult({ id: orderId, data });
             })
             .catch((failure) => {
-                if (!cancelled) setError(failure.response?.data?.message || "Không tìm thấy đơn hàng.");
+                if (!cancelled) setResult({ id: orderId, error: failure.response?.data?.message || 'Không tìm thấy đơn hàng.' });
             });
         return () => {
             cancelled = true;

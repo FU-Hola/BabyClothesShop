@@ -7,7 +7,7 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../hooks/useCart.js";
 
 const SAMPLE_PRODUCTS = [
   {
