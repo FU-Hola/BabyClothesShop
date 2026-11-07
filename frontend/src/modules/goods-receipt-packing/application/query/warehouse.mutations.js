@@ -49,8 +49,6 @@ export async function performWarehouseWrite(client, api, resource, id, { action,
             (resource === "issue" && action === "export")
         ) {
             queryKeys.push(
-                warehouseKeys.inventory,
-                warehouseKeys.statistics,
                 warehouseKeys.options,
             );
         }

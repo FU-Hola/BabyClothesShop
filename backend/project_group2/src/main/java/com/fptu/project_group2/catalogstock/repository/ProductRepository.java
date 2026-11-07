@@ -9,8 +9,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.domain.Specification;
 
-public interface ProductRepository extends JpaRepository<Product, UUID> {
+public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpecificationExecutor<Product> {
     @Query("""
             select p
             from Product p
@@ -34,4 +37,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             Pageable pageable
     );
 
+    @Override
+    @EntityGraph(attributePaths = "category")
+    Page<Product> findAll(Specification<Product> specification, Pageable pageable);
 }

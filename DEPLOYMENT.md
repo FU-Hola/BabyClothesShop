@@ -10,8 +10,7 @@ bash deploy.sh
 
 Script build JAR và frontend rồi build/restart các service Compose. Không chạy
 test tự động, không backup, không khởi động hoặc cấu hình Cloudflare Tunnel.
-PostgreSQL tiếp tục dùng volume hiện có. Mock account API dùng volume riêng
-`sba_mock-data` tại `/app/data`; rebuild không tự thay dữ liệu đã lưu trong volume.
+PostgreSQL tiếp tục dùng volume hiện có. Auth, account và kho dùng API Spring Boot; không khởi động mock server.
 
 ## Địa chỉ
 
@@ -19,10 +18,9 @@ PostgreSQL tiếp tục dùng volume hiện có. Mock account API dùng volume r
 - Healthcheck Nginx: http://127.0.0.1:8088/healthz
 - Backend local: http://127.0.0.1:8081
 - Nginx `/api/v1/` chuyển sang Spring Boot `backend:8080`.
-- Nginx `/api/` chuyển sang mock account server `mock:3000`.
 
-Chưa bổ sung auth mới. Các chức năng đăng nhập/phân quyền và mock sẵn có của app
-được giữ nguyên. Có thể truy cập trực tiếp API kho đang mở nếu public app.
+Frontend build dùng `VITE_API_BASE_URL=/api/v1` và `VITE_WAREHOUSE_API_URL=/warehouse-staff`.
+Đăng nhập dùng cookie/CSRF của Auth; API kho yêu cầu role `WAREHOUSE_STAFF`.
 
 ## Cloudflare
 
@@ -46,7 +44,7 @@ tunnel cũ khi chưa xác minh phạm vi các route khác.
 
 ```bash
 docker compose --env-file backend/project_group2/.env -f docker-compose.yaml -f compose.deploy.yaml ps
-docker compose --env-file backend/project_group2/.env -f docker-compose.yaml -f compose.deploy.yaml logs --tail=80 backend web mock
+docker compose --env-file backend/project_group2/.env -f docker-compose.yaml -f compose.deploy.yaml logs --tail=80 backend web
 ```
 
 Restart policy chỉ có hiệu lực khi Docker daemon hoạt động. Chưa thay đổi cấu hình

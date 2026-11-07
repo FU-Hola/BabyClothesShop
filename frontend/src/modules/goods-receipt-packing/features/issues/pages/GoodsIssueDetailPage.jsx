@@ -27,7 +27,7 @@ function IssueContent({ data, ...actions }) {
     const steps = ["PENDING", "PICKING", "PACKED", "EXPORTED"];
     const labels = ["Chờ xử lý", "Soạn hàng", "Đóng gói", "Xuất kho"];
     const orderStatusLabels = {
-        PENDING_CONFIRMATION: "Chờ xác nhận (dữ liệu cũ)",
+        PENDING_CONFIRMATION: "Chờ xác nhận",
         CONFIRMED: "Đã xác nhận",
         PACKED: "Đã đóng gói",
         SHIPPING: "Đang giao hàng",
@@ -206,11 +206,11 @@ function IssueContent({ data, ...actions }) {
                         note: "",
                     }}
                     title="Xác nhận xuất kho"
-                    description="Tồn kho được kiểm tra và trừ tại thời điểm xuất. Không giữ hàng trước."
+                    description="Tồn kho được kiểm tra và trừ tại thời điểm xuất. Vui lòng nhập đơn vị vận chuyển và mã vận đơn."
                     confirmText="Xác nhận xuất toàn bộ phiếu, trừ tồn kho và chuyển đơn sang đang giao?"
                 >
                     <InputField name="carrierName" label="Đơn vị vận chuyển *" maxLength={255} />
-                    <InputField name="trackingNumber" label="Mã vận đơn" maxLength={100} />
+                    <InputField name="trackingNumber" label="Mã vận đơn *" maxLength={100} required />
                     <InputField
                         name="note"
                         label="Ghi chú xuất kho"

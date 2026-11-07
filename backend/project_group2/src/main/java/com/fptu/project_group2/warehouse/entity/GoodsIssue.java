@@ -2,10 +2,8 @@ package com.fptu.project_group2.warehouse.entity;
 
 import com.fptu.project_group2.common.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.ArrayList;
@@ -15,22 +13,29 @@ import com.fptu.project_group2.ordermanagement.entity.Order;
 import com.fptu.project_group2.warehouse.common.GoodsIssueStatus;
 import com.fptu.project_group2.warehouse.common.PackagingType;
 
+@Builder
+@AllArgsConstructor
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "goods_issues", indexes = {@Index(name = "idx_goods_issues_status_created", columnList = "status, created_at"), @Index(name = "idx_goods_issues_assigned", columnList = "assigned_to")})
+@Table(name = "goods_issues",
+        indexes = {
+        @Index(name = "idx_goods_issues_status_created", columnList = "status, created_at"),
+                @Index(name = "idx_goods_issues_assigned", columnList = "assigned_to")
+})
 public class GoodsIssue extends BaseEntity {
 
     @Column(name = "code", nullable = false, length = 40, unique = true)
     private String code;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "order_id", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 32)
+    @Builder.Default
     private GoodsIssueStatus status = GoodsIssueStatus.PENDING;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
@@ -67,12 +72,25 @@ public class GoodsIssue extends BaseEntity {
     @Column(name = "note", nullable = true, length = 1000)
     private String note;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cancelled_by")
+    private User cancelledBy;
+
+    private Instant cancelledAt;
+
+    @Column(length = 1000)
+    private String cancellationReason;
+
+    // Cập nhật đầu phiếu để version tăng ngay cả khi chỉ đổi số lượng nhặt ở chi tiết.
+    private Instant pickingUpdatedAt;
+
     @Version
     @Column(name = "version", nullable = false)
     private Long version;
 
     @Setter(AccessLevel.NONE)
     @OneToMany(mappedBy = "goodsIssue", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<GoodsIssueItem> items = new ArrayList<>();
 
     public void addGoodsIssueItem(GoodsIssueItem item) {

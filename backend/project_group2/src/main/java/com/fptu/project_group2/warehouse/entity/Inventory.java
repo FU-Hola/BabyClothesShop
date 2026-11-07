@@ -1,13 +1,11 @@
 package com.fptu.project_group2.warehouse.entity;
 
+import com.fptu.project_group2.catalogstock.entity.ProductVariant;
 import com.fptu.project_group2.common.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
+import java.util.UUID;
 import lombok.*;
 
-import java.util.UUID;
 
 @Builder
 @Getter
@@ -21,6 +19,10 @@ public class Inventory extends BaseEntity {
     @Column(nullable = false)
     private Long quantity;
 
-    @Column(nullable = false)
+    @Column(name = "variant_id", nullable = false, unique = true)
     private UUID variantId;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "variant_id", nullable = false, unique = true, insertable = false, updatable = false)
+    private ProductVariant variant;
 }

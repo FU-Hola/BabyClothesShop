@@ -31,4 +31,9 @@ public class PageResponse<T> {
                 page.hasPrevious()
         );
     }
+    public static <T> PageResponse<T> oneBased(Page<T> page) {
+        PageResponse<T> response = of(page);
+        response.setPage(page.getNumber() + 1);
+        return response;
+    }
 }

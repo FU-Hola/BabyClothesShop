@@ -26,11 +26,9 @@ public enum GoodsReceiptStatus {
         String trimmed = value.trim();
 
         for (GoodsReceiptStatus status : GoodsReceiptStatus.values()) {
-            // Khớp với code hoặc enum name (vd: "PENDING", "pending")
             if (status.name().equalsIgnoreCase(trimmed) || status.code.equalsIgnoreCase(trimmed)) {
                 return status;
             }
-            // Khớp với label tiếng Việt hiển thị (vd: "Chờ xác nhận nhập kho")
             if (status.label.equalsIgnoreCase(trimmed)) {
                 return status;
             }
@@ -39,9 +37,7 @@ public enum GoodsReceiptStatus {
         throw new IllegalArgumentException("Trạng thái không hợp lệ: " + value);
     }
 
-    /**
-     * Mặc định khi trả về trong các DTO thông thường, chỉ trả chuỗi code
-     */
+
     @JsonValue
     public String getCode() {
         return this.code;

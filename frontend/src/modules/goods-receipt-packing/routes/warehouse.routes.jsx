@@ -16,12 +16,7 @@ const warehouseRoutes = [{ element: <RoleRoute allowedRoles={["WAREHOUSE_STAFF"]
         children: [
             { index: true, element: <Navigate to="stock" replace /> },
             { path: "stock", element: <StockOverview /> },
-            {
-                path: "inventory",
-                lazy: async () => ({
-                    Component: (await import("../features/inventory/pages/InventoryPage.jsx")).default,
-                }),
-            },
+            { path: "inventory", element: <Navigate to="/warehouse-staff/stock" replace /> },
             {
                 path: "goods-receipts",
                 lazy: async () => ({

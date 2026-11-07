@@ -63,7 +63,7 @@ export const packIssueSchema = z.object({
 export const exportIssueSchema = z.object({
     version: versionSchema,
     carrierName: textSchema(255, true),
-    trackingNumber: textSchema(100),
+    trackingNumber: textSchema(100, true),
     note: textSchema(1000),
 });
 

@@ -1,9 +1,0 @@
-FROM node:24-alpine
-WORKDIR /app/mock
-COPY --chown=node:node mock/ ./
-RUN mkdir -p /app/data && printf '{"users":[]}' > /app/data/db.json && chown -R node:node /app/data
-USER node
-ENV MOCK_PORT=3000
-ENV MOCK_DB_PATH=/app/data/db.json
-EXPOSE 3000
-CMD ["node", "server.js"]

@@ -3,7 +3,6 @@ import { Link, NavLink } from "react-router-dom";
 import { Package, ClipboardList, ShoppingBag, Store, ShieldCheck, ChevronRight, LogOut } from "lucide-react";
 
 const menuItems = [
-    { label: "Tồn kho vận hành", path: "/warehouse-staff/inventory", icon: Package },
     { label: "Tồn kho", path: "/warehouse-staff/stock", icon: Package },
     { label: "Phiếu nhập kho", path: "/warehouse-staff/goods-receipts", icon: ClipboardList },
     { label: "Nhập kho chờ xử lý", path: "/warehouse-staff/pending-receipts", icon: ClipboardList },

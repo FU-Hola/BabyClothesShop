@@ -16,6 +16,7 @@ public enum ErrorCode {
     TOKEN_EXPIRED(1004, HttpStatus.UNAUTHORIZED, "Phiên đăng nhập đã hết hạn hoặc không hợp lệ"),
     VALIDATION_FAILED(1005, HttpStatus.BAD_REQUEST, "Dữ liệu đầu vào không hợp lệ"),
     RESOURCE_NOT_FOUND(1006, HttpStatus.NOT_FOUND, "Không tìm thấy tài nguyên yêu cầu"),
+    CONFLICT(1012, HttpStatus.CONFLICT, "Dữ liệu đã thay đổi hoặc thao tác không còn hợp lệ"),
     BAD_REQUEST(1007, HttpStatus.BAD_REQUEST, "Yêu cầu không hợp lệ"),
     EMAIL_ALREADY_EXISTS(1008, HttpStatus.CONFLICT, "Email đã được sử dụng"),
     EMPLOYEE_CODE_ALREADY_EXISTS(1009, HttpStatus.CONFLICT, "Mã nhân viên đã được sử dụng"),

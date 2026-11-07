@@ -31,4 +31,10 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
             where i.variantId = :variantId and i.quantity >= :quantity
             """)
     int decreaseStock(@Param("variantId") UUID variantId, @Param("quantity") long quantity);
+    @Modifying(flushAutomatically = true)
+    @Query("""
+        update Inventory i set i.quantity = i.quantity - :quantity, i.updatedAt = CURRENT_TIMESTAMP
+        where i.variant.id = :variantId and i.quantity >= :quantity
+        """)
+    int decreaseStockIfAvailable(@Param("variantId") UUID variantId, @Param("quantity") Long quantity);
 }

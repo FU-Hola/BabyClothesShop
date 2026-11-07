@@ -12,10 +12,10 @@ compose=(docker compose --env-file backend/project_group2/.env
 "${compose[@]}" config --quiet
 
 (cd backend/project_group2 && bash ./mvnw -DskipTests package)
-(cd frontend && VITE_API_BASE_URL=/api \
-    VITE_WAREHOUSE_API_URL=/api/v1/warehouse-staff npm run build)
+(cd frontend && VITE_API_BASE_URL=/api/v1 \
+    VITE_WAREHOUSE_API_URL=/warehouse-staff npm run build)
 
-"${compose[@]}" up -d --build --wait --wait-timeout 120 postgres backend mock web
+"${compose[@]}" up -d --build --wait --wait-timeout 120 postgres backend web
 "${compose[@]}" ps
 echo "Local web: http://127.0.0.1:8088"
 echo "Cloudflare service: HTTP / sba-web:80 (connector must join proxy_net)"

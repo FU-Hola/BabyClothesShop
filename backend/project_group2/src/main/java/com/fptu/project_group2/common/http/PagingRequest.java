@@ -33,8 +33,9 @@ public class PagingRequest {
         if (page < 1) {
             throw new BadRequestException(MessageHelper.getMessage("error.pagination.page.invalid"));
         }
-        if (size <= 0) {
-            throw new BadRequestException(MessageHelper.getMessage("error.pagination.size.invalid"));
+        // Giới hạn chung cho các API, tránh tải một trang quá lớn.
+        if (size <= 0 || size > 100) {
+            throw new BadRequestException("size phải từ 1 đến 100");
         }
     }
 
