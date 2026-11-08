@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { ChevronRight, Package } from "lucide-react";
+import { Pagination } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
 import { getMyOrders } from "./customerOrderApi.js";
 import styles from "./Orders.module.css";
+
+const PAGE_SIZE = 9;
 
 const FALLBACK_IMAGE = "/images/products/sample-baby-romper.png";
 
@@ -36,20 +39,25 @@ const OrderHistory = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const status = searchParams.get("status") || "";
     const [orders, setOrders] = useState([]);
+    const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const cancelledView = status === "CANCELLED";
+    const visibleOrders = status
+        ? orders.filter((order) => order.status === status)
+        : orders;
+    const totalPages = Math.max(1, Math.ceil(visibleOrders.length / PAGE_SIZE));
+    const currentPage = Math.min(page, totalPages);
+    const pageOrders = visibleOrders.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
     useEffect(() => {
-        if (cancelledView) {
-            setOrders([]);
-            setError("");
-            setLoading(false);
-            return undefined;
-        }
+        setPage(1);
+    }, [status]);
+
+    useEffect(() => {
         let cancelled = false;
         setLoading(true);
-        getMyOrders(status || undefined)
+        getMyOrders()
             .then((data) => {
                 if (!cancelled) {
                     setOrders(Array.isArray(data) ? data : []);
@@ -68,7 +76,7 @@ const OrderHistory = () => {
         return () => {
             cancelled = true;
         };
-    }, [status, cancelledView]);
+    }, []);
 
     return (
         <div className={styles.page}>
@@ -110,7 +118,13 @@ const OrderHistory = () => {
 
                     <div className={styles.listHeading}>
                         <h2>{STATUS_FILTERS.find((filter) => filter.value === status)?.label || "Đã đặt"}</h2>
-                        <span>{loading ? "Đang tải..." : `${orders.length} đơn hàng`}</span>
+                        <span>
+                            {cancelledView
+                                ? "0 đơn hàng"
+                                : loading
+                                    ? "Đang tải..."
+                                    : `${visibleOrders.length} đơn hàng`}
+                        </span>
                     </div>
 
                     {cancelledView ? (
@@ -120,53 +134,90 @@ const OrderHistory = () => {
                         </div>
                     ) : null}
                     {error ? <p>{error}</p> : null}
-                    {!loading && !error && !cancelledView && orders.length === 0 ? (
+                    {!loading && !error && !cancelledView && visibleOrders.length === 0 ? (
                         <div className={styles.emptyState}>
                             <p>Chưa có đơn hàng ở trạng thái này.</p>
                             <Link to="/ao-thun">Khám phá sản phẩm</Link>
                         </div>
                     ) : null}
-                    {!cancelledView && orders.map((order) => (
-                        <article className={styles.orderCard} key={order.id}>
-                            <div className={styles.orderCardHeader}>
-                                <div>
-                                    <span className={styles.smallLabel}>Mã đơn hàng</span>
-                                    <h3>{order.orderCode}</h3>
-                                    <p>Đặt ngày {formatDate(order.createdAt)}</p>
-                                </div>
-                                <span className={`${styles.status} ${styles[order.status] || ""}`}>
-                                    {STATUS_LABELS[order.status] || order.status}
-                                </span>
-                            </div>
+                    {!cancelledView && pageOrders.length > 0 ? (
+                        <div className={styles.orderGrid}>
+                            {pageOrders.map((order) => (
+                                <article className={styles.orderCard} key={order.id}>
+                                    <div className={styles.orderCardHeader}>
+                                        <div>
+                                            <span className={styles.smallLabel}>Mã đơn hàng</span>
+                                            <h3>{order.orderCode}</h3>
+                                            <p>Đặt ngày {formatDate(order.createdAt)}</p>
+                                        </div>
+                                        <span className={`${styles.status} ${styles[order.status] || ""}`}>
+                                            {STATUS_LABELS[order.status] || order.status}
+                                        </span>
+                                    </div>
 
-                            <div className={styles.orderPreview}>
-                                <div
-                                    className={styles.previewImage}
-                                    role="img"
-                                    aria-label={order.previewItem?.productName || order.orderCode}
-                                    style={{ backgroundImage: `url("${order.previewItem?.imageUrl || FALLBACK_IMAGE}")` }}
-                                />
-                                <div className={styles.previewInfo}>
-                                    <strong>{order.previewItem?.productName || "Sản phẩm"}</strong>
-                                    <span>
-                                        {order.previewItem?.color || "—"} · Size {order.previewItem?.size || "—"}
-                                    </span>
-                                    <span>Số lượng: {order.previewItem?.quantity || order.totalQuantity || 0}</span>
-                                    {order.lineCount > 1 ? <span>+ {order.lineCount - 1} sản phẩm khác</span> : null}
-                                </div>
-                            </div>
+                                    <div className={styles.orderPreview}>
+                                        <div
+                                            className={styles.previewImage}
+                                            role="img"
+                                            aria-label={order.previewItem?.productName || order.orderCode}
+                                            style={{ backgroundImage: `url("${order.previewItem?.imageUrl || FALLBACK_IMAGE}")` }}
+                                        />
+                                        <div className={styles.previewInfo}>
+                                            <strong>{order.previewItem?.productName || "Sản phẩm"}</strong>
+                                            <span>
+                                                {order.previewItem?.color || "—"} · Size {order.previewItem?.size || "—"}
+                                            </span>
+                                            <span>Số lượng: {order.previewItem?.quantity || order.totalQuantity || 0}</span>
+                                            {order.lineCount > 1 ? <span>+ {order.lineCount - 1} sản phẩm khác</span> : null}
+                                        </div>
+                                    </div>
 
-                            <div className={styles.orderCardFooter}>
-                                <div>
-                                    <span>Tổng thanh toán</span>
-                                    <strong>{formatPrice(order.totalAmount)}</strong>
-                                </div>
-                                <Link className={styles.detailLink} to={`/don-hang/${order.id}`}>
-                                    Xem chi tiết <ChevronRight size={16} aria-hidden="true" />
-                                </Link>
+                                    <div className={styles.orderCardFooter}>
+                                        <div>
+                                            <span>Tổng thanh toán</span>
+                                            <strong>{formatPrice(order.totalAmount)}</strong>
+                                        </div>
+                                        <Link className={styles.detailLink} to={`/don-hang/${order.id}`}>
+                                            Xem chi tiết <ChevronRight size={16} aria-hidden="true" />
+                                        </Link>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+                    ) : null}
+                    {!cancelledView && !loading && !error && totalPages > 1 ? (
+                        <div className={styles.paginationRow}>
+                            <div className="text-muted small">
+                                Tìm thấy <span className="fw-semibold text-dark">{visibleOrders.length}</span> đơn hàng
                             </div>
-                        </article>
-                    ))}
+                            <Pagination size="sm" className="mb-0">
+                                <Pagination.Prev
+                                    disabled={currentPage === 1}
+                                    onClick={() => setPage(currentPage - 1)}
+                                >
+                                    Trước
+                                </Pagination.Prev>
+                                {Array.from({ length: totalPages }, (_, index) => {
+                                    const pageNumber = index + 1;
+                                    return (
+                                        <Pagination.Item
+                                            key={pageNumber}
+                                            active={currentPage === pageNumber}
+                                            onClick={() => setPage(pageNumber)}
+                                        >
+                                            {pageNumber}
+                                        </Pagination.Item>
+                                    );
+                                })}
+                                <Pagination.Next
+                                    disabled={currentPage === totalPages}
+                                    onClick={() => setPage(currentPage + 1)}
+                                >
+                                    Sau
+                                </Pagination.Next>
+                            </Pagination>
+                        </div>
+                    ) : null}
                 </section>
             </div>
         </div>

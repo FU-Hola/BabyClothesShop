@@ -1,9 +1,7 @@
 import client from "../../../shared/api/axiosClient.js";
 
-export async function getMyOrders(status) {
-    const response = await client.get("/orders", {
-        params: status ? { status } : undefined,
-    });
+export async function getMyOrders() {
+    const response = await client.get("/orders");
     return response.data;
 }
 

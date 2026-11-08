@@ -84,11 +84,27 @@ public class OrderService {
     }
 
     public List<OrderSummaryResponse> getCustomerOrders(UUID customerId, OrderStatus status) {
-        return orderRepository.findByCustomerIdOrderByCreatedAtDesc(customerId).stream()
+        List<Order> matched = orderRepository.findByCustomerIdOrderByCreatedAtDesc(customerId).stream()
                 .filter(order -> status == null || order.getStatus() == status)
-                .map(order -> orderRepository.findWithItemsById(order.getId()).orElse(order))
-                .map(orderMapper::toSummary)
                 .toList();
+        if (matched.isEmpty()) {
+            return List.of();
+        }
+
+        Map<UUID, Order> ordersById = new HashMap<>();
+        List<UUID> ids = matched.stream().map(Order::getId).toList();
+        for (Order order : orderRepository.findAllWithItemsByIdIn(ids)) {
+            ordersById.put(order.getId(), order);
+        }
+
+        List<OrderSummaryResponse> items = new ArrayList<>();
+        for (Order order : matched) {
+            Order loaded = ordersById.get(order.getId());
+            if (loaded != null) {
+                items.add(orderMapper.toSummary(loaded));
+            }
+        }
+        return items;
     }
 
     public OrderDetailResponse getCustomerOrder(UUID customerId, UUID orderId) {
