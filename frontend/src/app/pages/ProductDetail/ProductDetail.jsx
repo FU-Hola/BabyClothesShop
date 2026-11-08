@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Minus, Plus } from "lucide-react";
 import { getCatalogProduct, getCatalogProducts } from "../../../shared/api/catalogApi.js";
-import { useCart } from "../../../modules/cart-checkout/context/CartContext.jsx";
+import { useCart } from "../../../modules/cart-checkout/hooks/useCart.js";
 import categories from "../../../shared/constants/categories.js";
 import styles from "./ProductDetail.module.css";
 
@@ -13,9 +13,10 @@ const ProductDetail = () => {
     const { productId } = useParams();
     const navigate = useNavigate();
     const { addToCart } = useCart();
-    const [product, setProduct] = useState(null);
+    const [result, setResult] = useState(null);
+    const product = result?.id === productId ? result.data : null;
     const [related, setRelated] = useState([]);
-    const [error, setError] = useState("");
+    const error = result?.id === productId ? result.error : '';
     const [variantId, setVariantId] = useState("");
     const [quantity, setQuantity] = useState(1);
     const [message, setMessage] = useState("");
@@ -23,12 +24,10 @@ const ProductDetail = () => {
 
     useEffect(() => {
         let cancelled = false;
-        setProduct(null);
-        setError("");
         getCatalogProduct(productId)
             .then((data) => {
                 if (cancelled) return;
-                setProduct(data);
+                setResult({ id: productId, data });
                 setVariantId(data.variants.find((item) => Number(item.availableStock) > 0)?.id ?? data.variants[0]?.id ?? "");
                 setQuantity(1);
                 setMessage("");
@@ -40,7 +39,7 @@ const ProductDetail = () => {
                 }
             })
             .catch((failure) => {
-                if (!cancelled) setError(failure.response?.data?.message || "Không tìm thấy sản phẩm.");
+                if (!cancelled) setResult({ id: productId, error: failure.response?.data?.message || 'Không tìm thấy sản phẩm.' });
             });
         return () => {
             cancelled = true;

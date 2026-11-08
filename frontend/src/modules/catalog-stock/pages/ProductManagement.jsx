@@ -1,9 +1,13 @@
-import {Container, Form, Button, Row, Col, Card, Pagination} from "react-bootstrap";
+import CatalogPagination from "../components/CatalogPagination.jsx";
+import {Container, Form, Button, Row, Col, Card} from "react-bootstrap";
 import {Package, CircleCheck, CirclePause, Tags, Plus, RotateCcw, Search} from "lucide-react";
 import ProductTable from "../components/ProductTable.jsx";
 import {catalogError, getCategories, getProducts} from "../api/catalog-stock.api.js";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {useNavigate} from "react-router-dom";
+import {keepPreviousData, useQuery} from "@tanstack/react-query";
+
+const PAGE_SIZE = 4;
 
 const ProductManagement = () => {
     const navigate = useNavigate();
@@ -12,78 +16,66 @@ const ProductManagement = () => {
     const [selectedStatus, setSelectedStatus] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [sortOrder, setSortOrder] = useState("desc");
-    const pageSize = 4;
 
-    const [categories, setCategories] = useState([]);
-    const [counts, setCounts] = useState(null);
-    const [metadataError, setMetadataError] = useState("");
-    const [result, setResult] = useState(null);
-
-    useEffect(() => {
-        let cancelled = false;
-        Promise.all([
-            getCategories(),
-            getProducts({size: 1, status: "ACTIVE"}),
-            getProducts({size: 1, status: "INACTIVE"})
-        ]).then(([categoryData, active, inactive]) => {
-            if (cancelled) return;
-            setCategories(categoryData);
-            setCounts({active: active.totalItems, inactive: inactive.totalItems});
-        }).catch((failure) => {
-            if (!cancelled) setMetadataError(catalogError(failure));
-        });
-        return () => { cancelled = true; };
-    }, []);
-
-    const requestKey = JSON.stringify({
+    const params = {
         page: currentPage,
-        size: pageSize,
+        size: PAGE_SIZE,
         keyword: searchTerm.trim() || undefined,
         categoryId: selectedCategory || undefined,
         status: selectedStatus || undefined,
         sortDirection: sortOrder.toUpperCase()
+    };
+
+    const productsQuery = useQuery({
+        queryKey: ["store-products", params],
+        queryFn: () => getProducts(params),
+        staleTime: 0,
+        placeholderData: keepPreviousData
+    });
+    const categoriesQuery = useQuery({queryKey: ["categories"], queryFn: getCategories});
+    const activeQuery = useQuery({
+        queryKey: ["store-products-count", "ACTIVE"],
+        queryFn: () => getProducts({size: 1, status: "ACTIVE"}),
+        staleTime: 0
+    });
+    const inactiveQuery = useQuery({
+        queryKey: ["store-products-count", "INACTIVE"],
+        queryFn: () => getProducts({size: 1, status: "INACTIVE"}),
+        staleTime: 0
     });
 
-    useEffect(() => {
-        let cancelled = false;
-        getProducts(JSON.parse(requestKey)).then((data) => {
-            if (!cancelled) setResult({key: requestKey, data});
-        }).catch((failure) => {
-            if (!cancelled) setResult({key: requestKey, error: catalogError(failure)});
-        });
-        return () => { cancelled = true; };
-    }, [requestKey]);
-
-    const currentResult = result?.key === requestKey ? result : null;
-    const pageData = currentResult?.data;
+    const pageData = productsQuery.data;
     const totalPages = pageData?.totalPages ?? 0;
-
+    const categories = categoriesQuery.data ?? [];
+    const activeCount = activeQuery.data?.totalItems;
+    const inactiveCount = inactiveQuery.data?.totalItems;
+    const metadataError = categoriesQuery.error || activeQuery.error || inactiveQuery.error;
 
     const statistics = [
         {
             label: "Tổng sản phẩm",
-            value: counts ? counts.active + counts.inactive : "—",
+            value: activeCount != null && inactiveCount != null ? activeCount + inactiveCount : "—",
             icon: Package,
             color: "#2563eb",
             background: "#eff6ff"
         },
         {
             label: "Đang kinh doanh",
-            value: counts?.active ?? "—",
+            value: activeCount ?? "—",
             icon: CircleCheck,
             color: "#16a34a",
             background: "#f0fdf4"
         },
         {
             label: "Ngừng kinh doanh",
-            value: counts?.inactive ?? "—",
+            value: inactiveCount ?? "—",
             icon: CirclePause,
             color: "#d97706",
             background: "#fffbeb"
         },
         {
             label: "Danh mục đang hoạt động",
-            value: counts ? categories.length : "—",
+            value: categoriesQuery.data ? categories.length : "—",
             icon: Tags,
             color: "#9333ea",
             background: "#faf5ff"
@@ -118,16 +110,16 @@ const ProductManagement = () => {
                 </div>
 
                 <Button
-                    variant="dark"
-                    className="d-flex align-items-center gap-2 px-3 py-2 rounded-3 text-white border-0 shadow-sm"
-                    style={{backgroundColor: "#10152B"}}
+                    variant="primary"
+                    className="d-flex align-items-center gap-2 px-3 py-2 rounded-3 shadow-sm"
+
                     onClick={handleCreate}
                 >
                     <Plus size={18} aria-hidden="true"/>
                     <span>Thêm sản phẩm</span>
                 </Button>
             </div>
-            {metadataError && <p className="text-danger">Không tải được danh mục hoặc thống kê. {metadataError}</p>}
+            {metadataError && <p className="text-danger">Không tải được danh mục hoặc thống kê. {catalogError(metadataError)}</p>}
             <Row className="row-cols-4 g-3 mb-4">
                 {statistics.map((item) => {
                     const Icon = item.icon;
@@ -241,44 +233,18 @@ const ProductManagement = () => {
                     </Col>
                 </Row>
             </div>
-            <div className="bg-white rounded-4 overflow-hidden shadow-sm p-1 mb-3">
+            <div className="bg-white rounded-4 overflow-hidden shadow-sm p-1 mb-3"
+                 style={{opacity: productsQuery.isPlaceholderData ? 0.6 : 1}}>
                 {pageData && <ProductTable products={pageData.items} onEdit={handleEdit}/>}
-                {!currentResult && <p className="text-center py-4 mb-0">Đang tải sản phẩm…</p>}
-                {currentResult?.error && <p className="text-danger p-3 mb-0">{currentResult.error}</p>}
+                {productsQuery.isPending && <p className="text-center py-4 mb-0">Đang tải sản phẩm…</p>}
+                {productsQuery.isError && <p className="text-danger p-3 mb-0">{catalogError(productsQuery.error)}</p>}
             </div>
-            <div className="d-flex justify-content-between align-items-center gap-3 px-2 mb-4">
+            <div className="d-flex justify-content-between align-items-center gap-3 flex-wrap px-2 mb-4">
                 <div className="text-muted small">
                     {pageData && <>Tìm thấy <span className="fw-semibold text-dark">{pageData.totalItems}</span> sản phẩm</>}
                 </div>
-                {totalPages > 1 && (
-                    <Pagination size="sm" className="mb-0">
-                        <Pagination.Prev
-                            disabled={currentPage === 1}
-                            onClick={() => setCurrentPage(currentPage - 1)}
-                        >
-                            Trước
-                        </Pagination.Prev>
-                        {Array.from({length: totalPages}, (_, index) => {
-                            const pageNumber = index + 1;
-
-                            return (
-                                <Pagination.Item
-                                    key={pageNumber}
-                                    active={currentPage === pageNumber}
-                                    onClick={() => setCurrentPage(pageNumber)}
-                                >
-                                    {pageNumber}
-                                </Pagination.Item>
-                            );
-                        })}
-                        <Pagination.Next
-                            disabled={currentPage === totalPages}
-                            onClick={() => setCurrentPage(currentPage + 1)}
-                        >
-                            Sau
-                        </Pagination.Next>
-                    </Pagination>
-                )}
+                <CatalogPagination currentPage={currentPage} totalPages={totalPages}
+                                   onPageChange={setCurrentPage} />
             </div>
         </Container>
     );

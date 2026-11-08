@@ -32,6 +32,7 @@ function IssueContent({ data, ...actions }) {
         PACKED: "Đã đóng gói",
         SHIPPING: "Đang giao hàng",
         DELIVERED: "Đã giao hàng",
+        CANCELLED: "Đã hủy",
     };
     function lines(editable = false) {
         return (
@@ -72,7 +73,7 @@ function IssueContent({ data, ...actions }) {
         <>
             <PageHeading
                 title={`Phiếu xuất ${data.code}`}
-                description={`Đơn hàng ${data.orderCode}. Hủy phiếu xuất không hủy đơn hàng.`}
+                description={`Đơn hàng ${data.orderCode}. Hủy phiếu xuất sẽ chuyển đơn hàng sang đã hủy.`}
             >
                 <StatusBadge status={data.status} />
             </PageHeading>
@@ -228,8 +229,8 @@ function IssueContent({ data, ...actions }) {
                     defaultValues={{ version: data.version, reason: "" }}
                     title="Hủy phiếu xuất"
                     danger
-                    description="Không thay đổi đơn hàng hoặc tồn kho."
-                    confirmText="Hủy toàn bộ phiếu xuất? Đơn hàng vẫn được giữ nguyên."
+                    description="Đơn hàng sẽ chuyển sang đã hủy. Tồn kho không thay đổi."
+                    confirmText="Hủy toàn bộ phiếu xuất và chuyển đơn hàng sang đã hủy?"
                 >
                     <InputField
                         name="reason"
@@ -239,17 +240,6 @@ function IssueContent({ data, ...actions }) {
                         maxLength={1000}
                     />
                 </ActionForm>
-            )}
-            {data.status === "CANCELLED" && openOrder && (
-                <ActionForm
-                    {...common}
-                    action="recreate"
-                    schema={issueVersionSchema}
-                    defaultValues={{ version: data.version }}
-                    title="Tạo lại phiếu xuất"
-                    description="Tạo phiếu thay thế hoặc mở phiếu hiện tại đã được tạo cho đơn hàng."
-                    confirmText="Yêu cầu tạo lại phiếu xuất cho đơn hàng này?"
-                />
             )}
         </>
     );

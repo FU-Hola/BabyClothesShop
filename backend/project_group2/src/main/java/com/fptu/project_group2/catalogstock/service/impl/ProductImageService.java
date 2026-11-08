@@ -1,8 +1,5 @@
 package com.fptu.project_group2.catalogstock.service.impl;
 
-import com.fptu.project_group2.authaccount.common.UserRole;
-import com.fptu.project_group2.authaccount.common.UserStatus;
-import com.fptu.project_group2.authaccount.entity.User;
 import com.fptu.project_group2.catalogstock.dto.request.UploadProductImageRequest;
 import com.fptu.project_group2.catalogstock.dto.response.CloudinaryUploadResponse;
 import com.fptu.project_group2.catalogstock.dto.response.ProductImageResponse;
@@ -15,13 +12,11 @@ import com.fptu.project_group2.catalogstock.service.IProductImage;
 import com.fptu.project_group2.common.exception.BaseBusinessException;
 import com.fptu.project_group2.common.exception.ErrorCode;
 import com.fptu.project_group2.common.exception.NotFoundException;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -32,17 +27,15 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProductImageService implements IProductImage {
 
+    private static final int MAX_IMAGES_PER_COLOR = 3;
+
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
     private final ProductImageRepository productImageRepository;
     private final CloudinaryService cloudinaryService;
-    private final EntityManager entityManager;
-    private final TransactionTemplate transactionTemplate;
 
     @Override
-    public ProductImageResponse uploadImage(UUID productId, UploadProductImageRequest request, UUID userId) {
-        validateStoreStaff(userId);
-
+    public ProductImageResponse uploadImage(UUID productId, UploadProductImageRequest request) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy sản phẩm"));
 
@@ -56,20 +49,22 @@ public class ProductImageService implements IProductImage {
                         "Màu ảnh không thuộc các biến thể của sản phẩm"
                 ));
 
+        if (productImageRepository.countByProductIdAndColorIgnoreCase(productId, color) >= MAX_IMAGES_PER_COLOR) {
+            throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED,
+                    "Mỗi màu chỉ được tối đa " + MAX_IMAGES_PER_COLOR + " ảnh");
+        }
+
         CloudinaryUploadResponse uploaded = cloudinaryService.uploadImage(request.getFile());
 
-        try {
-            return transactionTemplate.execute(status -> {
-                ProductImage image = new ProductImage();
-                image.setProduct(product);
-                image.setImageUrl(uploaded.getImageUrl());
-                image.setPublicId(uploaded.getPublicId());
-                image.setColor(color);
-                image.setSortOrder(request.getSortOrder());
+        ProductImage image = new ProductImage();
+        image.setProduct(product);
+        image.setImageUrl(uploaded.getImageUrl());
+        image.setPublicId(uploaded.getPublicId());
+        image.setColor(color);
+        image.setSortOrder(request.getSortOrder());
 
-                ProductImage savedImage = productImageRepository.saveAndFlush(image);
-                return toProductImageResponse(savedImage);
-            });
+        try {
+            return toProductImageResponse(productImageRepository.saveAndFlush(image));
         } catch (RuntimeException exception) {
             log.error("Không thể lưu ảnh cho sản phẩm {}", productId, exception);
 
@@ -97,9 +92,7 @@ public class ProductImageService implements IProductImage {
     }
 
     @Override
-    public void deleteImage(UUID productId, UUID imageId, UUID userId) {
-        validateStoreStaff(userId);
-
+    public void deleteImage(UUID productId, UUID imageId) {
         ProductImage image = findProductImage(productId, imageId);
 
         if (StringUtils.hasText(image.getPublicId())) {
@@ -116,8 +109,7 @@ public class ProductImageService implements IProductImage {
 
     @Override
     @Transactional
-    public ProductImageResponse updateSortOrder(UUID productId, UUID imageId, int sortOrder, UUID userId) {
-        validateStoreStaff(userId);
+    public ProductImageResponse updateSortOrder(UUID productId, UUID imageId, int sortOrder) {
         ProductImage image = findProductImage(productId, imageId);
         image.setSortOrder(sortOrder);
         return toProductImageResponse(image);
@@ -126,23 +118,6 @@ public class ProductImageService implements IProductImage {
     private ProductImage findProductImage(UUID productId, UUID imageId) {
         return productImageRepository.findByIdAndProductId(imageId, productId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy ảnh của sản phẩm"));
-    }
-
-    private void validateStoreStaff(UUID userId) {
-        User staff = entityManager.find(User.class, userId);
-
-        if (staff == null) {
-            throw new NotFoundException("Không tìm thấy nhân viên");
-        }
-
-        if (staff.getRole() != UserRole.STORE_STAFF
-                || staff.getStatus() != UserStatus.ACTIVE
-                || staff.getDeletedAt() != null) {
-            throw new BaseBusinessException(
-                    ErrorCode.ACCESS_DENIED,
-                    "Tài khoản không có quyền thực hiện thao tác này"
-            );
-        }
     }
 
     private ProductImageResponse toProductImageResponse(ProductImage image) {

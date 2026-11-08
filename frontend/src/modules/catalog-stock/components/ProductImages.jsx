@@ -6,6 +6,7 @@ import {
 } from "../api/catalog-stock.api.js";
 
 const colorKey = (color) => color?.trim().toLowerCase() ?? "";
+const MAX_IMAGES_PER_COLOR = 3;
 
 export default function ProductImages({ productId, variants }) {
     const [images, setImages] = useState(null);
@@ -25,6 +26,7 @@ export default function ProductImages({ productId, variants }) {
     const visibleImages = (images ?? []).filter((image) =>
         !filter || colorKey(image.color) === filter
     );
+    const countImages = (key) => (images ?? []).filter((image) => colorKey(image.color) === key).length;
 
     useEffect(() => {
         let cancelled = false;
@@ -75,7 +77,7 @@ export default function ProductImages({ productId, variants }) {
             {notice && <Alert variant="success">{notice}</Alert>}
             {images === null && !error && <p>Đang tải ảnh…</p>}
             {images === null && error && (
-                <Button type="button" variant="outline-secondary" disabled={busy}
+                <Button type="button" variant="primary" disabled={busy}
                         onClick={() => runAction(reloadImages, "")}>Tải lại danh sách ảnh</Button>
             )}
             <Form onSubmit={upload} className="mb-4">
@@ -87,7 +89,9 @@ export default function ProductImages({ productId, variants }) {
                                 <Form.Select name="color" required defaultValue="">
                                     <option value="">Chọn màu</option>
                                     {[...colors].map(([key, color]) => (
-                                        <option key={key} value={color}>{color}</option>
+                                        <option key={key} value={color} disabled={countImages(key) >= MAX_IMAGES_PER_COLOR}>
+                                            {color} ({countImages(key)}/{MAX_IMAGES_PER_COLOR})
+                                        </option>
                                     ))}
                                 </Form.Select>
                             </Form.Group>
@@ -104,7 +108,7 @@ export default function ProductImages({ productId, variants }) {
                                 <Form.Control name="sortOrder" type="number" min="0" step="1" defaultValue="0" required />
                             </Form.Group>
                         </Col>
-                        <Col md={2}><Button type="submit">Tải ảnh lên</Button></Col>
+                        <Col md={2}><Button type="submit" variant="primary">Tải ảnh lên</Button></Col>
                     </Row>
                 </fieldset>
             </Form>
@@ -138,7 +142,7 @@ export default function ProductImages({ productId, variants }) {
                                         <Form.Control key={image.sortOrder} aria-label="Thứ tự ảnh" name="sortOrder"
                                                       type="number" min="0" step="1" required
                                                       defaultValue={image.sortOrder} disabled={busy} />
-                                        <Button type="submit" size="sm" variant="outline-primary" disabled={busy}>Lưu</Button>
+                                        <Button type="submit" size="sm" variant="primary" disabled={busy}>Lưu</Button>
                                     </Form>
                                     <Button type="button" size="sm" variant="outline-danger" disabled={busy}
                                             onClick={() => {

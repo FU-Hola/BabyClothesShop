@@ -14,7 +14,7 @@ public interface StockRepository extends JpaRepository<Inventory, UUID> {
     @Query("""
             select i
             from Inventory i
-            join ProductVariant v on v.id = i.variantId
+            join i.variant v
             join v.product p
             where (
                 lower(p.name) like :keyword

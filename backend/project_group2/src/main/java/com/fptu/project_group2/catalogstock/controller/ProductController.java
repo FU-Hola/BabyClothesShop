@@ -30,9 +30,7 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<ProductListResponse>>> searchProducts(@ModelAttribute ProductSearchRequest request) {
         Page<ProductListResponse> products = productService.searchProducts(request);
-        PageResponse<ProductListResponse> response = PageResponse.of(products);
-        response.setPage(products.getNumber() + 1);
-        return ResponseBuilder.ok(response, "Lấy danh sách sản phẩm thành công");
+        return ResponseBuilder.ok(PageResponse.oneBased(products), "Lấy danh sách sản phẩm thành công");
     }
 
     @PreAuthorize("hasRole('STORE_STAFF')")
@@ -57,10 +55,9 @@ public class ProductController {
     @PutMapping("/{productId}")
     public ResponseEntity<ApiResponse<Void>> updateProduct(
             @PathVariable("productId") UUID productId,
-            @Valid @RequestBody UpdateProductRequest request,
-            @AuthenticationPrincipal AuthenticatedUser principal
+            @Valid @RequestBody UpdateProductRequest request
     ) {
-        productService.updateProduct(productId, request, principal.id());
+        productService.updateProduct(productId, request);
 
         return ResponseBuilder.ok(null, "Cập nhật sản phẩm thành công");
     }

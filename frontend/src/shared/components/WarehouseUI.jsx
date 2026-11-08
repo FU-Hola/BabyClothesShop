@@ -1,5 +1,6 @@
 import { Table, Button, Form, Alert, Spinner } from "react-bootstrap";
 import { PackageOpen } from "lucide-react";
+import NumberedPagination from "./NumberedPagination.jsx";
 import "../styles/warehouse.css";
 
 export function PageHeading({ title, description, children }) {
@@ -160,29 +161,12 @@ export function PaginationBar({ data, busy, onChange }) {
                         ))}
                 </Form.Select>
             </label>
-            <div className="d-flex gap-2">
-                <Button
-                    variant="outline-secondary"
-                    disabled={busy || data.page <= 1}
-                    onClick={() => onChange({ page: 1 })}
-                >
-                    Đầu
-                </Button>
-                <Button
-                    variant="outline-secondary"
-                    disabled={busy || !data.hasPrevious}
-                    onClick={() => onChange({ page: data.page - 1 })}
-                >
-                    Trước
-                </Button>
-                <Button
-                    variant="outline-secondary"
-                    disabled={busy || !data.hasNext}
-                    onClick={() => onChange({ page: data.page + 1 })}
-                >
-                    Sau
-                </Button>
-            </div>
+            <NumberedPagination
+                currentPage={data.page}
+                totalPages={data.totalPages}
+                busy={busy}
+                onPageChange={(page) => onChange({ page })}
+            />
         </nav>
     );
 }

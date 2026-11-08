@@ -1,8 +1,7 @@
 package com.fptu.project_group2.catalogstock.service.impl;
 
-import com.fptu.project_group2.authaccount.common.UserRole;
-import com.fptu.project_group2.authaccount.common.UserStatus;
 import com.fptu.project_group2.authaccount.entity.User;
+import com.fptu.project_group2.authaccount.repository.UserRepository;
 import com.fptu.project_group2.catalogstock.common.ProductStatus;
 import com.fptu.project_group2.catalogstock.dto.request.CreateProductRequest;
 import com.fptu.project_group2.catalogstock.dto.request.ProductSearchRequest;
@@ -21,7 +20,6 @@ import com.fptu.project_group2.common.exception.ErrorCode;
 import com.fptu.project_group2.common.exception.NotFoundException;
 import com.fptu.project_group2.warehouse.entity.Inventory;
 import com.fptu.project_group2.warehouse.repository.InventoryRepository;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,7 +37,7 @@ public class ProductService implements IProduct {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductVariantRepository productVariantRepository;
-    private final EntityManager entityManager;
+    private final UserRepository userRepository;
     private final InventoryRepository inventoryRepository;
 
     @Override
@@ -62,7 +60,7 @@ public class ProductService implements IProduct {
         if (!category.isActive()) {
             throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED, "Danh mục đã ngừng hoạt động");
         }
-        User creator = getActiveStoreStaff(userId);
+        User creator = userRepository.getReferenceById(userId);
         validateVariants(request.getVariants());
         Product product = toProduct(request, category, creator);
         for (CreateProductRequest.VariantRequest item : request.getVariants()) {
@@ -83,9 +81,7 @@ public class ProductService implements IProduct {
 
     @Override
     @Transactional
-    public void updateProduct(UUID productId, UpdateProductRequest request, UUID userId) {
-        getActiveStoreStaff(userId);
-
+    public void updateProduct(UUID productId, UpdateProductRequest request) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy sản phẩm"));
 
@@ -130,23 +126,6 @@ public class ProductService implements IProduct {
 
             initializeInventory(savedVariants);
         }
-    }
-
-    private User getActiveStoreStaff(UUID userId) {
-        User staff = entityManager.find(User.class, userId);
-
-        if (staff == null) {
-            throw new NotFoundException("Không tìm thấy nhân viên");
-        }
-
-        if (staff.getRole() != UserRole.STORE_STAFF
-                || staff.getStatus() != UserStatus.ACTIVE
-                || staff.getDeletedAt() != null) {
-            throw new BaseBusinessException(ErrorCode.ACCESS_DENIED,
-                    "Tài khoản không có quyền thực hiện thao tác này");
-        }
-
-        return staff;
     }
 
     private void initializeInventory(List<ProductVariant> variants) {
@@ -237,7 +216,7 @@ public class ProductService implements IProduct {
 
     private void validateVariants(List<CreateProductRequest.VariantRequest> variants) {
         Set<String> skus = new HashSet<>();
-        Set<List<String>> colorSizes = new HashSet<>();
+        Set<String> colorSizes = new HashSet<>();
 
         for (CreateProductRequest.VariantRequest item : variants) {
             String sku = item.getSku().trim().toLowerCase(Locale.ROOT);
@@ -251,10 +230,7 @@ public class ProductService implements IProduct {
                 throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED, "SKU đã tồn tại: " + item.getSku());
             }
 
-            String color = item.getColor().trim().toLowerCase(Locale.ROOT);
-            String size = item.getSize().trim().toLowerCase(Locale.ROOT);
-
-            if (!colorSizes.add(List.of(color, size))) {
+            if (!colorSizes.add(colorSizeKey(item.getColor(), item.getSize()))) {
                 throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED, "Biến thể bị trùng màu và size");
             }
 
@@ -317,32 +293,37 @@ public class ProductService implements IProduct {
             }
         }
 
-        Set<List<String>> requestColorSizePairs = new HashSet<>();
+        validateColorSizeNotDuplicated(requests, existingVariants.values());
+    }
+
+    private void validateColorSizeNotDuplicated(
+            List<UpdateProductRequest.VariantRequest> requests,
+            Collection<ProductVariant> existingVariants
+    ) {
+        Set<String> requestKeys = new HashSet<>();
 
         for (UpdateProductRequest.VariantRequest request : requests) {
-            List<String> requestedPair = List.of(request.getColor().trim().toLowerCase(Locale.ROOT),
-                    request.getSize().trim().toLowerCase(Locale.ROOT));
+            String key = colorSizeKey(request.getColor(), request.getSize());
 
-            if (!requestColorSizePairs.add(requestedPair)) {
-                throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED,
-                        "Biến thể bị trùng màu và size trong request");
+            if (!requestKeys.add(key)) {
+                throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED, "Biến thể bị trùng màu và size");
             }
 
-            for (ProductVariant variant : existingVariants.values()) {
-                if (Objects.equals(variant.getId(), request.getId())) {
-                    continue;
-                }
+            for (ProductVariant variant : existingVariants) {
+                boolean isOtherVariant = !variant.getId().equals(request.getId());
 
-                List<String> existingPair = List.of(variant.getColor().trim().toLowerCase(Locale.ROOT),
-                        variant.getSize().trim().toLowerCase(Locale.ROOT));
-
-                if (requestedPair.equals(existingPair)) {
+                if (isOtherVariant && key.equals(colorSizeKey(variant.getColor(), variant.getSize()))) {
                     throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED,
-                            "Màu và size đang thuộc một biến thể khác. "
-                                    + "Hãy lưu thay đổi của biến thể đó trước");
+                            "Màu " + request.getColor().trim() + " - size " + request.getSize().trim()
+                                    + " đang thuộc biến thể " + variant.getSku()
+                                    + ". Không thể đổi chéo màu và size giữa các biến thể trong một lần lưu");
                 }
             }
         }
+    }
+
+    private String colorSizeKey(String color, String size) {
+        return color.trim().toLowerCase(Locale.ROOT) + "|" + size.trim().toLowerCase(Locale.ROOT);
     }
 
 }

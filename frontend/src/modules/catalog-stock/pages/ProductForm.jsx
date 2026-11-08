@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Alert, Button, Col, Container, Form, Row } from "react-bootstrap";
+import { Alert, Button, Col, Container, Form, Row, Table } from "react-bootstrap";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+
 import ProductImages from "../components/ProductImages.jsx";
 import { catalogError, createProduct, getCategories, getProduct, updateProduct } from "../api/catalog-stock.api.js";
 
@@ -22,7 +23,10 @@ function ProductEditor({ productId, onSaved }) {
     const [categories, setCategories] = useState([]);
     const [loadError, setLoadError] = useState("");
     const [submitError, setSubmitError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState({});
     const [saving, setSaving] = useState(false);
+    const [showInactive, setShowInactive] = useState(false);
+    const hiddenIds = new Set(savedVariants.filter((variant) => !variant.active).map((variant) => variant.id));
 
     useEffect(() => {
         let cancelled = false;
@@ -65,16 +69,17 @@ function ProductEditor({ productId, onSaved }) {
         event.preventDefault();
         setSaving(true);
         setSubmitError("");
+        setFieldErrors({});
         try {
             const payload = {
                 name: product.name.trim(),
                 description: (product.description ?? "").trim(),
-                categoryId: product.categoryId,
+                categoryId: product.categoryId || null,
                 variants: product.variants.map((variant) => ({
                     sku: variant.sku.trim(),
                     color: variant.color.trim(),
                     size: variant.size.trim(),
-                    price: Number(variant.price),
+                    price: variant.price === "" ? null : Number(variant.price),
                     originalPrice: variant.originalPrice === "" ? null : Number(variant.originalPrice),
                     ...(productId ? { id: variant.id, active: variant.active } : {}),
                 })),
@@ -92,35 +97,46 @@ function ProductEditor({ productId, onSaved }) {
                 });
             }
         } catch (failure) {
-            setSubmitError(catalogError(failure));
+            const responseErrors = failure.response?.data?.errors;
+            const errors = typeof responseErrors === "object" && responseErrors !== null ? responseErrors : {};
+            setFieldErrors(errors);
+            setSubmitError(Object.keys(errors).length > 0
+                ? "Vui lòng kiểm tra lại các ô được đánh dấu đỏ."
+                : catalogError(failure));
         } finally {
             setSaving(false);
         }
     }
 
+    function errorText(field) {
+        return <Form.Control.Feedback type="invalid">{fieldErrors[field]}</Form.Control.Feedback>;
+    }
+
     if (loadError) return <Alert variant="danger">{loadError}</Alert>;
     if (!product) return <p>Đang tải form sản phẩm…</p>;
 
+    const activeCount = product.variants.filter((variant) => variant.active).length;
+
     return (
         <>
-            <Form onSubmit={submit} className="bg-white rounded-4 shadow-sm p-4">
+            <Form noValidate onSubmit={submit} className="bg-white rounded-4 shadow-sm p-4">
                 {submitError && <Alert variant="danger">{submitError}</Alert>}
                 <fieldset disabled={saving}>
-                    <Form.Group controlId="productName" className="mb-3">
-                        <Form.Label>Tên sản phẩm</Form.Label>
-                        <Form.Control value={product.name} required maxLength={255}
-                                      onChange={(event) => setField("name", event.target.value)} />
-                    </Form.Group>
-                    <Form.Group controlId="productDescription" className="mb-3">
-                        <Form.Label>Mô tả sản phẩm</Form.Label>
-                        <Form.Control as="textarea" rows={3} value={product.description} required
-                                      onChange={(event) => setField("description", event.target.value)} />
-                    </Form.Group>
-                    <Row className="g-3 mb-4">
+                    <Row className="g-3 mb-3">
                         <Col md={6}>
+                            <Form.Group controlId="productName">
+                                <Form.Label>Tên sản phẩm</Form.Label>
+                                <Form.Control value={product.name} required maxLength={255}
+                                              isInvalid={Boolean(fieldErrors.name)}
+                                              onChange={(event) => setField("name", event.target.value)} />
+                                {errorText("name")}
+                            </Form.Group>
+                        </Col>
+                        <Col md={productId ? 3 : 6}>
                             <Form.Group controlId="productCategory">
                                 <Form.Label>Danh mục</Form.Label>
                                 <Form.Select required value={product.categoryId}
+                                             isInvalid={Boolean(fieldErrors.categoryId)}
                                              onChange={(event) => setField("categoryId", event.target.value)}>
                                     <option value="">Chọn danh mục</option>
                                     {product.categoryId && !categories.some((category) => category.id === product.categoryId) && (
@@ -130,10 +146,11 @@ function ProductEditor({ productId, onSaved }) {
                                         <option key={category.id} value={category.id}>{category.name}</option>
                                     ))}
                                 </Form.Select>
+                                {errorText("categoryId")}
                             </Form.Group>
                         </Col>
                         {productId && (
-                            <Col md={6}>
+                            <Col md={3}>
                                 <Form.Group controlId="productStatus">
                                     <Form.Label>Trạng thái kinh doanh</Form.Label>
                                     <Form.Select value={product.status}
@@ -145,55 +162,97 @@ function ProductEditor({ productId, onSaved }) {
                             </Col>
                         )}
                     </Row>
-                    <h2 className="h5">Biến thể sản phẩm</h2>
-                    {product.variants.map((variant, index) => (
-                        <fieldset key={variant.key} className="border rounded p-3 mb-3">
-                            <legend className="float-none w-auto px-2 fs-6">Biến thể {index + 1}</legend>
-                            <Row className="g-3">
-                                {[
-                                    ["sku", "Mã SKU", 64],
-                                    ["color", "Màu sắc", 100],
-                                    ["size", "Kích cỡ", 40],
-                                ].map(([field, label, maxLength]) => (
-                                    <Col md={4} key={field}>
-                                        <Form.Group controlId={`${field}-${variant.key}`}>
-                                            <Form.Label>{label}</Form.Label>
-                                            <Form.Control value={variant[field]} maxLength={maxLength} required
-                                                          readOnly={field === "sku" && Boolean(variant.id)}
+                    <Form.Group controlId="productDescription" className="mb-4">
+                        <Form.Label>Mô tả sản phẩm</Form.Label>
+                        <Form.Control as="textarea" rows={2} value={product.description} required maxLength={1000}
+                                      isInvalid={Boolean(fieldErrors.description)}
+                                      onChange={(event) => setField("description", event.target.value)} />
+                        {errorText("description")}
+                    </Form.Group>
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                        <h2 className="h5 mb-0">
+                            Biến thể sản phẩm
+                            {productId && <span className="text-muted fs-6 fw-normal"> ({activeCount} đang bán)</span>}
+                        </h2>
+                        {hiddenIds.size > 0 && (
+                            <Form.Check id="showInactive" label={`Hiện ${hiddenIds.size} biến thể đã ngừng bán`}
+                                        checked={showInactive}
+                                        onChange={(event) => setShowInactive(event.target.checked)} />
+                        )}
+                    </div>
+                    <Table responsive size="sm" className="align-middle mb-3">
+                        <thead className="table-light">
+                        <tr>
+                            <th style={{ width: "22%" }}>Mã SKU</th>
+                            <th>Màu sắc</th>
+                            <th>Kích cỡ</th>
+                            <th>Giá bán (VND)</th>
+                            <th>Giá trước giảm (VND)</th>
+                            {productId && <th className="text-center">Đang bán</th>}
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {product.variants.map((variant, index) => {
+                            if (!showInactive && hiddenIds.has(variant.id)) return null;
+                            const rowClass = variant.id && !variant.active ? "table-secondary" : "";
+                            return (
+                                <tr key={variant.key} className={rowClass}>
+                                    <td>
+                                        {variant.id ? (
+                                            <span className="font-monospace d-inline-block">{variant.sku}</span>
+                                        ) : (
+                                            <>
+                                                <Form.Control size="sm" aria-label="Mã SKU" value={variant.sku} maxLength={64}
+                                                              isInvalid={Boolean(fieldErrors[`variants[${index}].sku`])}
+                                                              onChange={(event) => setVariantField(variant.key, "sku", event.target.value)} />
+                                                {errorText(`variants[${index}].sku`)}
+                                            </>
+                                        )}
+                                    </td>
+                                    {[
+                                        ["color", "Màu sắc", 100],
+                                        ["size", "Kích cỡ", 40],
+                                    ].map(([field, label, maxLength]) => (
+                                        <td key={field}>
+                                            <Form.Control size="sm" aria-label={label} value={variant[field]} maxLength={maxLength}
+                                                          isInvalid={Boolean(fieldErrors[`variants[${index}].${field}`])}
                                                           onChange={(event) => setVariantField(variant.key, field, event.target.value)} />
-                                        </Form.Group>
-                                    </Col>
-                                ))}
-                                <Col md={4}>
-                                    <Form.Group controlId={`price-${variant.key}`}>
-                                        <Form.Label>Giá bán (VND)</Form.Label>
-                                        <Form.Control type="number" min="0.01" step="any" required value={variant.price}
-                                                      onChange={(event) => setVariantField(variant.key, "price", event.target.value)} />
-                                    </Form.Group>
-                                </Col>
-                                <Col md={4}>
-                                    <Form.Group controlId={`originalPrice-${variant.key}`}>
-                                        <Form.Label>Giá trước giảm (VND)</Form.Label>
-                                        <Form.Control type="number" min="0" step="any" value={variant.originalPrice}
-                                                      onChange={(event) => setVariantField(variant.key, "originalPrice", event.target.value)} />
-                                    </Form.Group>
-                                </Col>
-                                <Col md={4} className="d-flex align-items-end gap-2">
+                                            {errorText(`variants[${index}].${field}`)}
+                                        </td>
+                                    ))}
+                                    {[
+                                        ["price", "Giá bán"],
+                                        ["originalPrice", "Giá trước giảm"],
+                                    ].map(([field, label]) => (
+                                        <td key={field}>
+                                            <Form.Control size="sm" type="number" min="0" step="1" aria-label={label}
+                                                          value={variant[field]}
+                                                          isInvalid={Boolean(fieldErrors[`variants[${index}].${field}`])}
+                                                          onChange={(event) => setVariantField(variant.key, field, event.target.value)} />
+                                            {errorText(`variants[${index}].${field}`)}
+                                        </td>
+                                    ))}
                                     {productId && (
-                                        <Form.Check id={`active-${variant.key}`} label="Đang hoạt động" checked={variant.active}
-                                                    onChange={(event) => setVariantField(variant.key, "active", event.target.checked)} />
+                                        <td className="text-center">
+                                            <Form.Check aria-label="Đang bán" checked={variant.active}
+                                                        onChange={(event) => setVariantField(variant.key, "active", event.target.checked)} />
+                                        </td>
                                     )}
-                                    {!variant.id && product.variants.length > 1 && (
-                                        <Button type="button" size="sm" variant="outline-danger"
-                                                onClick={() => setField("variants", product.variants.filter(({ key }) => key !== variant.key))}>
-                                            Bỏ dòng
-                                        </Button>
-                                    )}
-                                </Col>
-                            </Row>
-                        </fieldset>
-                    ))}
-                    <Button type="button" variant="outline-secondary" className="mb-4"
+                                    <td className="text-end">
+                                        {!variant.id && product.variants.length > 1 && (
+                                            <Button type="button" size="sm" variant="danger" title="Bỏ dòng" className="text-nowrap"
+                                                    onClick={() => setField("variants", product.variants.filter(({ key }) => key !== variant.key))}>
+                                                Bỏ
+                                            </Button>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                        </tbody>
+                    </Table>
+                    <Button type="button" variant="primary" className="mb-4"
                             onClick={() => setField("variants", [...product.variants, newVariant()])}>
                         Thêm biến thể
                     </Button>
@@ -204,8 +263,8 @@ function ProductEditor({ productId, onSaved }) {
                         </section>
                     )}
                     <div className="d-flex justify-content-between gap-2">
-                        <Button as={Link} to={listPath} variant="outline-secondary">Quay lại danh sách</Button>
-                        <Button type="submit" variant="dark">
+                        <Button as={Link} to={listPath} variant="primary">Quay lại danh sách</Button>
+                        <Button type="submit" variant="primary">
                             {saving ? "Đang lưu…" : productId ? "Lưu thay đổi" : "Tạo sản phẩm"}
                         </Button>
                     </div>

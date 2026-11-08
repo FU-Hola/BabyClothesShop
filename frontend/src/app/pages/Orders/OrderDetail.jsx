@@ -12,6 +12,7 @@ const STATUS_LABELS = {
     PACKED: "Đã đóng gói",
     SHIPPING: "Đang giao",
     DELIVERED: "Đã giao",
+    CANCELLED: "Đã hủy",
 };
 
 const formatPrice = (price) => `${new Intl.NumberFormat("vi-VN").format(price || 0)} đ`;
@@ -24,19 +25,18 @@ const formatDate = (value) => {
 
 const OrderDetail = () => {
     const { orderId } = useParams();
-    const [order, setOrder] = useState(null);
-    const [error, setError] = useState("");
+    const [result, setResult] = useState(null);
+    const order = result?.id === orderId ? result.data : null;
+    const error = result?.id === orderId ? result.error : '';
 
     useEffect(() => {
         let cancelled = false;
-        setOrder(null);
-        setError("");
         getMyOrder(orderId)
             .then((data) => {
-                if (!cancelled) setOrder(data);
+                if (!cancelled) setResult({ id: orderId, data });
             })
             .catch((failure) => {
-                if (!cancelled) setError(failure.response?.data?.message || "Không tìm thấy đơn hàng.");
+                if (!cancelled) setResult({ id: orderId, error: failure.response?.data?.message || 'Không tìm thấy đơn hàng.' });
             });
         return () => {
             cancelled = true;

@@ -8,11 +8,11 @@ import java.util.UUID;
 
 public interface IProductImage {
 
-    ProductImageResponse uploadImage(UUID productId, UploadProductImageRequest request, UUID userId);
+    ProductImageResponse uploadImage(UUID productId, UploadProductImageRequest request);
 
     List<ProductImageResponse> getImages(UUID productId);
 
-    void deleteImage(UUID productId, UUID imageId, UUID userId);
+    void deleteImage(UUID productId, UUID imageId);
 
-    ProductImageResponse updateSortOrder(UUID productId, UUID imageId, int sortOrder, UUID userId);
+    ProductImageResponse updateSortOrder(UUID productId, UUID imageId, int sortOrder);
 }

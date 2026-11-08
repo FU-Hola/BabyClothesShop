@@ -1,7 +1,7 @@
 import { Search } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import cartIcon from "../../assets/cart-icon.svg";
-import { useCart } from "../../../modules/cart-checkout/context/CartContext";
+import { useCart } from "../../../modules/cart-checkout/hooks/useCart.js";
 import styles from "./MainHeader.module.css";
 
 const MainHeader = () => {

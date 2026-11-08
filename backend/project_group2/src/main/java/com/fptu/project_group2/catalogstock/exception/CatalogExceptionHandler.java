@@ -1,22 +1,23 @@
 package com.fptu.project_group2.catalogstock.exception;
 
-import com.fptu.project_group2.catalogstock.controller.CatalogController;
-import com.fptu.project_group2.catalogstock.controller.ProductController;
 import com.fptu.project_group2.common.exception.BaseBusinessException;
 import com.fptu.project_group2.common.exception.ErrorCode;
 import com.fptu.project_group2.common.http.ApiResponse;
 import com.fptu.project_group2.common.http.ResponseBuilder;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@RestControllerAdvice(basePackageClasses = {ProductController.class, CatalogController.class})
+@RestControllerAdvice(basePackages = "com.fptu.project_group2.catalogstock.controller")
 public class CatalogExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiResponse<Void>> handleMaxUploadSizeException(MaxUploadSizeExceededException exception) {
@@ -44,5 +45,17 @@ public class CatalogExceptionHandler {
 
         return ResponseBuilder.error(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_FAILED.getCode(),
                 "Dữ liệu đầu vào không hợp lệ", errors);
+    }
+
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ApiResponse<Void>> handleInvalidRequest(Exception exception) {
+        return ResponseBuilder.error(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_FAILED.getCode(),
+                "Dữ liệu đầu vào không hợp lệ", null);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException exception) {
+        return ResponseBuilder.error(HttpStatus.CONFLICT, ErrorCode.CONFLICT.getCode(),
+                "Dữ liệu không hợp lệ hoặc đã tồn tại. Vui lòng kiểm tra lại", null);
     }
 }

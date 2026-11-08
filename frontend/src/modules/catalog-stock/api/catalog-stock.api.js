@@ -48,8 +48,8 @@ export async function updateProductImageOrder(productId, imageId, sortOrder) {
     await client.patch(`${imagePath(productId)}/${imageId}/sort-order`, { sortOrder });
 }
 
-export async function getStocks(params, signal) {
-    return (await client.get(stocksPath, { params, signal })).data;
+export async function getStocks(params) {
+    return (await client.get(stocksPath, { params })).data;
 }
 
 export async function getStockSummary() {

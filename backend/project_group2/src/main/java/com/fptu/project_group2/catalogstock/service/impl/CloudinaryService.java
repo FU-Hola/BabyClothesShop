@@ -5,10 +5,8 @@ import com.fptu.project_group2.catalogstock.dto.response.CloudinaryUploadRespons
 import com.fptu.project_group2.common.exception.BaseBusinessException;
 import com.fptu.project_group2.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.util.unit.DataSize;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -20,9 +18,6 @@ import java.util.Map;
 public class CloudinaryService {
 
     private final Cloudinary cloudinary;
-
-    @Value("${spring.servlet.multipart.max-file-size:5MB}")
-    private String maxFileSize;
 
     public CloudinaryUploadResponse uploadImage(MultipartFile file) {
         validateConfiguration();
@@ -87,15 +82,6 @@ public class CloudinaryService {
             throw new BaseBusinessException(
                     ErrorCode.VALIDATION_FAILED,
                     "Vui lòng chọn file ảnh"
-            );
-        }
-
-        long maxBytes = DataSize.parse(maxFileSize).toBytes();
-
-        if (file.getSize() > maxBytes) {
-            throw new BaseBusinessException(
-                    ErrorCode.VALIDATION_FAILED,
-                    "Ảnh không được vượt quá " + maxFileSize
             );
         }
 

@@ -11,8 +11,9 @@ const statuses = {
     PACKED: { label: "Đã đóng gói", style: "packed" },
     SHIPPING: { label: "Đang giao", style: "shipping" },
     DELIVERED: { label: "Đã giao", style: "delivered" },
+    CANCELLED: { label: "Đã hủy", style: "cancelled" },
 };
-const steps = Object.keys(statuses);
+const steps = Object.keys(statuses).filter((status) => status !== "CANCELLED");
 const pageSize = 10;
 const formatPrice = (value) => new Intl.NumberFormat("vi-VN", {
     style: "currency", currency: "VND",
@@ -185,7 +186,7 @@ export default function StaffOrders() {
                         {!loading && !error && <span>{totalItems} kết quả</span>}</div>
                     <div className={styles.toolbar}>
                         <div className={styles.filters} aria-label="Lọc theo trạng thái">
-                            {["", ...steps].map((value) => <button key={value}
+                            {["", ...Object.keys(statuses)].map((value) => <button key={value}
                                 className={status === value ? styles.filterActive : ""}
                                 aria-pressed={status === value}
                                 onClick={() => { setStatus(value); setPage(1); }}>
@@ -266,6 +267,7 @@ export default function StaffOrders() {
                     <div className={styles.detailStack}>
                         <section className={styles.panel}>
                             <div className={styles.panelHeading}><Truck size={19} /><h2>Tiến trình đơn hàng</h2></div>
+                            {order.status === "CANCELLED" && <p className={styles.cancelledNote}>Đơn hàng đã hủy do phiếu xuất kho bị hủy.</p>}
                             <ol className={styles.timeline}>{steps.map((step, index) =>
                                 <li key={step} className={index <= steps.indexOf(order.status) ? styles.stepDone : ""}>
                                     <span className={styles.stepDot}>{index < steps.indexOf(order.status) && <Check size={12} />}</span>

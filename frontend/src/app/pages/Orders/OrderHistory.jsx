@@ -25,6 +25,7 @@ const STATUS_LABELS = {
     PACKED: "Đã đóng gói",
     SHIPPING: "Đang giao",
     DELIVERED: "Đã giao",
+    CANCELLED: "Đã hủy",
 };
 
 const formatPrice = (price) => `${new Intl.NumberFormat("vi-VN").format(price || 0)} đ`;
@@ -42,7 +43,6 @@ const OrderHistory = () => {
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const cancelledView = status === "CANCELLED";
     const visibleOrders = status
         ? orders.filter((order) => order.status === status)
         : orders;
@@ -118,29 +118,17 @@ const OrderHistory = () => {
 
                     <div className={styles.listHeading}>
                         <h2>{STATUS_FILTERS.find((filter) => filter.value === status)?.label || "Đã đặt"}</h2>
-                        <span>
-                            {cancelledView
-                                ? "0 đơn hàng"
-                                : loading
-                                    ? "Đang tải..."
-                                    : `${visibleOrders.length} đơn hàng`}
-                        </span>
+                        <span>{loading ? "Đang tải..." : `${visibleOrders.length} đơn hàng`}</span>
                     </div>
 
-                    {cancelledView ? (
-                        <div className={styles.emptyState}>
-                            <p>Phiên bản này chưa có chức năng hủy đơn, nên không có đơn đã hủy.</p>
-                            <Link to="/don-hang">Xem đơn đã đặt</Link>
-                        </div>
-                    ) : null}
                     {error ? <p>{error}</p> : null}
-                    {!loading && !error && !cancelledView && visibleOrders.length === 0 ? (
+                    {!loading && !error && visibleOrders.length === 0 ? (
                         <div className={styles.emptyState}>
                             <p>Chưa có đơn hàng ở trạng thái này.</p>
                             <Link to="/ao-thun">Khám phá sản phẩm</Link>
                         </div>
                     ) : null}
-                    {!cancelledView && pageOrders.length > 0 ? (
+                    {pageOrders.length > 0 ? (
                         <div className={styles.orderGrid}>
                             {pageOrders.map((order) => (
                                 <article className={styles.orderCard} key={order.id}>
@@ -185,7 +173,7 @@ const OrderHistory = () => {
                             ))}
                         </div>
                     ) : null}
-                    {!cancelledView && !loading && !error && totalPages > 1 ? (
+                    {!loading && !error && totalPages > 1 ? (
                         <div className={styles.paginationRow}>
                             <div className="text-muted small">
                                 Tìm thấy <span className="fw-semibold text-dark">{visibleOrders.length}</span> đơn hàng

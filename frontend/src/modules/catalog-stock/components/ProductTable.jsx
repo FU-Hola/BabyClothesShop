@@ -1,4 +1,4 @@
-import {Table, Button, Image} from "react-bootstrap";
+import {Table, Button} from "react-bootstrap";
 
 const formatPrice = new Intl.NumberFormat("vi-VN");
 
@@ -18,7 +18,6 @@ const ProductTable = ({products, onEdit}) => {
             <Table hover className="align-middle mb-0">
                 <thead className="table-light">
                 <tr>
-                    <th>Ảnh</th>
                     <th>Tên sản phẩm</th>
                     <th>Danh mục</th>
                     <th>Giá bán</th>
@@ -30,16 +29,6 @@ const ProductTable = ({products, onEdit}) => {
                 <tbody>
                 {products.map((product) => (
                     <tr key={product.id}>
-                        <td>
-                            <Image
-                                src="/images/products/sample-baby-romper.png"
-                                alt={`Ảnh mẫu ${product.name}`}
-                                width={56}
-                                height={56}
-                                rounded
-                                className="object-fit-contain"
-                            />
-                        </td>
                         <td>{product.name}</td>
                         <td>{product.categoryName}</td>
                         <td className="text-nowrap">{formatPriceRange(product)}</td>
@@ -54,7 +43,7 @@ const ProductTable = ({products, onEdit}) => {
                         </td>
                         <td>
                             <Button
-                                variant="outline-secondary"
+                                variant="primary"
                                 size="sm"
                                 className="text-nowrap"
                                 onClick={() => onEdit(product.id)}
