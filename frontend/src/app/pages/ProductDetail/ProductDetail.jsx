@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Minus, Plus } from "lucide-react";
 import { getCatalogProduct, getCatalogProducts } from "../../../shared/api/catalogApi.js";
 import { useCart } from "../../../modules/cart-checkout/hooks/useCart.js";
-import categories from "../../../shared/constants/categories.js";
 import styles from "./ProductDetail.module.css";
 
 const FALLBACK_IMAGE = "/images/products/sample-baby-romper.png";
@@ -50,7 +49,6 @@ const ProductDetail = () => {
     const colors = useMemo(() => [...new Set(product?.variants.map((item) => item.color) ?? [])], [product]);
     const sizes = product?.variants.filter((item) => item.color === variant?.color) ?? [];
     const available = Number(variant?.availableStock ?? 0);
-    const category = categories.find((item) => item.slug === product?.categorySlug);
     const image = product?.imageUrl || FALLBACK_IMAGE;
 
     const changeQuantity = (next) => {
@@ -89,7 +87,7 @@ const ProductDetail = () => {
             <nav className={styles.breadcrumb} aria-label="Đường dẫn trang">
                 <Link to="/">Trang chủ</Link>
                 <span aria-hidden="true">›</span>
-                <Link to={category?.path || "/"}>{product.categoryName}</Link>
+                <Link to={`/danh-muc/${encodeURIComponent(product.categorySlug)}`}>{product.categoryName}</Link>
                 <span aria-hidden="true">›</span>
                 <span aria-current="page">{product.name}</span>
             </nav>

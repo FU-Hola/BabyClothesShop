@@ -24,6 +24,7 @@ const publicRoutes = [
                 element: <ProductList slug={category.slug} />
             })),
             { path: "/search", element: <ProductList /> },
+            { path: "/danh-muc/:categorySlug", element: <ProductList /> },
             { path: "/san-pham/:productId", element: <ProductDetail /> },
             {
                 element: <RoleRoute allowedRoles={['CUSTOMER']} />,
