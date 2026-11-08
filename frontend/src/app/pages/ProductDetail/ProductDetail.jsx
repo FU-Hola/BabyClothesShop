@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Minus, Plus } from "lucide-react";
 import { getCatalogProduct, getCatalogProducts } from "../../../shared/api/catalogApi.js";
@@ -7,6 +7,67 @@ import styles from "./ProductDetail.module.css";
 
 const FALLBACK_IMAGE = "/images/products/sample-baby-romper.png";
 const formatPrice = (price) => `${new Intl.NumberFormat("vi-VN").format(price)} đ`;
+const SIZE_ORDER = ["S", "M", "L", "XL", "XXL"];
+
+function ProductGallery({ images, name }) {
+    const [selectedIndex, setSelectedIndex] = useState(0);
+    const imageFrame = useRef(null);
+
+    function selectImage(index) {
+        setSelectedIndex(index);
+        if (imageFrame.current) {
+            delete imageFrame.current.dataset.zoomed;
+            imageFrame.current.style.removeProperty("--zoom-x");
+            imageFrame.current.style.removeProperty("--zoom-y");
+        }
+    }
+
+    function moveZoom(event) {
+        if (event.pointerType !== "mouse") return;
+        event.currentTarget.dataset.zoomed = "true";
+        const bounds = event.currentTarget.getBoundingClientRect();
+        const x = Math.max(0, Math.min(100, (event.clientX - bounds.left) / bounds.width * 100));
+        const y = Math.max(0, Math.min(100, (event.clientY - bounds.top) / bounds.height * 100));
+        event.currentTarget.style.setProperty("--zoom-x", `${x}%`);
+        event.currentTarget.style.setProperty("--zoom-y", `${y}%`);
+    }
+
+    function resetZoom(event) {
+        delete event.currentTarget.dataset.zoomed;
+        event.currentTarget.style.removeProperty("--zoom-x");
+        event.currentTarget.style.removeProperty("--zoom-y");
+    }
+
+    return (
+        <div className={styles.gallery}>
+            <div className={styles.thumbnails} role="group" aria-label="Ảnh sản phẩm">
+                {images.map((image, index) => (
+                    <button key={image.id ?? image.imageUrl} type="button"
+                            className={`${styles.thumbnail} ${index === selectedIndex ? styles.thumbnailActive : ""}`}
+                            aria-label={`Xem ảnh ${index + 1} của ${name}`}
+                            aria-pressed={index === selectedIndex}
+                            onClick={() => selectImage(index)}>
+                        <img src={image.imageUrl} alt={`${name} - ảnh ${index + 1}`}
+                             className={styles.thumbnailImage} />
+                    </button>
+                ))}
+            </div>
+            <div ref={imageFrame} className={styles.mainImage} onPointerMove={moveZoom}
+                 onPointerLeave={resetZoom} onPointerCancel={resetZoom}>
+                <div className={styles.imageTrack}
+                     style={{ transform: `translateX(-${selectedIndex * 100}%)` }}>
+                    {images.map((image, index) => (
+                        <div key={image.id ?? image.imageUrl} className={styles.imageSlide}
+                             aria-hidden={index !== selectedIndex}>
+                            <img src={image.imageUrl} alt={index === selectedIndex ? name : ""}
+                                 className={styles.heroImage} />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
 
 const ProductDetail = () => {
     const { productId } = useParams();
@@ -47,9 +108,23 @@ const ProductDetail = () => {
 
     const variant = product?.variants.find((item) => item.id === variantId) ?? product?.variants[0];
     const colors = useMemo(() => [...new Set(product?.variants.map((item) => item.color) ?? [])], [product]);
-    const sizes = product?.variants.filter((item) => item.color === variant?.color) ?? [];
+    const sizes = (product?.variants.filter((item) => item.color === variant?.color) ?? [])
+        .sort((a, b) => {
+            const aIndex = SIZE_ORDER.indexOf(a.size);
+            const bIndex = SIZE_ORDER.indexOf(b.size);
+            return aIndex >= 0 && bIndex >= 0 ? aIndex - bIndex : a.size.localeCompare(b.size);
+        });
     const available = Number(variant?.availableStock ?? 0);
-    const image = product?.imageUrl || FALLBACK_IMAGE;
+    const colorImages = (product?.images ?? [])
+        .filter((image) => image.color === variant?.color)
+        .sort((a, b) => a.sortOrder - b.sortOrder);
+    const sharedImages = (product?.images ?? [])
+        .filter((image) => !image.color)
+        .sort((a, b) => a.sortOrder - b.sortOrder);
+    const galleryImages = colorImages.length ? colorImages
+        : sharedImages.length ? sharedImages
+            : [{ imageUrl: product?.imageUrl || FALLBACK_IMAGE }];
+    const image = galleryImages[0].imageUrl;
 
     const changeQuantity = (next) => {
         setQuantity(Math.min(Math.max(available, 1), Math.max(1, next)));
@@ -93,11 +168,8 @@ const ProductDetail = () => {
             </nav>
 
             <section className={styles.detail} aria-labelledby="product-name">
-                <div className={styles.gallery}>
-                    <div className={styles.mainImage}>
-                        <img src={image} alt={product.name} className={styles.heroImage} />
-                    </div>
-                </div>
+                <ProductGallery key={`${product.id}-${variant.color}`}
+                                images={galleryImages} name={product.name} />
                 <div className={styles.details}>
                     <div className={styles.heading}>
                         <span className={styles.brand}>{product.categoryName}</span>
@@ -116,7 +188,8 @@ const ProductDetail = () => {
                                         type="button"
                                         className={`${styles.sizeButton} ${color === variant.color ? styles.sizeButtonActive : ""}`}
                                         onClick={() => {
-                                            const next = product.variants.find((item) => item.color === color);
+                                             const next = product.variants.find((item) => item.color === color && item.size === variant.size)
+                                                 ?? product.variants.find((item) => item.color === color);
                                             setVariantId(next.id);
                                             setQuantity(1);
                                         }}
