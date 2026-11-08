@@ -118,6 +118,30 @@ class CatalogStockIntegrationTests extends IntegrationTestSupport {
     }
 
     @Test
+    void publicCatalogReturnsOrderedImagesWithTheirColors() throws Exception {
+        String sku = randomCode();
+        UUID productId = createProduct(createBody("Áo có thư viện ảnh",
+                newVariant(sku + "-RED", "Đỏ", "S", 199000),
+                newVariant(sku + "-BLUE", "Xanh", "S", 199000)));
+        for (int sortOrder : new int[]{2, 0, 1, 3}) {
+            jdbc.update("""
+                    INSERT INTO shop.product_images (id, product_id, image_url, color, sort_order)
+                    VALUES (?, ?, ?, ?, ?)
+                    """, UUID.randomUUID(), productId, "/images/test-" + sortOrder + ".jpg",
+                    sortOrder == 3 ? "Xanh" : "Đỏ", sortOrder);
+        }
+
+        mvc.perform(get("/api/v1/catalog/products/" + productId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.imageUrl").value("/images/test-0.jpg"))
+                .andExpect(jsonPath("$.data.images.length()").value(4))
+                .andExpect(jsonPath("$.data.images[0].imageUrl").value("/images/test-0.jpg"))
+                .andExpect(jsonPath("$.data.images[1].sortOrder").value(1))
+                .andExpect(jsonPath("$.data.images[2].color").value("Đỏ"))
+                .andExpect(jsonPath("$.data.images[3].color").value("Xanh"));
+    }
+
+    @Test
     void createProductIsActiveAndEverySkuStartsWithZeroStock() throws Exception {
         String sku = randomCode();
         UUID productId = createProduct(createBody("Áo cotton",
