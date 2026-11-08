@@ -140,7 +140,7 @@ public class CheckoutServiceImpl implements ICheckoutService {
             throw new BadRequestException("Giỏ hàng của bạn đang trống, không thể thanh toán");
         }
 
-        // Kiểm tra lại tồn kho có thể bán một lần nữa trước khi tạo đơn và giữ hàng
+        // Kiểm tra lại tồn thực tế trước khi tạo đơn. Đơn mới không giữ hàng.
         for (CartItem item : cartItems) {
             ProductVariant variant = item.getVariant();
             long available = stockService.getAvailableStock(variant.getId());
@@ -192,8 +192,7 @@ public class CheckoutServiceImpl implements ICheckoutService {
             totalAmount = totalAmount.add(variant.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
         }
 
-        // Lưu đơn hàng và các order_items (đơn PENDING_CONFIRMATION sẽ giữ hàng tự
-        // động)
+        // Lưu đơn hàng và các order_items. Tồn inventory chỉ giảm khi xuất kho.
         Order savedOrder = orderRepository.save(order);
         for (OrderItem oi : order.getItems()) {
             orderItemRepository.save(oi);
