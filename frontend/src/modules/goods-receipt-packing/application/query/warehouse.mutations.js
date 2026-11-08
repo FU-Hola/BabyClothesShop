@@ -24,7 +24,6 @@ export async function performWarehouseWrite(client, api, resource, id, { action,
                   pack: () => api.packIssue(id, body),
                   export: () => api.exportIssue(id, body),
                   cancel: () => api.cancelIssue(id, body),
-                  recreate: () => api.recreateIssue(id, body),
               };
     if (!operations[action]) throw new Error("Thao tác kho không hợp lệ");
     if (id)
@@ -37,7 +36,6 @@ export async function performWarehouseWrite(client, api, resource, id, { action,
     try {
         if (resource === "receipt" && id) queryKeys.push(warehouseKeys.detail(resource, id));
         if (resource === "issue") {
-            // Recreate trả ID khác: chỉ ghi đúng cache của phiếu được trả về.
             await client.cancelQueries({
                 queryKey: warehouseKeys.detail(resource, data.id),
                 exact: true,

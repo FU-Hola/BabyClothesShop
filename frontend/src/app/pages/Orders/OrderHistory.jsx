@@ -22,6 +22,7 @@ const STATUS_LABELS = {
     PACKED: "Đã đóng gói",
     SHIPPING: "Đang giao",
     DELIVERED: "Đã giao",
+    CANCELLED: "Đã hủy",
 };
 
 const formatPrice = (price) => `${new Intl.NumberFormat("vi-VN").format(price || 0)} đ`;
@@ -36,16 +37,12 @@ const OrderHistory = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const status = searchParams.get("status") || "";
     const [result, setResult] = useState(null);
-    const cancelledView = status === "CANCELLED";
     const currentResult = result?.status === status ? result : null;
-    const orders = !cancelledView ? currentResult?.data || [] : [];
-    const loading = !cancelledView && !currentResult;
-    const error = !cancelledView ? currentResult?.error : '';
+    const orders = currentResult?.data || [];
+    const loading = !currentResult;
+    const error = currentResult?.error;
 
     useEffect(() => {
-        if (cancelledView) {
-            return undefined;
-        }
         let cancelled = false;
         getMyOrders(status || undefined)
             .then((data) => {
@@ -61,7 +58,7 @@ const OrderHistory = () => {
         return () => {
             cancelled = true;
         };
-    }, [status, cancelledView]);
+    }, [status]);
 
     return (
         <div className={styles.page}>
@@ -106,20 +103,14 @@ const OrderHistory = () => {
                         <span>{loading ? "Đang tải..." : `${orders.length} đơn hàng`}</span>
                     </div>
 
-                    {cancelledView ? (
-                        <div className={styles.emptyState}>
-                            <p>Phiên bản này chưa có chức năng hủy đơn, nên không có đơn đã hủy.</p>
-                            <Link to="/don-hang">Xem đơn đã đặt</Link>
-                        </div>
-                    ) : null}
                     {error ? <p>{error}</p> : null}
-                    {!loading && !error && !cancelledView && orders.length === 0 ? (
+                    {!loading && !error && orders.length === 0 ? (
                         <div className={styles.emptyState}>
                             <p>Chưa có đơn hàng ở trạng thái này.</p>
                             <Link to="/ao-thun">Khám phá sản phẩm</Link>
                         </div>
                     ) : null}
-                    {!cancelledView && orders.map((order) => (
+                    {orders.map((order) => (
                         <article className={styles.orderCard} key={order.id}>
                             <div className={styles.orderCardHeader}>
                                 <div>

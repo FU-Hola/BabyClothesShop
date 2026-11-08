@@ -12,6 +12,7 @@ const STATUS_LABELS = {
     PACKED: "Đã đóng gói",
     SHIPPING: "Đang giao",
     DELIVERED: "Đã giao",
+    CANCELLED: "Đã hủy",
 };
 
 const formatPrice = (price) => `${new Intl.NumberFormat("vi-VN").format(price || 0)} đ`;

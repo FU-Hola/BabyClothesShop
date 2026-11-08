@@ -15,7 +15,7 @@ export const issueSummarySchema = z.looseObject({
 });
 
 export const issueDetailSchema = issueSummarySchema.extend({
-    orderStatus: z.enum(["PENDING_CONFIRMATION", "CONFIRMED", "PACKED", "SHIPPING", "DELIVERED"]),
+    orderStatus: z.enum(["PENDING_CONFIRMATION", "CONFIRMED", "PACKED", "SHIPPING", "DELIVERED", "CANCELLED"]),
 
     receiverName: nullableText,
     receiverPhone: nullableText,

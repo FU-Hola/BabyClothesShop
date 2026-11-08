@@ -80,15 +80,6 @@ export function createIssueApi({ request, getPage } = warehouseTransport) {
                 issueDetailSchema,
             ),
 
-        recreateIssue: (id, body) =>
-            request(
-                {
-                    method: "POST",
-                    url: issuePath(id, "/recreate"),
-                    data: body,
-                },
-                issueDetailSchema,
-            ),
     };
 }
 
