@@ -4,7 +4,8 @@ import java.util.UUID;
 
 public interface IStockService {
     /**
-     * Tính số lượng có thể bán = Tồn thực tế (inventory) - Số lượng đang giữ cho đơn (Pending Confirmation, Confirmed, Packed)
+     * Tồn hiển thị cho khách là tồn thực tế trong inventory.
+     * Tồn chỉ giảm khi phiếu xuất kho chuyển sang EXPORTED.
      */
     long getAvailableStock(UUID variantId);
 }
