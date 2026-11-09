@@ -13,7 +13,13 @@ import com.fptu.project_group2.warehouse.common.GoodsIssueStatus;
 import com.fptu.project_group2.warehouse.entity.GoodsIssue;
 import com.fptu.project_group2.warehouse.repository.GoodsIssueRepository;
 import com.fptu.project_group2.warehouse.repository.InventoryRepository;
+import com.fptu.project_group2.warehouse.service.IGoodsIssue;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,11 +30,20 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
 
+@ExtendWith(MockitoExtension.class)
 class OrderShippingTests {
-    private final OrderRepository orders = mock(OrderRepository.class);
-    private final GoodsIssueRepository issues = mock(GoodsIssueRepository.class);
-    private final InventoryRepository inventory = mock(InventoryRepository.class);
-    private final OrderService service = new OrderService(orders, new OrderResponseMapper(), issues, inventory);
+    @Mock
+    private OrderRepository orders;
+    @Mock
+    private GoodsIssueRepository issues;
+    @Mock
+    private InventoryRepository inventory;
+    @Mock
+    private IGoodsIssue goodsIssue;
+    @Spy
+    private OrderResponseMapper mapper = new OrderResponseMapper();
+    @InjectMocks
+    private OrderService service;
 
     @Test
     void shipsPackedOrderOnceAndRecordsCarrier() {
