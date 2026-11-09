@@ -10,7 +10,13 @@ import com.fptu.project_group2.ordermanagement.mapper.OrderResponseMapper;
 import com.fptu.project_group2.ordermanagement.repository.OrderRepository;
 import com.fptu.project_group2.warehouse.repository.GoodsIssueRepository;
 import com.fptu.project_group2.warehouse.repository.InventoryRepository;
+import com.fptu.project_group2.warehouse.service.IGoodsIssue;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -24,10 +30,20 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class OrderServiceTests {
-    private final OrderRepository repository = mock(OrderRepository.class);
-    private final OrderService service = new OrderService(repository, new OrderResponseMapper(),
-            mock(GoodsIssueRepository.class), mock(InventoryRepository.class));
+    @Mock
+    private OrderRepository repository;
+    @Mock
+    private GoodsIssueRepository issues;
+    @Mock
+    private InventoryRepository inventory;
+    @Mock
+    private IGoodsIssue goodsIssue;
+    @Spy
+    private OrderResponseMapper mapper = new OrderResponseMapper();
+    @InjectMocks
+    private OrderService service;
 
     @Test
     void listsOrdersInPageOrderAndTrimsSearch() {
