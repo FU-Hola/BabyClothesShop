@@ -1,7 +1,10 @@
 .page {
-    padding: 24px var(--page-gutter) 64px;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 20px 24px 48px;
     color: #222;
-    font-size: 16px;
+    font-size: 15px;
 }
 
 .breadcrumb {
@@ -10,7 +13,7 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
     color: #777;
     font-size: 13px;
 }
@@ -26,14 +29,14 @@
 
 .detail {
     display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     align-items: start;
-    gap: clamp(24px, 4vw, 64px);
+    gap: clamp(24px, 3vw, 40px);
 }
 
 .gallery {
     display: grid;
-    grid-template-columns: minmax(84px, 21%) minmax(0, 1fr);
+    grid-template-columns: minmax(64px, 18%) minmax(0, 1fr);
     align-items: start;
     gap: 6px;
     min-width: 0;
@@ -42,6 +45,8 @@
 .thumbnails {
     display: grid;
     gap: 6px;
+    max-height: 720px;
+    overflow-y: auto;
 }
 
 .thumbnail {
@@ -56,6 +61,11 @@
 
 .thumbnailActive {
     border-color: #777;
+}
+
+.thumbnail:focus-visible {
+    outline: 2px solid var(--ui-primary);
+    outline-offset: -3px;
 }
 
 .actions button:focus-visible {
@@ -76,8 +86,27 @@
     background-size: cover;
 }
 
+.imageTrack {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 300ms ease-in-out;
+}
+
+.imageSlide {
+    flex: 0 0 100%;
+    min-width: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .imageTrack {
+        transition: none;
+    }
+}
+
 .mainImage {
-    grid-column: 1 / -1;
     width: 100%;
     aspect-ratio: 3 / 4;
     overflow: hidden;
@@ -85,7 +114,27 @@
 }
 
 .mainImage img {
-    object-fit: cover;
+    object-fit: contain;
+    transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .mainImage {
+        cursor: zoom-in;
+    }
+
+}
+
+.mainImage[data-zoomed="true"] {
+    cursor: zoom-in;
+}
+
+.mainImage[data-zoomed="true"] img {
+    transform: scale(2);
+}
+
+.thumbnailImage {
+    object-fit: contain;
 }
 
 .details {
@@ -94,8 +143,8 @@
 
 .heading {
     display: grid;
-    gap: 8px;
-    padding-bottom: 24px;
+    gap: 6px;
+    padding-bottom: 16px;
     border-bottom: 1px solid #e9e9e9;
 }
 
@@ -105,25 +154,25 @@
 
 .heading h1 {
     margin: 0;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 500;
     line-height: 1.4;
 }
 
 .price {
-    margin-top: 12px;
+    margin-top: 8px;
     font-size: 24px;
     font-weight: 700;
 }
 
 .options {
     display: grid;
-    gap: 24px;
-    padding: 24px 0;
+    gap: 16px;
+    padding: 16px 0;
 }
 
 .optionLabel {
-    margin: 0 0 12px;
+    margin: 0 0 8px;
     font-size: 14px;
     text-transform: uppercase;
 }
@@ -187,12 +236,12 @@
 .actions {
     display: grid;
     gap: 10px;
-    max-width: 360px;
-    margin: 12px 0 32px;
+    max-width: 320px;
+    margin: 8px 0 24px;
 }
 
 .actions button {
-    min-height: 48px;
+    min-height: 44px;
     border: 1px solid #e8e8e8;
     background: #f6f6f7;
     color: #222;
@@ -296,7 +345,7 @@
 }
 
 .recommendations {
-    margin-top: 80px;
+    margin-top: 56px;
 }
 
 .recommendations h2 {
@@ -356,6 +405,7 @@
 @media (max-width: 600px) {
     .page {
         padding-top: 16px;
+        padding-inline: 16px;
     }
 
     .gallery {
@@ -367,6 +417,8 @@
         display: flex;
         gap: 8px;
         width: 100%;
+        max-height: none;
+        overflow-x: auto;
     }
 
     .thumbnail {

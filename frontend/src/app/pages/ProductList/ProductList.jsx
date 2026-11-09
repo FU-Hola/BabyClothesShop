@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Button, Form, Modal } from "react-bootstrap";
 import { Minus, Plus, RotateCcw } from "lucide-react";
 import { getCatalogProducts } from "../../../shared/api/catalogApi.js";
 import { useCart } from "../../../modules/cart-checkout/hooks/useCart.js";
-import categories from "../../../shared/constants/categories.js";
+import { useCatalogCategories } from "../../../shared/hooks/useCatalogCategories.js";
 import CatalogPagination from "../../../modules/catalog-stock/components/CatalogPagination.jsx";
 import styles from "./ProductList.module.css";
 
@@ -149,9 +149,11 @@ const ProductCard = ({ product }) => {
 
 const ProductList = ({ slug, preview = false }) => {
     const navigate = useNavigate();
+    const { categorySlug } = useParams();
+    const { data: categories = [], isError: categoriesError } = useCatalogCategories();
     const [searchParams, setSearchParams] = useSearchParams();
     const keyword = preview ? "" : searchParams.get("q") || "";
-    const selectedSlug = preview ? "" : slug || searchParams.get("category") || "";
+    const selectedSlug = preview ? "" : slug || categorySlug || searchParams.get("category") || "";
     const minPrice = preview ? "" : searchParams.get("minPrice") || "";
     const maxPrice = preview ? "" : searchParams.get("maxPrice") || "";
     const category = categories.find((item) => item.slug === selectedSlug);
@@ -197,7 +199,7 @@ const ProductList = ({ slug, preview = false }) => {
         return () => { cancelled = true; };
     }, [selectedSlug, keyword, sort, requestKey]);
 
-    const title = keyword ? `Kết quả cho “${keyword}”` : (category?.label || "Sản phẩm");
+    const title = keyword ? `Kết quả cho “${keyword}”` : (category?.name || "Sản phẩm");
 
     function search(event) {
         event.preventDefault();
@@ -235,7 +237,7 @@ const ProductList = ({ slug, preview = false }) => {
             {!preview && <nav className={styles.breadcrumb}>
                 <Link to="/">Trang chủ</Link>
                 <span>/</span>
-                <span>{category?.label || "Tìm kiếm sản phẩm"}</span>
+                <span>{category?.name || "Tìm kiếm sản phẩm"}</span>
             </nav>}
             {preview ? <h2 className={styles.title}>Sản phẩm</h2> : <h1 className={styles.title}>{title}</h1>}
             <div>
@@ -253,10 +255,11 @@ const ProductList = ({ slug, preview = false }) => {
                         <Form.Select value={selectedSlug} onChange={(event) => changeCategory(event.target.value)}>
                             <option value="">Tất cả danh mục</option>
                             {categories.map((item) => (
-                                <option key={item.slug} value={item.slug}>{item.label}</option>
+                                <option key={item.slug} value={item.slug}>{item.name}</option>
                             ))}
                         </Form.Select>
                     </Form.Group>
+                    {categoriesError && <p role="alert">Không tải được danh mục.</p>}
                     <Form.Group controlId="catalogMinPrice" key={`min-${minPrice}`}>
                         <Form.Label>Giá từ (VND)</Form.Label>
                         <Form.Control type="number" name="minPrice" form="catalog-search-form"
@@ -274,8 +277,8 @@ const ProductList = ({ slug, preview = false }) => {
                     <button className={styles.searchButton} type="submit" form="catalog-search-form">
                         Tìm kiếm
                     </button>
-                    <button type="reset" form="catalog-search-form" className={styles.resetButton}
-                            title="Đặt lại bộ lọc" onClick={() => {
+                    <button type="button" className={styles.resetButton}
+                            title="Đặt lại bộ lọc" aria-label="Đặt lại bộ lọc" onClick={() => {
                                 setSort("default");
                                 navigate("/search");
                             }}>

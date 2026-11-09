@@ -16,9 +16,19 @@ public class CatalogProductResponse {
     private String categoryName;
     private String categorySlug;
     private String imageUrl;
+    private List<CatalogImageResponse> images;
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
     private List<CatalogVariantResponse> variants;
+
+    @Getter
+    @Builder
+    public static class CatalogImageResponse {
+        private UUID id;
+        private String imageUrl;
+        private String color;
+        private int sortOrder;
+    }
 
     @Getter
     @Builder
