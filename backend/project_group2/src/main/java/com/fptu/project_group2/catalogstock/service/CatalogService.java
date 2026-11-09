@@ -68,8 +68,11 @@ public class CatalogService {
                 .min(BigDecimal::compareTo).orElse(null);
         BigDecimal maxPrice = variants.stream().map(CatalogProductResponse.CatalogVariantResponse::getPrice)
                 .max(BigDecimal::compareTo).orElse(null);
+        Comparator<ProductImage> imageOrder = Comparator.comparingInt(ProductImage::getSortOrder)
+                .thenComparing(ProductImage::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(ProductImage::getId);
         String imageUrl = product.getImages().stream()
-                .min(Comparator.comparingInt(ProductImage::getSortOrder))
+                .min(imageOrder)
                 .map(ProductImage::getImageUrl)
                 .orElse(null);
         return CatalogProductResponse.builder()
@@ -80,8 +83,7 @@ public class CatalogService {
                 .categorySlug(product.getCategory().getSlug())
                 .imageUrl(imageUrl)
                 .images(product.getImages().stream()
-                        .sorted(Comparator.comparingInt(ProductImage::getSortOrder)
-                                .thenComparing(ProductImage::getId))
+                        .sorted(imageOrder)
                         .map(image -> CatalogProductResponse.CatalogImageResponse.builder()
                                 .id(image.getId())
                                 .imageUrl(image.getImageUrl())
