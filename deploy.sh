@@ -11,7 +11,7 @@ compose=(docker compose --env-file backend/project_group2/.env
     -f docker-compose.yaml -f compose.deploy.yaml)
 "${compose[@]}" config --quiet
 
-(cd backend/project_group2 && bash ./mvnw -DskipTests package)
+(cd backend/project_group2 && bash ./mvnw -DskipTests clean package)
 (cd frontend && VITE_API_BASE_URL=/api/v1 \
     VITE_WAREHOUSE_API_URL=/warehouse-staff npm run build)
 
