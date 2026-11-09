@@ -11,6 +11,7 @@ import com.fptu.project_group2.ordermanagement.common.PaymentStatus;
 import com.fptu.project_group2.ordermanagement.dto.request.ShipOrderRequest;
 import com.fptu.project_group2.ordermanagement.entity.OrderItem;
 import com.fptu.project_group2.warehouse.common.GoodsIssueStatus;
+import com.fptu.project_group2.warehouse.dto.request.GoodsIssue.CreateGoodsIssueRequest;
 import com.fptu.project_group2.warehouse.entity.GoodsIssue;
 import com.fptu.project_group2.warehouse.repository.GoodsIssueRepository;
 import com.fptu.project_group2.warehouse.repository.InventoryRepository;
@@ -19,6 +20,7 @@ import com.fptu.project_group2.ordermanagement.dto.response.OrderSummaryResponse
 import com.fptu.project_group2.ordermanagement.entity.Order;
 import com.fptu.project_group2.ordermanagement.mapper.OrderResponseMapper;
 import com.fptu.project_group2.ordermanagement.repository.OrderRepository;
+import com.fptu.project_group2.warehouse.service.IGoodsIssue;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -43,6 +45,7 @@ public class OrderService {
     private final OrderResponseMapper orderMapper;
     private final GoodsIssueRepository goodsIssueRepository;
     private final InventoryRepository inventoryRepository;
+    private final IGoodsIssue goodsIssue;
 
     public PageResponse<OrderSummaryResponse> getOrders(OrderStatus status, String search,
                                                        int page, int size) {
@@ -135,6 +138,7 @@ public class OrderService {
 
         // Flush now so @Version detects concurrent changes before returning the result.
         orderRepository.saveAndFlush(order);
+        goodsIssue.createGoodsIssue(new CreateGoodsIssueRequest(order.getId()));
         return orderMapper.toDetail(order);
     }
 
