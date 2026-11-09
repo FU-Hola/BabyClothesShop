@@ -30,7 +30,8 @@ public class CloudinaryService {
                     file.getBytes(),
                     Map.of(
                             "resource_type", "image",
-                            "allowed_formats", List.of("jpg", "jpeg", "png", "webp")
+                            "allowed_formats", List.of("jpg", "jpeg", "png", "webp"),
+                            "asset_folder", "baby-clothes-shop"
                     )
             );
         } catch (IOException | RuntimeException exception) {
