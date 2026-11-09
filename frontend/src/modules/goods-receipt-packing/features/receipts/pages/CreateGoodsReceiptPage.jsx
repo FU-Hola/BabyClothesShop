@@ -77,7 +77,7 @@ function ReceiptLines() {
 }
 
 export default function CreateGoodsReceiptPage() {
-    const [result, setResult] = useState(null);
+    const [created, setCreated] = useState(false);
     return (
         <div className="goods-receipt-packing">
             <PageHeading
@@ -88,11 +88,9 @@ export default function CreateGoodsReceiptPage() {
                     Danh sách phiếu nhập
                 </Button>
             </PageHeading>
-            {result && (
-                <Alert variant={result.refreshFailed ? "warning" : "success"}>
+            {created && (
+                <Alert variant="success">
                     Đã tạo phiếu nhập.{" "}
-                    {result.refreshFailed &&
-                        "Danh sách chưa tải lại được; vui lòng tải lại khi mở danh sách."}{" "}
                     <Link to="/store-staff/goods-receipts">Xem danh sách phiếu nhập</Link>
                 </Alert>
             )}
@@ -102,7 +100,7 @@ export default function CreateGoodsReceiptPage() {
                 schema={createReceiptSchema}
                 defaultValues={{ supplierName: "", expectedDate: "", note: "", items: [] }}
                 title="Tạo phiếu nhập"
-                onCompleted={setResult}
+                onCompleted={() => setCreated(true)}
                 confirmText="Tạo phiếu nhập với các SKU và số lượng dự kiến đã chọn?"
             >
                 <div className="warehouse-detail-grid">

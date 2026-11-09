@@ -4,17 +4,10 @@ import {
     versionSchema,
     textSchema,
     quantitySchema,
-    validateExactLines,
 } from "../../../../../shared/schemas/warehouse.schemas.js";
-
-export const issueStatusSchema = z.enum(["PENDING", "PICKING", "PACKED", "EXPORTED", "CANCELLED"]);
 
 export const issueVersionSchema = z.object({
     version: versionSchema,
-});
-
-export const createIssueSchema = z.object({
-    orderId: uuidSchema,
 });
 
 export function pickingSchema(issue) {
@@ -33,8 +26,6 @@ export function pickingSchema(issue) {
                 .max(200),
         })
         .superRefine((value, context) => {
-            validateExactLines(value.items, issue.items, "issueItemId", "issueItemId", context);
-
             const orderedById = new Map(
                 issue.items.map((item) => [item.issueItemId, item.orderedQuantity]),
             );

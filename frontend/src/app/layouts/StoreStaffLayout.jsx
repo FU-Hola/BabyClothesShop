@@ -4,7 +4,6 @@ import StoreStaffHeader from "../../shared/components/StoreStaff/StoreStaffHeade
 import StoreStaffFooter from "../../shared/components/StoreStaff/StoreStaffFooter.jsx";
 import useAuth from "../../modules/auth/hooks/useAuth.js";
 
-import WarehouseWorkGuard from "../../shared/components/WarehouseWorkGuard.jsx";
 
 const StoreStaffLayout = () => {
     const navigate = useNavigate();
@@ -19,7 +18,7 @@ const StoreStaffLayout = () => {
     };
 
     return (
-        <WarehouseWorkGuard><div className="d-flex min-vh-100 fs-6"
+        <div className="d-flex min-vh-100 fs-6"
              style={{backgroundColor: "#f8fafc", color: "#1e293b", fontFamily: "Arial, sans-serif"}}>
             <aside className="position-sticky top-0 vh-100 flex-shrink-0"
                    style={{width: "260px", backgroundColor: "#10152B"}}>
@@ -32,7 +31,7 @@ const StoreStaffLayout = () => {
                 </main>
                 <StoreStaffFooter/>
             </div>
-        </div></WarehouseWorkGuard>
+        </div>
     );
 };
 

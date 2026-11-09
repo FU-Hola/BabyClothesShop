@@ -4,10 +4,7 @@ import {
     versionSchema,
     textSchema,
     quantitySchema,
-    validateExactLines,
 } from "../../../../../shared/schemas/warehouse.schemas.js";
-
-export const receiptStatusSchema = z.enum(["PENDING", "COMPLETED", "CANCELLED"]);
 
 function localToday() {
     const date = new Date();
@@ -80,14 +77,6 @@ export function confirmReceiptSchema(receipt) {
                 .max(200),
         })
         .superRefine((value, context) => {
-            validateExactLines(
-                value.items,
-                receipt.items,
-                "receiptItemId",
-                "goodsReceiptItemId",
-                context,
-            );
-
             const expectedById = new Map(
                 receipt.items.map((item) => [item.goodsReceiptItemId, item.expectedQuantity]),
             );

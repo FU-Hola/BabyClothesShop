@@ -124,8 +124,6 @@ public class GoodsReceiptService implements IGoodsReceipt {
         if (target != GoodsReceiptStatus.COMPLETED) {
             throw new BaseBusinessException(ErrorCode.BAD_REQUEST, "Xác nhận phải là COMPLETED; dùng API cancel để hủy");
         }
-        // Phiếu đã lập vẫn được xử lý khi sản phẩm ngừng hoạt động; không lọc active ở đây.
-        // Kiểm nhận phải đủ các dòng, không trùng và có lý do khi số lượng chênh lệch.
         Map<UUID, GoodsReceiptItem> map = goodsReceipt.getItems().stream()
                 .collect(Collectors.toMap(GoodsReceiptItem::getId, Function.identity()));
         Set<UUID> ids = new HashSet<>();
@@ -134,6 +132,10 @@ public class GoodsReceiptService implements IGoodsReceipt {
 
         for (ConfirmReceiptRequest.Line line : request.items()) {
             GoodsReceiptItem item = map.get(line.receiptItemId());
+            if(line.receivedQuantity() > item.getExpectedQuantity()){
+                throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED, "Số lượng nhập không được lớn hơn số lượng mua");
+            }
+
             if (item == null || !ids.add(line.receiptItemId())) {
                 throw new BaseBusinessException(ErrorCode.BAD_REQUEST, "Dòng phiếu không hợp lệ hoặc bị trùng");
             }
@@ -156,6 +158,7 @@ public class GoodsReceiptService implements IGoodsReceipt {
 
         for (ConfirmReceiptRequest.Line line : lines) {
             GoodsReceiptItem item = map.get(line.receiptItemId());
+
             item.setReceivedQuantity(line.receivedQuantity());
             if (line.receivedQuantity() > 0 && inventoryRepository.increaseStock(
                     item.getVariantId(), line.receivedQuantity()) != 1) {

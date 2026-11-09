@@ -33,22 +33,6 @@ const WarehouseStaffSidebar = ({ onLogout }) => {
                 {menuItems.map((item) => {
                     const Icon = item.icon;
 
-                    if (!item.path) {
-                        return (
-                            <div
-                                key={item.label}
-                                className="d-flex align-items-center gap-3 px-3 py-2 text-white-50 rounded-3"
-                                style={{ opacity: 0.55 }}
-                            >
-                                <Icon size={18} className="flex-shrink-0" aria-hidden="true" />
-                                <span style={{ fontSize: "0.9rem" }}>{item.label}</span>
-                                <span className="ms-auto text-nowrap" style={{ fontSize: "0.75rem" }}>
-                                    Sắp có
-                                </span>
-                            </div>
-                        );
-                    }
-
                     return (
                         <NavLink
                             key={item.label}

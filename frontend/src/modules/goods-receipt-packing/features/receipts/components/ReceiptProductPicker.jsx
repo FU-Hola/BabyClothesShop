@@ -26,8 +26,7 @@ export default function ReceiptProductPicker({ existingIds, onAdd, onClose }) {
             </Modal.Header>
             <Modal.Body>
                 <p className="text-muted">
-                    Chỉ hiển thị sản phẩm và biến thể đang hoạt động, đã có trong kho. SKU có tồn
-                    bằng 0 vẫn nhập được.
+                    Chỉ hiển thị sản phẩm và biến thể đang hoạt động, đã có trong kho.
                 </p>
                 {!product ? (
                     <>

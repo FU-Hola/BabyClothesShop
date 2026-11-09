@@ -34,6 +34,8 @@ function IssueContent({ data, ...actions }) {
         DELIVERED: "Đã giao hàng",
         CANCELLED: "Đã hủy",
     };
+
+
     function lines(editable = false) {
         return (
             <DataTable
@@ -69,6 +71,8 @@ function IssueContent({ data, ...actions }) {
             </DataTable>
         );
     }
+
+
     return (
         <>
             <PageHeading

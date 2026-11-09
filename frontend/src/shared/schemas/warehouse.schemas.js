@@ -6,7 +6,6 @@ export const uuidSchema = z.string().trim().uuid("ID không đúng định dạn
 
 export const versionSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 
-// Java @Size đo độ dài String theo UTF-16, tương ứng value.length.
 export function textSchema(maxLength, required = false) {
     return z
         .string()
@@ -36,37 +35,4 @@ export function quantitySchema(minimum = 0) {
             .min(minimum, `Số lượng phải từ ${minimum} trở lên`)
             .max(JAVA_INTEGER_MAX, "Số lượng vượt giới hạn hệ thống"),
     );
-}
-
-export function validateExactLines(submittedItems, sourceItems, submittedIdField, sourceIdField, context) {
-    const expectedIds = new Set(sourceItems.map((item) => item[sourceIdField]));
-
-    const receivedIds = new Set();
-
-    submittedItems.forEach((item, index) => {
-        const id = item[submittedIdField];
-
-        if (!expectedIds.has(id) || receivedIds.has(id)) {
-            context.addIssue({
-                code: "custom",
-                path: ["items", index, submittedIdField],
-                message: "Dòng phiếu không hợp lệ hoặc bị trùng",
-            });
-        }
-
-        receivedIds.add(id);
-    });
-
-    const complete =
-        submittedItems.length === sourceItems.length &&
-        expectedIds.size === receivedIds.size &&
-        [...expectedIds].every((id) => receivedIds.has(id));
-
-    if (!complete) {
-        context.addIssue({
-            code: "custom",
-            path: ["items"],
-            message: "Phải gửi đầy đủ các dòng của phiếu",
-        });
-    }
 }
