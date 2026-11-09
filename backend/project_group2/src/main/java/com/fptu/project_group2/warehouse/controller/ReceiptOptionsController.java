@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@PreAuthorize("hasRole('WAREHOUSE_STAFF')")
+@PreAuthorize("hasRole('STORE_STAFF')")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/warehouse-staff/receipt-options")
 public class ReceiptOptionsController {

@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@PreAuthorize("hasRole('WAREHOUSE_STAFF')")
+@PreAuthorize("hasAnyRole('STORE_STAFF', 'WAREHOUSE_STAFF')")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/warehouse-staff")
 public class GoodsReceiptController {
@@ -55,6 +55,7 @@ public class GoodsReceiptController {
         return ResponseBuilder.ok(goodsReceiptService.getReceipt(id));
     }
 
+    @PreAuthorize("hasRole('STORE_STAFF')")
     @PatchMapping("/cancel/{id}")
     public ResponseEntity<ApiResponse<Void>> cancel(@PathVariable UUID id,
             @Valid @RequestBody CancelReceiptRequest request) {
@@ -62,7 +63,7 @@ public class GoodsReceiptController {
         return ResponseBuilder.ok(null, "Đã hủy phiếu nhập kho");
     }
 
-    @PreAuthorize("hasRole('WAREHOUSE_STAFF')")
+    @PreAuthorize("hasRole('STORE_STAFF')")
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<Void>> createGoodsReceipt(
             @Valid @RequestBody CreateReceiptRequest request,
@@ -84,7 +85,6 @@ public class GoodsReceiptController {
         return ResponseBuilder.ok(null, "Xác nhận phiếu nhập kho thành công");
     }
 
-    @PreAuthorize("hasRole('WAREHOUSE_STAFF')")
     @GetMapping("/status")
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> getAllReceiptStatus(){
         List<Map<String, String>> statuses = Arrays.stream(GoodsReceiptStatus.values())

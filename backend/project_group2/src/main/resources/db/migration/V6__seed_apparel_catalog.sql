@@ -2,10 +2,17 @@
 -- Source photos: product-images-preview/. No Cloudinary upload is performed.
 -- Stable IDs also recognize the former manual seed without resetting prices/stock.
 
+-- Existing databases may have store staff without the original V1 demo email.
+CREATE TEMP TABLE apparel_seed_owner ON COMMIT DROP AS
+SELECT id FROM shop.users
+WHERE role = 'STORE_STAFF' AND status = 'ACTIVE' AND deleted_at IS NULL
+ORDER BY (email = 'store@babyshop.test') DESC, created_at NULLS LAST, id
+LIMIT 1;
+
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM shop.users WHERE email = 'store@babyshop.test') THEN
-        RAISE EXCEPTION 'Apparel demo requires store@babyshop.test from V1; check the database baseline before migrating';
+    IF NOT EXISTS (SELECT 1 FROM apparel_seed_owner) THEN
+        RAISE EXCEPTION 'Apparel demo requires an active Store Staff account';
     END IF;
 END $$;
 
@@ -54,7 +61,7 @@ WHERE slug IN ('demo-cham-soc', 'demo-quan-ao', 'demo-do-choi', 'demo-an-uong')
 INSERT INTO shop.products (id, created_at, updated_at, category_id, name, description, status, created_by)
 SELECT md5('apparel:product:' || s.code)::uuid, now(), now(), c.id, s.name,
        s.name || '. Có các kích cỡ S, M, L, XL, XXL. Giá và tồn kho là dữ liệu demo của đồ án.',
-       'ACTIVE', (SELECT id FROM shop.users WHERE email = 'store@babyshop.test')
+       'ACTIVE', (SELECT id FROM apparel_seed_owner)
 FROM apparel_seed s JOIN shop.categories c ON c.slug = s.category_slug
 ON CONFLICT (id) DO NOTHING;
 
