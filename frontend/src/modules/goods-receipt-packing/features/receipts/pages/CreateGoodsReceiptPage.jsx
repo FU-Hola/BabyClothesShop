@@ -1,3 +1,4 @@
+import "../../../../../shared/styles/warehouse.css";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Alert, Button } from "react-bootstrap";
@@ -81,9 +82,9 @@ export default function CreateGoodsReceiptPage() {
         <div className="goods-receipt-packing">
             <PageHeading
                 title="Tạo phiếu nhập kho"
-                description="Chọn SKU đã có trong kho. Phiếu mới ở trạng thái chờ xử lý và chưa tăng tồn kho."
+                description="Chọn SKU đã có trong kho. Phiếu mới chờ Warehouse xác nhận số lượng thực nhận và chưa tăng tồn kho."
             >
-                <Button as={Link} to="/warehouse-staff/goods-receipts" variant="outline-secondary">
+                <Button as={Link} to="/store-staff/goods-receipts" variant="outline-secondary">
                     Danh sách phiếu nhập
                 </Button>
             </PageHeading>
@@ -92,7 +93,7 @@ export default function CreateGoodsReceiptPage() {
                     Đã tạo phiếu nhập.{" "}
                     {result.refreshFailed &&
                         "Danh sách chưa tải lại được; vui lòng tải lại khi mở danh sách."}{" "}
-                    <Link to="/warehouse-staff/goods-receipts">Xem danh sách phiếu nhập</Link>
+                    <Link to="/store-staff/goods-receipts">Xem danh sách phiếu nhập</Link>
                 </Alert>
             )}
             <ActionForm

@@ -25,9 +25,7 @@ const warehouseRoutes = [{ element: <RoleRoute allowedRoles={["WAREHOUSE_STAFF"]
             },
             {
                 path: "goods-receipts/new",
-                lazy: async () => ({
-                    Component: (await import("../features/receipts/pages/CreateGoodsReceiptPage.jsx")).default,
-                }),
+                element: <Navigate to="/warehouse-staff/goods-receipts" replace />,
             },
             {
                 path: "goods-receipts/:receiptId",

@@ -1,3 +1,5 @@
+import "../../../../../shared/styles/warehouse.css";
+import useAuth from "../../../../auth/hooks/useAuth.js";
 import { useParams } from "react-router-dom";
 import WarehouseDetail from "../../../application/components/WarehouseDetail.jsx";
 import { ActionForm } from "../../../application/components/ActionForm.jsx";
@@ -12,13 +14,18 @@ import { cancelReceiptSchema, confirmReceiptSchema } from "../schemas/receipt.sc
 import { dateOnly, dateTime, display } from "../../../../../shared/utils/warehouse.format.js";
 
 function ReceiptContent({ data, ...actions }) {
+    const { user } = useAuth();
+    const canConfirm = user?.role === "WAREHOUSE_STAFF";
+    const canCancel = user?.role === "STORE_STAFF";
     const pending = data.goodsReceiptStatus === "PENDING";
     const common = { resource: "receipt", id: data.goodsReceiptId, ...actions };
     return (
         <>
             <PageHeading
                 title={`Phiếu nhập ${data.code}`}
-                description="Xác nhận hoặc hủy toàn bộ phiếu. Tồn kho tăng theo số lượng thực nhận."
+                description={canConfirm
+                    ? "Xác nhận toàn bộ phiếu. Tồn kho tăng theo số lượng thực nhận."
+                    : "Theo dõi kết quả nhập kho. Có thể hủy phiếu khi Warehouse chưa xác nhận."}
             >
                 <StatusBadge status={data.goodsReceiptStatus} />
             </PageHeading>
@@ -46,7 +53,7 @@ function ReceiptContent({ data, ...actions }) {
                     ]}
                 />
             </section>
-            {pending ? (
+            {pending && canConfirm ? (
                 <ActionForm
                     {...common}
                     action="confirm"
@@ -125,7 +132,7 @@ function ReceiptContent({ data, ...actions }) {
                     ))}
                 </DataTable>
             )}
-            {pending && (
+            {pending && canCancel && (
                 <ActionForm
                     {...common}
                     action="cancel"
@@ -150,8 +157,12 @@ function ReceiptContent({ data, ...actions }) {
 }
 export default function GoodsReceiptDetailPage() {
     const { receiptId } = useParams();
+    const { user } = useAuth();
+    const listPath = user?.role === "STORE_STAFF"
+        ? "/store-staff/goods-receipts"
+        : "/warehouse-staff/goods-receipts";
     return (
-        <WarehouseDetail key={receiptId} resource="receipt" id={receiptId}>
+        <WarehouseDetail key={receiptId} resource="receipt" id={receiptId} listPath={listPath}>
             {(props) => <ReceiptContent {...props} />}
         </WarehouseDetail>
     );

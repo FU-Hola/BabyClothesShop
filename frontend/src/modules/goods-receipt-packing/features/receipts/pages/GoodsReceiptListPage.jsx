@@ -1,3 +1,5 @@
+import "../../../../../shared/styles/warehouse.css";
+import useAuth from "../../../../auth/hooks/useAuth.js";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { useReceipts } from "../queries/receipt.queries.js";
@@ -14,6 +16,9 @@ import {
 import { dateTime } from "../../../../../shared/utils/warehouse.format.js";
 
 export default function GoodsReceiptListPage({ pendingOnly = false }) {
+    const { user } = useAuth();
+    const canCreate = user?.role === "STORE_STAFF";
+    const basePath = canCreate ? "/store-staff/goods-receipts" : "/warehouse-staff/goods-receipts";
     const { params, change } = useWarehouseList({ keyword: "", status: "" });
     const filters = { ...params, status: pendingOnly ? "PENDING" : params.status };
     const query = useReceipts(filters);
@@ -21,15 +26,17 @@ export default function GoodsReceiptListPage({ pendingOnly = false }) {
         <div className="goods-receipt-packing">
             <PageHeading
                 title={pendingOnly ? "Phiếu nhập chờ xử lý" : "Phiếu nhập kho"}
-                description="Theo dõi phiếu nhập, xác nhận số lượng thực nhận hoặc hủy toàn bộ phiếu."
+                description={canCreate
+                    ? "Tạo phiếu nhập và theo dõi kết quả xác nhận từ Warehouse. Có thể hủy phiếu còn chờ xử lý."
+                    : "Kiểm tra phiếu nhập và xác nhận số lượng thực nhận để cập nhật tồn kho."}
             >
-                <Button
+                {canCreate && <Button
                     as={Link}
-                    to="/warehouse-staff/goods-receipts/new"
+                    to={`${basePath}/new`}
                     className="btn-primary-navy"
                 >
                     Tạo phiếu nhập
-                </Button>
+                </Button>}
             </PageHeading>
             <WarehouseFilters
                 key={JSON.stringify(filters)}
@@ -83,7 +90,7 @@ export default function GoodsReceiptListPage({ pendingOnly = false }) {
                             </td>
                             <td>
                                 <Link
-                                    to={`/warehouse-staff/goods-receipts/${item.goodsReceiptId}`}
+                                    to={`${basePath}/${item.goodsReceiptId}`}
                                     aria-label={`Xem phiếu ${item.code}`}
                                 >
                                     Xem phiếu

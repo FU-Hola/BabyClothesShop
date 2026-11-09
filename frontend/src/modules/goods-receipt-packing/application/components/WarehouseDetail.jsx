@@ -6,14 +6,14 @@ import { useWarehouseDetail } from "../query/warehouse.queries.js";
 import { uuidSchema } from "../../../../shared/schemas/warehouse.schemas.js";
 import { warehouseKeys } from "../../../../shared/query/warehouse.keys.js";
 
-export default function WarehouseDetail({ resource, id, children }) {
+export default function WarehouseDetail({ resource, id, children, listPath }) {
     const query = useWarehouseDetail(resource, id);
     const writing = useIsMutating({ mutationKey: warehouseKeys.write(resource, id) }) > 0;
     const [uncertain, setUncertain] = useState(false);
     const [refreshPrompt, setRefreshPrompt] = useState(false);
     const [notice, setNotice] = useState(null);
     const [revision, setRevision] = useState(0);
-    const list = resource === "receipt" ? "goods-receipts" : "issues";
+    const list = listPath || `/warehouse-staff/${resource === "receipt" ? "goods-receipts" : "issues"}`;
     async function refresh() {
         const result = await query.refetch();
         if (!result.isError) {
@@ -27,7 +27,7 @@ export default function WarehouseDetail({ resource, id, children }) {
         return (
             <Alert variant="danger">
                 Đường dẫn phiếu không hợp lệ.{" "}
-                <Link to={`/warehouse-staff/${list}`}>Về danh sách</Link>
+                <Link to={list}>Về danh sách</Link>
             </Alert>
         );
     if (query.isPending)
@@ -39,7 +39,7 @@ export default function WarehouseDetail({ resource, id, children }) {
     return (
         <div className="goods-receipt-packing">
             <div className="d-flex justify-content-between gap-3 mb-3">
-                <Link to={`/warehouse-staff/${list}`}>← Danh sách phiếu</Link>
+                <Link to={list}>← Danh sách phiếu</Link>
                 <Button
                     variant="outline-secondary"
                     disabled={writing || query.isFetching}

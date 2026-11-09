@@ -18,14 +18,32 @@ const storeStaffRoutes = [
                     { path: "orders/:orderId", element: <StaffOrders /> },
                     { path: "products", element: <ProductManagement /> },
                     { path: "products/new", element: <ProductForm /> },
-                    { path: "products/:productId/edit", element: <ProductForm /> }
+                    { path: "products/:productId/edit", element: <ProductForm /> },
+                    {
+                        path: "goods-receipts",
+                        lazy: async () => ({
+                            Component: (await import("../../modules/goods-receipt-packing/features/receipts/pages/GoodsReceiptListPage.jsx")).default,
+                        }),
+                    },
+                    {
+                        path: "goods-receipts/new",
+                        lazy: async () => ({
+                            Component: (await import("../../modules/goods-receipt-packing/features/receipts/pages/CreateGoodsReceiptPage.jsx")).default,
+                        }),
+                    },
+                    {
+                        path: "goods-receipts/:receiptId",
+                        lazy: async () => ({
+                            Component: (await import("../../modules/goods-receipt-packing/features/receipts/pages/GoodsReceiptDetailPage.jsx")).default,
+                        }),
+                    }
                 ]
             }
         ]
     },
     {
         path: "/warehouse-operations",
-        element: <Navigate to="/warehouse-staff/goods-receipts" replace />
+        element: <Navigate to="/store-staff/goods-receipts" replace />
     }
 ];
 

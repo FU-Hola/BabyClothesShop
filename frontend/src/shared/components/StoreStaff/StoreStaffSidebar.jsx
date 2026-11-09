@@ -2,6 +2,7 @@ import { Button } from "react-bootstrap";
 import { Link, NavLink } from "react-router-dom";
 import {
   Package,
+  ClipboardList,
   ShoppingBag,
   Store,
   ShieldCheck,
@@ -12,6 +13,7 @@ import {
 const menuItems = [
   { label: "Sản phẩm", path: "/store-staff/products", icon: Package },
   { label: "Đơn hàng", path: "/store-staff/orders", icon: ShoppingBag },
+  { label: "Phiếu nhập kho", path: "/store-staff/goods-receipts", icon: ClipboardList },
 ];
 
 const StoreStaffSidebar = ({ onLogout }) => {
