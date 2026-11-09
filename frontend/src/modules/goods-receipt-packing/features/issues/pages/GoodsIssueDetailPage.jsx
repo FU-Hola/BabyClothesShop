@@ -77,6 +77,11 @@ function IssueContent({ data, ...actions }) {
             >
                 <StatusBadge status={data.status} />
             </PageHeading>
+            {data.status === "CANCELLED" && data.orderStatus === "CANCELLED" && (
+                <Alert variant="secondary" role="status">
+                    Phiếu xuất và đơn hàng đã hủy. Tồn kho không thay đổi.
+                </Alert>
+            )}
             {data.status !== "CANCELLED" && (
                 <ol className="warehouse-steps admin-card">
                     {steps.map((step, index) => (

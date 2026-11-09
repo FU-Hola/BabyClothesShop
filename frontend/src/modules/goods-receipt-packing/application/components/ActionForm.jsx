@@ -23,6 +23,8 @@ export function ActionForm({
     children,
     danger = false,
 }) {
+
+    // quản lí form với zod
     const form = useForm({ resolver: zodResolver(schema), defaultValues });
     const mutation = useWarehouseMutation(resource, id);
     const writing = useIsMutating({ mutationKey: warehouseKeys.write(resource, id) }) > 0;

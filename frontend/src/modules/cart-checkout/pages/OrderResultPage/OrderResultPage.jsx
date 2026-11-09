@@ -41,6 +41,7 @@ const OrderResultPage = () => {
       PACKED: 'Đã đóng gói',
       SHIPPING: 'Đang giao',
       DELIVERED: 'Đã giao',
+      CANCELLED: 'Đã hủy',
     }[order.status] || order.status,
     customer: { fullName: order.receiverName, phone: order.receiverPhone, address: order.receiverAddress, note: order.customerNote },
     items: order.items.map(item => ({ id: item.id, name: item.productNameSnapshot, size: item.sizeSnapshot, image: item.imageUrlSnapshot || '/images/products/sample-baby-romper.png', quantity: item.quantity, price: Number(item.unitPrice) })),

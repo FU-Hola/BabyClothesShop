@@ -268,11 +268,11 @@ export default function StaffOrders() {
                         <section className={styles.panel}>
                             <div className={styles.panelHeading}><Truck size={19} /><h2>Tiến trình đơn hàng</h2></div>
                             {order.status === "CANCELLED" && <p className={styles.cancelledNote}>Đơn hàng đã hủy do phiếu xuất kho bị hủy.</p>}
-                            <ol className={styles.timeline}>{steps.map((step, index) =>
+                            {order.status !== "CANCELLED" && <ol className={styles.timeline}>{steps.map((step, index) =>
                                 <li key={step} className={index <= steps.indexOf(order.status) ? styles.stepDone : ""}>
                                     <span className={styles.stepDot}>{index < steps.indexOf(order.status) && <Check size={12} />}</span>
                                     <span>{statuses[step].label}</span>
-                                </li>)}</ol>
+                                </li>)}</ol>}
                             {order.confirmedAt && <p>Đã xác nhận: {formatDate(order.confirmedAt)}</p>}
                             {order.deliveredAt && <p>Đã giao: {formatDate(order.deliveredAt)}</p>}
                             {confirmButton(order)}

@@ -244,6 +244,8 @@ public class GoodsIssueService implements IGoodsIssue {
         issue.setCancelledAt(Instant.now());
         issue.setCancellationReason(request.reason().trim());
         issue.setStatus(GoodsIssueStatus.CANCELLED);
+        // Hủy phiếu và đơn trong cùng transaction; chưa xuất nên không đổi tồn kho.
+        issue.getOrder().setStatus(OrderStatus.CANCELLED);
 
         return flushAndMap(issue);
     }
@@ -307,7 +309,7 @@ public class GoodsIssueService implements IGoodsIssue {
     }
 
     private void requireOrderOpen(Order order) {
-        // Cho phép PACKED để hủy/tạo lại phiếu mà không sửa trạng thái đơn.
+        // Chỉ xử lý phiếu khi đơn đã xác nhận hoặc đang đóng gói; đơn đã hủy là kết thúc.
         if (order.getStatus() != OrderStatus.CONFIRMED && order.getStatus() != OrderStatus.PACKED) {
             throw conflict("Đơn phải ở trạng thái CONFIRMED hoặc PACKED để xử lý phiếu");
         }
