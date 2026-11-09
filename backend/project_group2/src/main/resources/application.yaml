@@ -23,7 +23,7 @@ spring:
     open-in-view: false
     show-sql: false
     hibernate:
-      ddl-auto: ${DDL_AUTO:update}
+      ddl-auto: ${DDL_AUTO:validate}
     properties:
       hibernate:
         default_schema: shop
@@ -33,7 +33,7 @@ spring:
         order_inserts: true
         order_updates: true
   flyway:
-    enabled: ${FLYWAY_ENABLED:false}
+    enabled: ${FLYWAY_ENABLED:true}
     url: ${spring.datasource.url}
     user: ${DB_MIGRATION_USERNAME}
     password: ${DB_MIGRATION_PASSWORD}

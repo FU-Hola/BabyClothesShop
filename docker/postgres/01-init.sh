@@ -14,9 +14,11 @@ CREATE ROLE :"app_user" LOGIN PASSWORD :'app_password' NOSUPERUSER NOCREATEDB NO
 CREATE ROLE :"migration_user" LOGIN PASSWORD :'migration_password' NOSUPERUSER NOCREATEDB NOCREATEROLE;
 REVOKE ALL ON DATABASE :"database" FROM PUBLIC;
 GRANT CONNECT ON DATABASE :"database" TO :"app_user", :"migration_user";
+-- V1 uses a pg_temp UUID helper while seeding; only the migration role needs TEMP.
+GRANT TEMPORARY ON DATABASE :"database" TO :"migration_user";
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 CREATE SCHEMA shop AUTHORIZATION :"migration_user";
--- The current application.yaml uses Hibernate ddl-auto=create.
+-- Legacy CREATE grant retained for compatibility; Flyway now owns schema DDL.
 GRANT USAGE, CREATE ON SCHEMA shop TO :"app_user";
 ALTER ROLE :"app_user" IN DATABASE :"database" SET search_path TO shop;
 ALTER ROLE :"migration_user" IN DATABASE :"database" SET search_path TO shop;
