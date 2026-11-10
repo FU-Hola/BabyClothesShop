@@ -73,14 +73,11 @@ spring:
             enable: ${MAIL_STARTTLS_ENABLE:false}
 
 app:
-<<<<<<< HEAD
   checkout:
     hold-seconds: ${CHECKOUT_HOLD_SECONDS:600}
     expiry-scan-ms: ${CHECKOUT_EXPIRY_SCAN_MS:15000}
-=======
   frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
   password-link-ttl-minutes: ${PASSWORD_LINK_TTL_MINUTES:30}
->>>>>>> origin/lynt
   auth-cookie:
     # false cho HTTP localhost; dùng true khi triển khai HTTPS.
     secure: ${AUTH_COOKIE_SECURE:false}
