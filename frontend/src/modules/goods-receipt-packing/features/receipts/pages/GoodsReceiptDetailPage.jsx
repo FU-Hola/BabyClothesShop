@@ -36,7 +36,7 @@ function ReceiptContent({ data, ...actions }) {
                         ["Nhà cung cấp", data.supplierName],
                         ["Ngày dự kiến", dateOnly(data.expectedDate)],
                         ["Ngày tạo", dateTime(data.createdAt)],
-                        ["Người tạo (ID)", data.createdBy],
+                        ["Người tạo", display(data.createdByName)],
                         ["Ghi chú", display(data.note)],
                         ...(data.goodsReceiptStatus === "COMPLETED"
                             ? [
