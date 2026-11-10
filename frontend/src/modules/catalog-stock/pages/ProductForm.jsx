@@ -83,7 +83,7 @@ function ProductEditor({ productId, onSaved }) {
                     originalPrice: variant.originalPrice === "" ? null : Number(variant.originalPrice),
                     ...(productId ? { id: variant.id, active: variant.active } : {}),
                 })),
-                ...(productId ? { status: product.status } : {}),
+                ...(productId ? { status: product.status, version: product.version } : {}),
             };
 
             if (productId) {

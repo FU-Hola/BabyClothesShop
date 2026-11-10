@@ -102,7 +102,7 @@ const OrderResultPage = () => {
   return (
     <div className={styles.resultPage}>
       {/* Stepper tiến trình (Đang ở bước 4: Hoàn tất đơn) */}
-      <Stepper currentStep={4} />
+      <Stepper currentStep={5} />
 
       <div className={styles.resultCard}>
         {/* Header thành công */}

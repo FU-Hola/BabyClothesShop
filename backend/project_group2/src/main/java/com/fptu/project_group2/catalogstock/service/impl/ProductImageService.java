@@ -50,8 +50,7 @@ public class ProductImageService implements IProductImage {
                 ));
 
         if (productImageRepository.countByProductIdAndColorIgnoreCase(productId, color) >= MAX_IMAGES_PER_COLOR) {
-            throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED,
-                    "Mỗi màu chỉ được tối đa " + MAX_IMAGES_PER_COLOR + " ảnh");
+            throw tooManyImagesException();
         }
 
         CloudinaryUploadResponse uploaded = cloudinaryService.uploadImage(request.getFile());
@@ -63,18 +62,35 @@ public class ProductImageService implements IProductImage {
         image.setColor(color);
         image.setSortOrder(request.getSortOrder());
 
+        ProductImage savedImage;
         try {
-            return toProductImageResponse(productImageRepository.saveAndFlush(image));
+            savedImage = productImageRepository.saveAndFlush(image);
         } catch (RuntimeException exception) {
             log.error("Không thể lưu ảnh cho sản phẩm {}", productId, exception);
-
-            try {
-                cloudinaryService.deleteImage(uploaded.getPublicId());
-            } catch (RuntimeException cleanupException) {
-                log.error("Cần dọn ảnh Cloudinary chưa được lưu vào database: {}", uploaded.getPublicId());
-            }
-
+            deleteFromCloudinaryQuietly(uploaded.getPublicId());
             throw new BaseBusinessException(ErrorCode.DATABASE_ERROR, "Không thể lưu thông tin ảnh sản phẩm");
+        }
+
+        long imageCountAfterSave = productImageRepository.countByProductIdAndColorIgnoreCase(productId, color);
+        if (imageCountAfterSave > MAX_IMAGES_PER_COLOR) {
+            productImageRepository.delete(savedImage);
+            deleteFromCloudinaryQuietly(uploaded.getPublicId());
+            throw tooManyImagesException();
+        }
+
+        return toProductImageResponse(savedImage);
+    }
+
+    private BaseBusinessException tooManyImagesException() {
+        return new BaseBusinessException(ErrorCode.VALIDATION_FAILED,
+                "Mỗi màu chỉ được tối đa " + MAX_IMAGES_PER_COLOR + " ảnh");
+    }
+
+    private void deleteFromCloudinaryQuietly(String publicId) {
+        try {
+            cloudinaryService.deleteImage(publicId);
+        } catch (RuntimeException cleanupException) {
+            log.error("Cần dọn ảnh Cloudinary chưa được lưu vào database: {}", publicId);
         }
     }
 

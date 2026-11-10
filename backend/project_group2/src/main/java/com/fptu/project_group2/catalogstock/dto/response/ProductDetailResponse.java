@@ -19,6 +19,7 @@ public class ProductDetailResponse {
     private String categoryName;
     private ProductStatus status;
     private Instant createdAt;
+    private Long version;
     private List<VariantResponse> variants;
 
     @Getter
