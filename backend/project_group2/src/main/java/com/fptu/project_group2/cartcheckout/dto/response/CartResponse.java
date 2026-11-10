@@ -15,6 +15,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CartResponse {
     private UUID cartId;
+    private long revision;
+    private String activeCheckoutKey;
     private List<CartItemResponse> items;
     private int totalItems;
     private BigDecimal totalPrice;

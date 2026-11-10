@@ -1,5 +1,7 @@
 package com.fptu.project_group2.warehouse.service.impl;
 
+import com.fptu.project_group2.ordermanagement.common.PaymentStatus;
+import com.fptu.project_group2.warehouse.service.InventoryReservationService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import java.util.Optional;
@@ -26,9 +28,8 @@ import com.fptu.project_group2.warehouse.entity.GoodsIssue;
 import com.fptu.project_group2.warehouse.entity.GoodsIssueItem;
 import com.fptu.project_group2.warehouse.mapper.GoodsIssueMapper;
 import com.fptu.project_group2.warehouse.repository.GoodsIssueRepository;
-import com.fptu.project_group2.warehouse.repository.InventoryRepository;
 import com.fptu.project_group2.warehouse.service.IGoodsIssue;
-import com.fptu.project_group2.warehouse.utils.WarehouseActorProvider;
+import com.fptu.project_group2.common.security.CurrentActorProvider;
 import com.fptu.project_group2.warehouse.utils.TrackingNumberGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,8 +51,8 @@ public class GoodsIssueService implements IGoodsIssue {
 
     private final OrderRepository orders;
     private final GoodsIssueRepository issues;
-    private final InventoryRepository inventory;
-    private final WarehouseActorProvider actors;
+    private final InventoryReservationService reservations;
+    private final CurrentActorProvider actors;
     private final GoodsIssueMapper mapper;
     private final TrackingNumberGenerator trackingNumbers;
 
@@ -62,6 +63,7 @@ public class GoodsIssueService implements IGoodsIssue {
         Order order = lockOrder(request.orderId());
 
         requireOrderOpen(order);
+        reservations.requireCommitted(order);
 
         // check exist và chưa bị cancel
         Optional<GoodsIssue> existing = issues.findFirstByOrderIdAndStatusNot(
@@ -128,6 +130,7 @@ public class GoodsIssueService implements IGoodsIssue {
         GoodsIssue issue = lockIssue(id, request.version());
 
         requireStatus(issue, GoodsIssueStatus.PICKING);
+        requireAssignee(issue);
         requireOrderOpen(issue.getOrder());
         validateSource(issue);
 
@@ -170,6 +173,7 @@ public class GoodsIssueService implements IGoodsIssue {
     ) {
         GoodsIssue issue = lockIssue(id, request.version());
         requireStatus(issue, GoodsIssueStatus.PICKING);
+        requireAssignee(issue);
         requireOrderOpen(issue.getOrder());
         requireFullyPicked(issue);
 
@@ -189,6 +193,7 @@ public class GoodsIssueService implements IGoodsIssue {
     ) {
         GoodsIssue issue = lockIssue(id, request.version());
         requireStatus(issue, GoodsIssueStatus.PACKED);
+        requireAssignee(issue);
 
         if (issue.getOrder().getStatus() != OrderStatus.PACKED) {
             throw conflict("Đơn hàng chưa sẵn sàng xuất kho");
@@ -196,28 +201,7 @@ public class GoodsIssueService implements IGoodsIssue {
 
         requireFullyPicked(issue);
 
-        Map<UUID, Long> quantities = new java.util.TreeMap<>();
-        for (GoodsIssueItem item : issue.getItems()) {
-            OrderItem orderItem = item.getOrderItem();
-            UUID variantId = orderItem.getVariant().getId();
-            Long quantity = orderItem.getQuantity().longValue();
-
-            quantities.merge(variantId, quantity, Math::addExact);
-        }
-
-        // trừ tồn kho
-        for (Map.Entry<UUID, Long> entry : quantities.entrySet()) {
-            int affectedRows = inventory.decreaseStockIfAvailable(
-                    entry.getKey(),
-                    entry.getValue()
-            );
-            if (affectedRows != 1) {
-                throw conflict(
-                        "Không đủ tồn kho cho biến thể " + entry.getKey()
-                                + "; toàn bộ thao tác xuất đã bị hủy"
-                );
-            }
-        }
+        reservations.consume(issue.getOrder());
 
         // Chỉ ghi nhận xuất và chuyển đơn sang SHIPPING sau khi trừ đủ tất cả dòng.
         issue.setCarrierName(request.carrierName().trim());
@@ -242,17 +226,22 @@ public class GoodsIssueService implements IGoodsIssue {
             throw conflict("Phiếu đã xuất hoặc đã hủy, không thể hủy tiếp");
         }
         requireOrderOpen(issue.getOrder());
+        if(issue.getAssignedTo()!=null) requireAssignee(issue);
         String reason = request.reason() == null ? "" : request.reason().strip();
         if (reason.isBlank() || reason.length() > 1000) {
             throw badRequest("Lý do hủy phải có từ 1 đến 1000 ký tự");
         }
+        if (!Boolean.TRUE.equals(request.stockRecovered())) {
+            throw badRequest("Cần xác nhận đã kiểm tra và thu hồi hàng của phiếu trước khi hủy");
+        }
+        reservations.release(issue.getOrder());
         var actor = actors.currentActor();
         Instant cancelledAt = Instant.now();
         issue.setCancelledBy(actor);
         issue.setCancelledAt(cancelledAt);
         issue.setCancellationReason(reason);
         issue.setStatus(GoodsIssueStatus.CANCELLED);
-        // Hủy phiếu và đơn trong cùng transaction; chưa xuất nên không đổi tồn kho.
+        // Physical balance stays unchanged; release the allocation in this transaction.
         issue.getOrder().setStatus(OrderStatus.CANCELLED);
         issue.getOrder().setCancelledBy(actor);
         issue.getOrder().setCancelledAt(cancelledAt);
@@ -298,7 +287,15 @@ public class GoodsIssueService implements IGoodsIssue {
         return issue;
     }
 
+    private void requireAssignee(GoodsIssue issue) {
+        if(issue.getAssignedTo()==null || !issue.getAssignedTo().getId().equals(actors.currentActor().getId()))
+            throw new BaseBusinessException(ErrorCode.ACCESS_DENIED,"Chỉ nhân viên nhận soạn phiếu được xử lý phiếu này");
+    }
+
     private void requireOrderOpen(Order order) {
+        if (order.getPaymentStatus() != PaymentStatus.PAID) {
+            throw conflict("Đơn hàng chưa thanh toán thành công");
+        }
         // Chỉ xử lý phiếu khi đơn đã xác nhận hoặc đang đóng gói; đơn đã hủy là kết thúc.
         if (order.getStatus() != OrderStatus.CONFIRMED && order.getStatus() != OrderStatus.PACKED) {
             throw conflict("Đơn phải ở trạng thái CONFIRMED hoặc PACKED để xử lý phiếu");

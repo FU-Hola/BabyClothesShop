@@ -58,6 +58,7 @@ export const exportIssueSchema = z.object({
 });
 
 export const cancelIssueSchema = z.object({
+    stockRecovered: z.literal(true, { error: "Cần xác nhận đã kiểm tra và thu hồi hàng trước khi hủy" }),
     version: versionSchema,
     reason: textSchema(1000, true),
 });

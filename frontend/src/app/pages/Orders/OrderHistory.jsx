@@ -11,6 +11,8 @@ const FALLBACK_IMAGE = "/images/products/sample-baby-romper.png";
 
 const STATUS_FILTERS = [
     { value: "", label: "Đã đặt" },
+    { value: "PENDING_PAYMENT", label: "Chờ thanh toán" },
+    { value: "EXPIRED", label: "Hết hạn" },
     { value: "PENDING_CONFIRMATION", label: "Chờ xác nhận" },
     { value: "CONFIRMED", label: "Đã xác nhận" },
     { value: "PACKED", label: "Đã đóng gói" },
@@ -20,6 +22,8 @@ const STATUS_FILTERS = [
 ];
 
 const STATUS_LABELS = {
+    PENDING_PAYMENT: "Chờ thanh toán",
+    EXPIRED: "Hết hạn thanh toán",
     PENDING_CONFIRMATION: "Chờ xác nhận",
     CONFIRMED: "Đã xác nhận",
     PACKED: "Đã đóng gói",
@@ -51,12 +55,7 @@ const OrderHistory = () => {
     const pageOrders = visibleOrders.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
     useEffect(() => {
-        setPage(1);
-    }, [status]);
-
-    useEffect(() => {
         let cancelled = false;
-        setLoading(true);
         getMyOrders()
             .then((data) => {
                 if (!cancelled) {
@@ -109,7 +108,7 @@ const OrderHistory = () => {
                                 role="tab"
                                 aria-selected={status === filter.value}
                                 className={status === filter.value ? styles.filterActive : styles.filter}
-                                onClick={() => setSearchParams(filter.value ? { status: filter.value } : {})}
+                                onClick={() => { setPage(1); setSearchParams(filter.value ? { status: filter.value } : {}); }}
                             >
                                 {filter.label}
                             </button>

@@ -15,6 +15,9 @@ import java.util.List;
 public class CheckoutValidationResponse {
     private boolean isValid;
     private String checkoutKey;
+    private java.util.UUID orderId;
+    private String orderCode;
+    private java.time.Instant paymentExpiresAt;
     private String receiverName;
     private String receiverPhone;
     private String receiverAddress;

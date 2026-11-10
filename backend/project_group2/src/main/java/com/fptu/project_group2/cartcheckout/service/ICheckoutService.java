@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface ICheckoutService {
 
     /**
-     * Kiểm tra tồn kho & thông tin trước khi chuyển sang bước thanh toán mô phỏng (UC12)
+     * Tạo checkout bất biến và giữ đủ tồn trong cùng transaction.
      */
     CheckoutValidationResponse validateCheckout(UUID customerId, CheckoutRequest request);
 
@@ -18,5 +18,8 @@ public interface ICheckoutService {
      * Xử lý kết quả thanh toán mô phỏng (Thành công / Thất bại) (UC12)
      */
     OrderResultResponse simulatePayment(UUID customerId, SimulatePaymentRequest request);
+    OrderResultResponse cancelCheckout(UUID customerId, String checkoutKey);
+
+    OrderResultResponse getCheckout(UUID customerId, String checkoutKey);
 }
 

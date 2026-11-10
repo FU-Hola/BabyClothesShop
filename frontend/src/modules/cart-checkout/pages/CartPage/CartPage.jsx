@@ -23,6 +23,7 @@ const CartPage = () => {
   const navigate = useNavigate();
   const {
     cartItems,
+    activeCheckoutKey,
     totalItemsCount,
     totalPrice,
     updateQuantity,
@@ -108,6 +109,9 @@ const CartPage = () => {
         )}
       </h1>
 
+      {activeCheckoutKey && <div className="alert alert-info" role="status">
+        Giỏ hàng đang có phiên giữ hàng. <Link to={`/checkout/payment?checkout=${encodeURIComponent(activeCheckoutKey)}`}>Tiếp tục thanh toán hoặc hủy phiên để sửa giỏ hàng</Link>.
+      </div>}
       {/* TRƯỜNG HỢP 1: GIỎ HÀNG TRỐNG */}
       {cartItems.length === 0 ? (
         <div className={styles.emptyCartState}>

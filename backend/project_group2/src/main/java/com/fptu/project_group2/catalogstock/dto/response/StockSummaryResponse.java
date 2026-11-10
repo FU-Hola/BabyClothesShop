@@ -8,4 +8,6 @@ import lombok.Getter;
 public class StockSummaryResponse {
 
     private Long totalQuantity;
+    private Long totalReservedQuantity;
+    private Long totalAvailableQuantity;
 }

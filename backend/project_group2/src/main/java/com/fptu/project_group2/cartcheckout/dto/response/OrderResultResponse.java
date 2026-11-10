@@ -20,6 +20,7 @@ public class OrderResultResponse {
     private UUID orderId;
     private String orderCode;
     private String checkoutKey;
+    private java.time.Instant paymentExpiresAt;
     private OrderStatus orderStatus;
     private PaymentStatus paymentStatus;
     private BigDecimal totalAmount;
@@ -27,6 +28,7 @@ public class OrderResultResponse {
     private String receiverPhone;
     private String receiverAddress;
     private Instant createdAt;
+    private Instant serverTime;
     private String message;
 }
 

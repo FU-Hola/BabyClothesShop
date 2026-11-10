@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Check, ClipboardList, MapPin, Package, Search, Truck, Wallet } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import orderApi from "../api/orderApi";
-import ShipOrderModal from "../components/ShipOrderModal";
 import styles from "./StaffOrders.module.css";
 
 const statuses = {
+    PENDING_PAYMENT: { label: "Chờ thanh toán", style: "pending" },
+    EXPIRED: { label: "Hết hạn", style: "cancelled" },
     PENDING_CONFIRMATION: { label: "Chờ xác nhận", style: "pending" },
     CONFIRMED: { label: "Đã xác nhận", style: "confirmed" },
     PACKED: { label: "Đã đóng gói", style: "packed" },
@@ -13,7 +14,7 @@ const statuses = {
     DELIVERED: { label: "Đã giao", style: "delivered" },
     CANCELLED: { label: "Đã hủy", style: "cancelled" },
 };
-const steps = Object.keys(statuses).filter((status) => status !== "CANCELLED");
+const steps = ["PENDING_PAYMENT", "PENDING_CONFIRMATION", "CONFIRMED", "PACKED", "SHIPPING", "DELIVERED"];
 const pageSize = 10;
 const formatPrice = (value) => new Intl.NumberFormat("vi-VN", {
     style: "currency", currency: "VND",
@@ -43,11 +44,11 @@ export default function StaffOrders() {
     const [reload, setReload] = useState(0);
     const [confirmOrder, setConfirmOrder] = useState(null);
     const [confirmAction, setConfirmAction] = useState("confirm");
-    const [shippingOrder, setShippingOrder] = useState(null);
     const [saving, setSaving] = useState(false);
     const [confirmError, setConfirmError] = useState("");
     const [notice, setNotice] = useState("");
     const cancelButton = useRef(null);
+    const savingGuard = useRef(false);
 
     useEffect(() => {
         let active = true;
@@ -114,7 +115,8 @@ export default function StaffOrders() {
     }
 
     async function handleConfirm() {
-        if (!confirmOrder || saving) return;
+        if (!confirmOrder || savingGuard.current) return;
+        savingGuard.current = true;
         setSaving(true);
         setConfirmError("");
         try {
@@ -130,6 +132,7 @@ export default function StaffOrders() {
         } catch (err) {
             setConfirmError(errorMessage(err));
         } finally {
+            savingGuard.current = false;
             setSaving(false);
         }
     }
@@ -139,20 +142,6 @@ export default function StaffOrders() {
         setPage(1);
         setSearch(searchInput.trim());
         setReload((value) => value + 1);
-    }
-
-    function handleShipped(updated) {
-        setShippingOrder(null);
-        setNotice(`Đã gửi đơn ${updated.orderCode}.`);
-        setReload((value) => value + 1);
-    }
-
-    // Packing belongs to Warehouse Staff; Store Staff can ship only PACKED orders.
-    function shipButton(item) {
-        if (item.status !== "PACKED") return null;
-        return <button className={styles.actionButton} onClick={() => setShippingOrder(item)}>
-            Đã gửi hàng
-        </button>;
     }
 
     function confirmButton(item) {
@@ -217,7 +206,6 @@ export default function StaffOrders() {
                                 <td><div className={styles.rowActions}>
                                     <Link className={styles.viewLink} to={`/store-staff/orders/${item.id}`}>Chi tiết</Link>
                                     {confirmButton(item)}
-                                    {shipButton(item)}
                                     {deliverButton(item)}
                                 </div></td>
                             </tr>)}</tbody>
@@ -268,11 +256,11 @@ export default function StaffOrders() {
                         <section className={styles.panel}>
                             <div className={styles.panelHeading}><Truck size={19} /><h2>Tiến trình đơn hàng</h2></div>
                             {order.status === "CANCELLED" && <div className={styles.cancelledNote} role="status">
-                                <p>Warehouse đã hủy phiếu xuất và đơn hàng. Không thể tạo lại phiếu.</p>
+                                <p>{order.paymentStatus === "PAID" ? "Warehouse đã hủy phiếu xuất và đơn hàng. Không thể tạo lại phiếu." : "Phiên đặt hàng đã hủy."}</p>
                                 <p>Lý do hủy: {order.cancellationReason || "Chưa ghi nhận lý do hủy."}</p>
                                 {order.cancelledAt && <p>Thời điểm hủy: {formatDate(order.cancelledAt)}</p>}
                             </div>}
-                            {order.status !== "CANCELLED" && <ol className={styles.timeline}>{steps.map((step, index) =>
+                            {!["CANCELLED", "EXPIRED"].includes(order.status) && <ol className={styles.timeline}>{steps.map((step, index) =>
                                 <li key={step} className={index <= steps.indexOf(order.status) ? styles.stepDone : ""}>
                                     <span className={styles.stepDot}>{index < steps.indexOf(order.status) && <Check size={12} />}</span>
                                     <span>{statuses[step].label}</span>
@@ -280,9 +268,8 @@ export default function StaffOrders() {
                             {order.confirmedAt && <p>Đã xác nhận: {formatDate(order.confirmedAt)}</p>}
                             {order.deliveredAt && <p>Đã giao: {formatDate(order.deliveredAt)}</p>}
                             {confirmButton(order)}
-                            {shipButton(order)}
                             {deliverButton(order)}
-                            {order.status === "CONFIRMED" && <p>Chờ nhân viên kho đóng gói.</p>}
+                            {["CONFIRMED", "PACKED"].includes(order.status) && <p>Warehouse xử lý đóng gói và xác nhận xuất kho.</p>}
                         </section>
                         <section className={styles.panel}>
                             <div className={styles.panelHeading}><Wallet size={19} /><h2>Thanh toán</h2></div>
@@ -295,8 +282,6 @@ export default function StaffOrders() {
                 </div>
             </>}
 
-            {shippingOrder && <ShipOrderModal order={shippingOrder}
-                onClose={() => setShippingOrder(null)} onShipped={handleShipped} />}
             {notice && <div className={styles.toast} role="status">{notice}
                 <button onClick={() => setNotice("")} aria-label="Đóng thông báo">×</button></div>}
             {confirmOrder && <div className={styles.overlay} onClick={(e) => {

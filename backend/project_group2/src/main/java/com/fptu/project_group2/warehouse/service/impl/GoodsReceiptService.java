@@ -1,5 +1,6 @@
 package com.fptu.project_group2.warehouse.service.impl;
 
+import com.fptu.project_group2.warehouse.service.InventoryReservationService;
 import com.fptu.project_group2.catalogstock.common.ProductStatus;
 import org.springframework.data.domain.Sort;
 import com.fptu.project_group2.warehouse.dto.request.GoodsReceipt.ReceiptSearchRequest;
@@ -42,6 +43,7 @@ public class GoodsReceiptService implements IGoodsReceipt {
 
     private final GoodsReceiptRepository goodsReceiptRepository;
     private final InventoryRepository inventoryRepository;
+    private final InventoryReservationService reservations;
     private final GoodsReceiptItemRepository goodsReceiptItemRepository;
     private final ProductVariantRepository productVariantRepository;
 
@@ -132,14 +134,13 @@ public class GoodsReceiptService implements IGoodsReceipt {
 
         for (ConfirmReceiptRequest.Line line : request.items()) {
             GoodsReceiptItem item = map.get(line.receiptItemId());
-            if(line.receivedQuantity() > item.getExpectedQuantity()){
-                throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED, "Số lượng nhập không được lớn hơn số lượng mua");
-            }
-
             if (item == null || !ids.add(line.receiptItemId())) {
                 throw new BaseBusinessException(ErrorCode.BAD_REQUEST, "Dòng phiếu không hợp lệ hoặc bị trùng");
             }
 
+            if(line.receivedQuantity() > item.getExpectedQuantity()) {
+                throw new BaseBusinessException(ErrorCode.VALIDATION_FAILED,"Số lượng nhập không được lớn hơn số lượng mua");
+            }
             discrepancy = discrepancy || !Objects.equals(
                     item.getExpectedQuantity(),
                     line.receivedQuantity()
@@ -154,7 +155,7 @@ public class GoodsReceiptService implements IGoodsReceipt {
         }
 
         List<ConfirmReceiptRequest.Line> lines = request.items().stream()
-                .sorted(Comparator.comparing(line -> map.get(line.receiptItemId()).getVariantId())).toList();
+                .sorted(Comparator.comparing(line -> map.get(line.receiptItemId()).getVariantId().toString())).toList();
 
         for (ConfirmReceiptRequest.Line line : lines) {
             GoodsReceiptItem item = map.get(line.receiptItemId());
@@ -164,6 +165,7 @@ public class GoodsReceiptService implements IGoodsReceipt {
                     item.getVariantId(), line.receivedQuantity()) != 1) {
                 throw new BaseBusinessException(ErrorCode.CONFLICT, "Không tìm thấy tồn kho cho biến thể " + item.getVariantId());
             }
+            reservations.receive(item.getVariantId(),item.getId(),line.receivedQuantity(),goodsReceiptId);
         }
 
         goodsReceipt.setGoodsReceiptStatus(GoodsReceiptStatus.COMPLETED);

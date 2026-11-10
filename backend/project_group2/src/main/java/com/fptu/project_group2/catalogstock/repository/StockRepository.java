@@ -24,8 +24,8 @@ public interface StockRepository extends JpaRepository<Inventory, UUID> {
             and (:variantSize is null or lower(v.size) = :variantSize)
             and (
                 :inStock is null
-                or (:inStock = true and i.quantity > 0)
-                or (:inStock = false and i.quantity = 0)
+                or (:inStock = true and i.quantity - i.reservedQuantity > 0)
+                or (:inStock = false and i.quantity - i.reservedQuantity = 0)
             )
             order by v.sku asc, v.id asc, i.id asc
             """)
@@ -37,9 +37,15 @@ public interface StockRepository extends JpaRepository<Inventory, UUID> {
             Pageable pageable
     );
 
+    interface Totals {
+        Long getTotalQuantity();
+        Long getTotalReservedQuantity();
+    }
+
     @Query("""
-            select coalesce(sum(i.quantity), 0)
+            select coalesce(sum(i.quantity), 0) as totalQuantity,
+                   coalesce(sum(i.reservedQuantity), 0) as totalReservedQuantity
             from Inventory i
             """)
-    Long getTotalQuantity();
+    Totals getTotals();
 }

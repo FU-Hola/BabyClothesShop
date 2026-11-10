@@ -15,7 +15,9 @@ const StockTable = ({ stockItems }) => {
                         <th>Màu</th>
                         <th>Size</th>
                         <th>Danh mục</th>
-                        <th className="text-end">Tồn kho</th>
+                        <th className="text-end">Tồn vật lý</th>
+                        <th className="text-end">Đang giữ</th>
+                        <th className="text-end">Có thể bán</th>
                         <th>Trạng thái</th>
                     </tr>
                 </thead>
@@ -28,6 +30,8 @@ const StockTable = ({ stockItems }) => {
                             <td>{item.size}</td>
                             <td>{item.categoryName}</td>
                             <td className="text-end">{item.quantity}</td>
+                            <td className="text-end">{item.reservedQuantity}</td>
+                            <td className="text-end">{item.availableQuantity}</td>
                             <td className={item.stockStatus === "IN_STOCK" ? "text-success" : "text-danger"}>
                                 {item.stockStatus === "IN_STOCK" ? "Còn hàng" : "Hết hàng"}
                             </td>

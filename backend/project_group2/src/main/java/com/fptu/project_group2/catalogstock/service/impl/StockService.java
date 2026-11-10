@@ -57,10 +57,13 @@ public class StockService implements IStock {
     @Override
     @Transactional(readOnly = true)
     public StockSummaryResponse getStockSummary() {
-        Long totalQuantity = stockRepository.getTotalQuantity();
+        var totals = stockRepository.getTotals();
+        Long totalQuantity = totals.getTotalQuantity();
 
         return StockSummaryResponse.builder()
                 .totalQuantity(totalQuantity)
+                .totalReservedQuantity(totals.getTotalReservedQuantity())
+                .totalAvailableQuantity(totalQuantity - totals.getTotalReservedQuantity())
                 .build();
     }
 
@@ -69,7 +72,7 @@ public class StockService implements IStock {
         Product product = variant.getProduct();
         Category category = product.getCategory();
 
-        StockStatus stockStatus = inventory.getQuantity() > 0 ? StockStatus.IN_STOCK : StockStatus.OUT_OF_STOCK;
+        StockStatus stockStatus = inventory.getAvailableQuantity() > 0 ? StockStatus.IN_STOCK : StockStatus.OUT_OF_STOCK;
 
         return StockResponse.builder()
                 .variantId(variant.getId())
@@ -81,6 +84,8 @@ public class StockService implements IStock {
                 .categoryId(category.getId())
                 .categoryName(category.getName())
                 .quantity(inventory.getQuantity())
+                .reservedQuantity(inventory.getReservedQuantity())
+                .availableQuantity(inventory.getAvailableQuantity())
                 .stockStatus(stockStatus)
                 .build();
     }

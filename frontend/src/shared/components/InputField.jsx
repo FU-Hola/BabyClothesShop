@@ -13,6 +13,12 @@ export function InputField({ name, label, options, help, ...props }) {
         "aria-describedby":
             [help && `${id}-help`, error && `${id}-error`].filter(Boolean).join(" ") || undefined,
     };
+    if (props.type === "checkbox") {
+        return <Form.Group className="mb-3">
+            <Form.Check {...control} id={id} label={label} />
+            {error && <div className="text-danger small" id={`${id}-error`} role="alert">{error.message}</div>}
+        </Form.Group>;
+    }
     return (
         <Form.Group className="mb-3" controlId={id}>
             <Form.Label>{label}</Form.Label>

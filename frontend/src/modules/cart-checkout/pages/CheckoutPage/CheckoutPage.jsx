@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Banknote,
@@ -22,7 +22,8 @@ const SHIPPING_FEE = 0; // Đồng bộ chính sách miễn phí giao hàng hi�
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-  const { cartItems, totalPrice, completeCheckout, setLastOrder, cartLoading, cartError } = useCart();
+  const submitting = useRef(false);
+  const { cartItems, cartRevision, activeCheckoutKey, totalPrice, completeCheckout, setLastOrder, lastOrder, cartLoading, cartError, syncCartFromBackend } = useCart();
 
   // 1. Quản lý 4 trường thông tin người nhận theo đúng UC12
   const [formData, setFormData] = useState({
@@ -84,7 +85,7 @@ const CheckoutPage = () => {
 
     if (!formData.phone.trim()) {
       newErrors.phone = "Vui lòng nhập số điện thoại người nhận";
-    } else if (!/(0[3|5|7|8|9])+([0-9]{8})\b/.test(formData.phone.trim())) {
+    } else if (!/^0[35789][0-9]{8}$/.test(formData.phone.trim())) {
       newErrors.phone = "Số điện thoại không hợp lệ (cần 10 chữ số bắt đầu bằng 03, 05, 07, 08, 09)";
     }
 
@@ -93,7 +94,7 @@ const CheckoutPage = () => {
     }
 
     if (!paymentMethod) {
-      newErrors.paymentMethod = "Vui lòng chọn 1 phương thức thanh toán (Tiền mặt hoặc Quét QR)";
+      newErrors.paymentMethod = "Vui lòng chọn 1 phương thức thanh toán (Mô phỏng ngay hoặc Quét QR)";
     }
 
     setErrors(newErrors);
@@ -103,13 +104,15 @@ const CheckoutPage = () => {
   // Xử lý khi nhấn nút Đặt hàng / Thanh toán (UC12)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSubmitting || !validateForm()) return;
+    if (submitting.current || !validateForm()) return;
+    submitting.current = true;
 
     setIsSubmitting(true);
     setStockIssue(null);
     setSubmitError('');
     try {
       const receiver = {
+        cartRevision,
         receiverName: formData.fullName.trim(),
         receiverPhone: formData.phone.trim(),
         receiverAddress: formData.address.trim(),
@@ -131,6 +134,9 @@ const CheckoutPage = () => {
 
       const orderData = {
         checkoutKey: validated.checkoutKey,
+        orderId: validated.orderId,
+        orderCode: validated.orderCode,
+        paymentExpiresAt: validated.paymentExpiresAt,
         customer: formData,
         items: cartItems,
         subTotal: Number(validated.subtotal),
@@ -139,23 +145,25 @@ const CheckoutPage = () => {
         paymentMethod,
       };
 
+      setLastOrder(orderData);
       if (paymentMethod === 'qr') {
-        setLastOrder(orderData);
-        navigate('/checkout/payment');
+        navigate('/checkout/payment?checkout=' + encodeURIComponent(validated.checkoutKey));
         return;
       }
 
-      const payment = await checkoutApi.simulatePayment({ ...receiver, checkoutKey: validated.checkoutKey, isSuccess: true });
+      const payment = await checkoutApi.simulatePayment({ checkoutKey: validated.checkoutKey, isSuccess: true });
       const created = payment?.data;
       if (!payment?.success || created?.success !== true || !created.orderId || !created.orderCode) {
         throw new Error(created?.message || payment?.message || 'Đặt hàng chưa thành công.');
       }
       setLastOrder(null);
-      completeCheckout();
+      await completeCheckout();
       navigate('/checkout/result?status=success&order=' + encodeURIComponent(created.orderId));
     } catch (error) {
       setSubmitError(error.response?.data?.message || error.message || 'Không thể đặt hàng. Vui lòng thử lại.');
+      if (error.response?.status === 409) await syncCartFromBackend();
     } finally {
+      submitting.current = false;
       setIsSubmitting(false);
     }
   };
@@ -166,6 +174,9 @@ const CheckoutPage = () => {
       <Stepper currentStep={2} />
 
       <h1 className={styles.pageTitle}>Thông Tin Đặt Hàng & Thanh Toán</h1>
+      {(activeCheckoutKey || lastOrder?.checkoutKey) && <div className="alert alert-info" role="status">
+        Bạn có phiên đặt hàng đang xử lý. <Link to={`/checkout/payment?checkout=${encodeURIComponent(activeCheckoutKey || lastOrder.checkoutKey)}`}>Tiếp tục thanh toán hoặc hủy phiên</Link>.
+      </div>}
 
       {/* CẢNH BÁO THIẾU HÀNG KHI KIỂM TRA TỒN KHO LẦN 1 (UC12) */}
       {stockIssue && (
@@ -272,7 +283,7 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            {/* 2. Chọn phương thức thanh toán (Radio Card: Tiền mặt hoặc Quét QR) */}
+            {/* 2. Chọn phương thức thanh toán (Radio Card: Mô phỏng ngay hoặc Quét QR) */}
             <div className={styles.formCard}>
               <h2 className={styles.cardHeading}>
                 <Banknote size={18} />
@@ -305,10 +316,10 @@ const CheckoutPage = () => {
                   <div className={styles.optionContent}>
                     <div className={styles.optionHeader}>
                       <Banknote size={20} color="#284e70" />
-                      <h3 className={styles.optionTitle}>Thanh toán tiền mặt</h3>
+                      <h3 className={styles.optionTitle}>Thanh toán mô phỏng ngay</h3>
                     </div>
                     <p className={styles.optionDesc}>
-                      Khách hàng thanh toán tiền mặt trực tiếp cho nhân viên giao hàng khi nhận kiện hàng (COD).
+                      Mô phỏng thanh toán thành công ngay sau khi hệ thống giữ đủ hàng.
                     </p>
                   </div>
                 </label>
@@ -412,7 +423,7 @@ const CheckoutPage = () => {
                 ) : (
                   <>
                     <CheckCircle size={18} />
-                    <span>Đặt hàng (Tiền mặt)</span>
+                    <span>Đặt hàng và thanh toán mô phỏng</span>
                   </>
                 )}
               </button>

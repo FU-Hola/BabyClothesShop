@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import com.fptu.project_group2.warehouse.dto.request.GoodsReceipt.ReceiptSearchRequest;
-import com.fptu.project_group2.warehouse.utils.WarehouseActorProvider;
+import com.fptu.project_group2.common.security.CurrentActorProvider;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import com.fptu.project_group2.warehouse.service.WarehouseIdempotency;
+import com.fptu.project_group2.common.service.RequestIdempotency;
 
 @RestController
 @PreAuthorize("hasAnyRole('STORE_STAFF', 'WAREHOUSE_STAFF')")
@@ -36,8 +36,8 @@ import com.fptu.project_group2.warehouse.service.WarehouseIdempotency;
 @RequestMapping("/api/v1/warehouse-staff")
 public class GoodsReceiptController {
     private final IGoodsReceipt goodsReceiptService;
-    private final WarehouseActorProvider actors;
-    private final WarehouseIdempotency idempotency;
+    private final CurrentActorProvider actors;
+    private final RequestIdempotency idempotency;
 
     @GetMapping("/receipts")
     public ResponseEntity<ApiResponse<PageResponse<GoodsReceiptResponse>>> receipts(

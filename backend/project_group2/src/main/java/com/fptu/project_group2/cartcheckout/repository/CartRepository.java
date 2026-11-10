@@ -14,6 +14,10 @@ public interface CartRepository extends JpaRepository<Cart, UUID> {
 
     Optional<Cart> findByCustomerId(UUID customerId);
 
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("select c from Cart c where c.customer.id = :customerId")
+    Optional<Cart> findByCustomerIdForUpdate(@Param("customerId") UUID customerId);
+
     @Query("""
         SELECT DISTINCT c FROM Cart c
         LEFT JOIN FETCH c.items i

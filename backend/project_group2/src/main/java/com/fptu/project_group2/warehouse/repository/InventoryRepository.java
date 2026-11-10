@@ -17,24 +17,10 @@ public interface InventoryRepository extends JpaRepository<Inventory, UUID> {
 
     @Modifying
     @Query(value = """
-        update inventory
+        update shop.inventory
                 set quantity = quantity + :receivedQuantity, updated_at = now()
                 where variant_id = :variantId;
         """, nativeQuery = true)
     int increaseStock(@Param("variantId") UUID variantId, @Param("receivedQuantity") Integer receivedQuantity);
 
-    // Only deduct when enough stock remains; a missing row also returns zero.
-    @Modifying
-    @Query("""
-            update Inventory i
-            set i.quantity = i.quantity - :quantity, i.updatedAt = CURRENT_TIMESTAMP
-            where i.variantId = :variantId and i.quantity >= :quantity
-            """)
-    int decreaseStock(@Param("variantId") UUID variantId, @Param("quantity") long quantity);
-    @Modifying(flushAutomatically = true)
-    @Query("""
-        update Inventory i set i.quantity = i.quantity - :quantity, i.updatedAt = CURRENT_TIMESTAMP
-        where i.variant.id = :variantId and i.quantity >= :quantity
-        """)
-    int decreaseStockIfAvailable(@Param("variantId") UUID variantId, @Param("quantity") Long quantity);
 }

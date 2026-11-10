@@ -7,6 +7,8 @@ import styles from "./Orders.module.css";
 const FALLBACK_IMAGE = "/images/products/sample-baby-romper.png";
 
 const STATUS_LABELS = {
+    PENDING_PAYMENT: "Chờ thanh toán",
+    EXPIRED: "Hết hạn thanh toán",
     PENDING_CONFIRMATION: "Chờ xác nhận",
     CONFIRMED: "Đã xác nhận",
     PACKED: "Đã đóng gói",
@@ -91,12 +93,16 @@ const OrderDetail = () => {
 
             {order.status === "CANCELLED" && (
                 <section className={styles.panel} role="status" aria-label="Thông tin hủy đơn">
-                    <h2>Đơn hàng đã bị hủy bởi Warehouse</h2>
+                    <h2>{order.paymentStatus === "PAID" ? "Đơn hàng đã bị hủy bởi Warehouse" : "Phiên đặt hàng đã hủy"}</h2>
                     <p>Lý do hủy: {order.cancellationReason || "Chưa ghi nhận lý do hủy."}</p>
                     {order.cancelledAt && <p>Thời điểm hủy: {formatDate(order.cancelledAt)}</p>}
                 </section>
             )}
 
+            {order.status === "PENDING_PAYMENT" && <section className={styles.panel}>
+                <p>Hạn thanh toán: {formatDate(order.paymentExpiresAt)}</p>
+                <Link to={`/checkout/payment?checkout=${encodeURIComponent(order.checkoutKey)}`}>Tiếp tục thanh toán</Link>
+            </section>}
             <div className={styles.detailLayout}>
                 <div className={styles.detailMain}>
                     <section className={styles.panel} aria-labelledby="order-products-heading">

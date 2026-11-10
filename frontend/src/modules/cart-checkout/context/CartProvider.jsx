@@ -26,7 +26,20 @@ const errorMessage = (error) => error.response?.data?.message || error.message |
 
 const CustomerCartProvider = ({ customerId, children }) => {
     const [cartItems, setCartItems] = useState([]);
-    const [lastOrder, setLastOrder] = useState(null);
+    const [activeCheckoutKey, setActiveCheckoutKey] = useState(null);
+    const [cartRevision, setCartRevision] = useState(null);
+    const [lastOrder, updateLastOrder] = useState(() => {
+        try { return JSON.parse(sessionStorage.getItem(`pending-checkout:${customerId}`) || 'null'); }
+        catch { return null; }
+    });
+    const setLastOrder = (order) => {
+        updateLastOrder(order);
+        setActiveCheckoutKey(order?.checkoutKey ?? null);
+        try {
+            if (order) sessionStorage.setItem(`pending-checkout:${customerId}`, JSON.stringify(order));
+            else sessionStorage.removeItem(`pending-checkout:${customerId}`);
+        } catch { /* Server remains authoritative if storage is unavailable. */ }
+    };
     const [cartLoading, setCartLoading] = useState(Boolean(customerId));
     const [cartError, setCartError] = useState('');
 
@@ -40,7 +53,7 @@ const CustomerCartProvider = ({ customerId, children }) => {
         cartApi.getCart()
             .then((response) => {
                 const items = readItems(response);
-                if (active) setCartItems(items);
+                if (active) { setCartItems(items); setCartRevision(response.data.revision); setActiveCheckoutKey(response.data.activeCheckoutKey); }
             })
             .catch((error) => {
                 if (active) setCartError(errorMessage(error));
@@ -55,7 +68,9 @@ const CustomerCartProvider = ({ customerId, children }) => {
         if (!customerId) return;
         setCartLoading(true);
         try {
-            setCartItems(readItems(await cartApi.getCart()));
+            const response = await cartApi.getCart();
+            setCartItems(readItems(response));
+            setCartRevision(response.data.revision); setActiveCheckoutKey(response.data.activeCheckoutKey);
             setCartError('');
         } catch (error) {
             setCartError(errorMessage(error));
@@ -72,7 +87,9 @@ const CustomerCartProvider = ({ customerId, children }) => {
             return { success: false, message: 'Giỏ hàng đang tải. Vui lòng thử lại sau.' };
         }
         try {
-            setCartItems(readItems(await request()));
+            const response = await request();
+            setCartItems(readItems(response));
+            setCartRevision(response.data.revision); setActiveCheckoutKey(response.data.activeCheckoutKey);
             setCartError('');
             return { success: true, message: 'Đã cập nhật giỏ hàng thành công.' };
         } catch (error) {
@@ -92,15 +109,13 @@ const CustomerCartProvider = ({ customerId, children }) => {
         ? removeFromCart(id)
         : updateCart(() => cartApi.updateQuantity(id, { quantity }));
 
-    const completeCheckout = () => {
-        // Backend đã xóa giỏ trong transaction tạo đơn, không gửi thêm DELETE.
-        setCartItems([]);
-        setCartError('');
-    };
+    const completeCheckout = syncCartFromBackend;
 
     return (
         <CartContext.Provider value={{
             cartItems,
+            cartRevision,
+            activeCheckoutKey,
             totalItemsCount: cartItems.reduce((sum, item) => sum + item.quantity, 0),
             totalPrice: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
             addToCart,

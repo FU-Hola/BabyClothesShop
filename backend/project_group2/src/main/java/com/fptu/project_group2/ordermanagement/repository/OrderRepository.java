@@ -20,6 +20,14 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, UUID> {
     Optional<Order> findByCheckoutKey(String checkoutKey);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select o from Order o where o.cartId=:cartId and o.cartRevision=:revision")
+    Optional<Order> findByCartIdAndCartRevisionForUpdate(@Param("cartId") UUID cartId, @Param("revision") Long revision);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select o from Order o where o.checkoutKey = :key")
+    Optional<Order> findByCheckoutKeyForUpdate(@Param("key") String key);
+
     Optional<Order> findByOrderCode(String orderCode);
 
     boolean existsByOrderCode(String orderCode);

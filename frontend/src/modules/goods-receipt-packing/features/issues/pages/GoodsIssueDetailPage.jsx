@@ -1,3 +1,4 @@
+import useAuth from "../../../../auth/hooks/useAuth.js";
 import { useParams } from "react-router-dom";
 import { Alert } from "react-bootstrap";
 import WarehouseDetail from "../../../application/components/WarehouseDetail.jsx";
@@ -19,6 +20,8 @@ import {
 import { dateTime, display } from "../../../../../shared/utils/warehouse.format.js";
 
 function IssueContent({ data, ...actions }) {
+    const { user } = useAuth();
+    const ownsIssue = data.assignedTo === user?.id;
     const common = { resource: "issue", id: data.id, ...actions };
     const openOrder = ["CONFIRMED", "PACKED"].includes(data.orderStatus);
     const fullyPicked =
@@ -83,7 +86,7 @@ function IssueContent({ data, ...actions }) {
             </PageHeading>
             {data.status === "CANCELLED" && data.orderStatus === "CANCELLED" && (
                 <Alert variant="secondary" role="status">
-                    Phiếu xuất và đơn hàng đã hủy. Không thể tạo lại phiếu. Tồn kho không thay đổi.
+                    Phiếu xuất và đơn hàng đã hủy. Không thể tạo lại phiếu. Tồn vật lý không thay đổi; lượng giữ hàng được giải phóng.
                 </Alert>
             )}
             {data.status !== "CANCELLED" && (
@@ -148,7 +151,10 @@ function IssueContent({ data, ...actions }) {
                     Trạng thái đơn hàng hiện tại không cho phép tiếp tục xử lý phiếu xuất.
                 </Alert>
             )}
-            {data.status === "PICKING" && openOrder ? (
+            {openOrder && data.assignedTo && !ownsIssue && <Alert variant="info">
+                Phiếu đang do nhân viên khác phụ trách. Bạn có thể xem tiến độ xử lý.
+            </Alert>}
+            {data.status === "PICKING" && openOrder && ownsIssue ? (
                 <ActionForm
                     {...common}
                     action="picking"
@@ -178,7 +184,7 @@ function IssueContent({ data, ...actions }) {
                     confirmText="Nhận soạn toàn bộ phiếu xuất này?"
                 />
             )}
-            {data.status === "PICKING" && openOrder && (
+            {data.status === "PICKING" && openOrder && ownsIssue && (
                 <ActionForm
                     {...common}
                     disabled={actions.disabled || !fullyPicked}
@@ -204,7 +210,7 @@ function IssueContent({ data, ...actions }) {
                     />
                 </ActionForm>
             )}
-            {data.status === "PACKED" && data.orderStatus === "PACKED" && fullyPicked && (
+            {data.status === "PACKED" && data.orderStatus === "PACKED" && fullyPicked && ownsIssue && (
                 <ActionForm
                     {...common}
                     action="export"
@@ -228,17 +234,19 @@ function IssueContent({ data, ...actions }) {
                     />
                 </ActionForm>
             )}
-            {openOrder && ["PENDING", "PICKING", "PACKED"].includes(data.status) && (
+            {openOrder && (!data.assignedTo || ownsIssue) && ["PENDING", "PICKING", "PACKED"].includes(data.status) && (
                 <ActionForm
                     {...common}
                     action="cancel"
                     schema={cancelIssueSchema}
-                    defaultValues={{ version: data.version, reason: "" }}
+                    defaultValues={{ version: data.version, reason: "", stockRecovered: false }}
                     title="Hủy phiếu xuất"
                     danger
-                    description="Đơn hàng sẽ chuyển sang đã hủy kèm lý do của Warehouse. Không thể tạo lại phiếu. Tồn kho không thay đổi."
+                    description="Đơn hàng sẽ chuyển sang đã hủy kèm lý do của Warehouse. Không thể tạo lại phiếu. Tồn vật lý không thay đổi; lượng giữ hàng được giải phóng."
                     confirmText="Hủy phiếu xuất và đơn hàng vĩnh viễn? Không thể tạo lại phiếu."
                 >
+                    <InputField name="stockRecovered" type="checkbox"
+                        label="Đã kiểm tra và thu hồi đầy đủ hàng của phiếu (nếu đã soạn/đóng gói)" />
                     <InputField
                         name="reason"
                         label="Lý do hủy *"

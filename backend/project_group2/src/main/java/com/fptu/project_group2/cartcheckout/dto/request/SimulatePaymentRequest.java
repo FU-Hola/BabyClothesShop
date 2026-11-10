@@ -13,13 +13,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SimulatePaymentRequest {
     @NotBlank(message = "Mã phiên checkout (checkoutKey) không được để trống")
+    @jakarta.validation.constraints.Size(max = 100)
     private String checkoutKey;
 
     @NotNull(message = "Kết quả thanh toán mô phỏng không được để trống")
     private Boolean isSuccess;
 
-    private String receiverName;
-    private String receiverPhone;
-    private String receiverAddress;
-    private String customerNote;
 }

@@ -12,6 +12,7 @@ spring:
     password: ${DB_PASSWORD}
     hikari:
       pool-name: BabyClothesShopPool
+      connection-init-sql: "SET lock_timeout = '5s'"
       maximum-pool-size: ${DB_POOL_MAX_SIZE:10}
       minimum-idle: ${DB_POOL_MIN_IDLE:2}
       connection-timeout: 30000
@@ -57,6 +58,9 @@ spring:
       max-request-size: ${UPLOAD_MAX_REQUEST_SIZE:10MB}
 
 app:
+  checkout:
+    hold-seconds: ${CHECKOUT_HOLD_SECONDS:600}
+    expiry-scan-ms: ${CHECKOUT_EXPIRY_SCAN_MS:15000}
   auth-cookie:
     # false cho HTTP localhost; dùng true khi triển khai HTTPS.
     secure: ${AUTH_COOKIE_SECURE:false}

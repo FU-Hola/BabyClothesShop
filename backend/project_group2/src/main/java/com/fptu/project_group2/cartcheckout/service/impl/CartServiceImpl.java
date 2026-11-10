@@ -41,6 +41,8 @@ public class CartServiceImpl implements ICartService {
     private final ProductVariantRepository productVariantRepository;
     private final UserRepository userRepository;
     private final IStockService stockService;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbc;
+    private final com.fptu.project_group2.cartcheckout.service.CheckoutExpiryService expiry;
 
     @Override
     @Transactional
@@ -55,6 +57,8 @@ public class CartServiceImpl implements ICartService {
     public CartResponse addToCart(UUID customerId, AddToCartRequest request) {
         User customer = requireCustomer(customerId);
         Cart cart = getOrCreateCart(customer);
+        requireEditable(cart);
+        cart.setRevision(Math.addExact(cart.getRevision(),1L));
 
         ProductVariant variant = productVariantRepository.findById(request.getVariantId())
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy biến thể sản phẩm yêu cầu"));
@@ -73,7 +77,7 @@ public class CartServiceImpl implements ICartService {
 
         int targetQuantity = request.getQuantity();
         if (existingItem != null) {
-            targetQuantity = existingItem.getQuantity() + request.getQuantity();
+            targetQuantity = Math.addExact(existingItem.getQuantity(), request.getQuantity());
         }
 
         if (targetQuantity > availableStock) {
@@ -101,6 +105,8 @@ public class CartServiceImpl implements ICartService {
     public CartResponse updateCartItem(UUID customerId, UUID cartItemId, UpdateCartItemRequest request) {
         User customer = requireCustomer(customerId);
         Cart cart = getOrCreateCart(customer);
+        requireEditable(cart);
+        cart.setRevision(Math.addExact(cart.getRevision(),1L));
 
         CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy sản phẩm trong giỏ hàng"));
@@ -126,6 +132,8 @@ public class CartServiceImpl implements ICartService {
     public CartResponse removeCartItem(UUID customerId, UUID cartItemId) {
         User customer = requireCustomer(customerId);
         Cart cart = getOrCreateCart(customer);
+        requireEditable(cart);
+        cart.setRevision(Math.addExact(cart.getRevision(),1L));
 
         CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy sản phẩm trong giỏ hàng"));
@@ -145,6 +153,8 @@ public class CartServiceImpl implements ICartService {
     public void clearCart(UUID customerId) {
         User customer = requireCustomer(customerId);
         Cart cart = getOrCreateCart(customer);
+        requireEditable(cart);
+        cart.setRevision(Math.addExact(cart.getRevision(),1L));
         cartItemRepository.deleteAllByCartId(cart.getId());
         cart.getItems().clear();
     }
@@ -165,12 +175,17 @@ public class CartServiceImpl implements ICartService {
     }
 
     private Cart getOrCreateCart(User customer) {
-        return cartRepository.findByCustomerId(customer.getId())
-                .orElseGet(() -> {
-                    Cart newCart = new Cart();
-                    newCart.setCustomer(customer);
-                    return cartRepository.save(newCart);
-                });
+        jdbc.update("INSERT INTO shop.carts(id,customer_id,created_at,updated_at) VALUES (?,?,now(),now()) "
+                + "ON CONFLICT (customer_id) DO NOTHING",UUID.randomUUID(),customer.getId());
+        return cartRepository.findByCustomerIdForUpdate(customer.getId()).orElseThrow();
+    }
+
+    private void requireEditable(Cart cart) {
+        expiry.expireForCart(cart.getId());
+        if(Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM shop.orders WHERE cart_id=? AND status='PENDING_PAYMENT')",
+                Boolean.class,cart.getId()))) {
+            throw new BaseBusinessException(ErrorCode.CONFLICT,"Giỏ hàng đang có đơn chờ thanh toán. Hãy thanh toán hoặc hủy phiên trước khi sửa giỏ.");
+        }
     }
 
     private CartResponse mapToCartResponse(Cart cart) {
@@ -210,8 +225,12 @@ public class CartServiceImpl implements ICartService {
                     .build());
         }
 
+        var pending = jdbc.queryForList("SELECT checkout_key FROM shop.orders WHERE cart_id=? AND status='PENDING_PAYMENT' ORDER BY created_at DESC LIMIT 1",
+                String.class, cart.getId());
         return CartResponse.builder()
+                .activeCheckoutKey(pending.isEmpty() ? null : pending.get(0))
                 .cartId(cart.getId())
+                .revision(cart.getRevision())
                 .items(itemResponses)
                 .totalItems(totalItems)
                 .totalPrice(totalPrice)

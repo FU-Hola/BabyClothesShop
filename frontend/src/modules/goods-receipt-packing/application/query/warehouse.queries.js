@@ -46,7 +46,7 @@ export function useWarehouseMutation(resource, id) {
             if (resource === "issue") client.setQueryData(warehouseKeys.detail(resource, id), data);
             const keys = [resource === "receipt" ? warehouseKeys.receiptLists : warehouseKeys.issueLists];
             if (id) keys.push(warehouseKeys.detail(resource, id));
-            if (action === "confirm" || action === "export") {
+            if (action === "confirm" || action === "export" || action === "cancel") {
                 keys.push(warehouseKeys.options, ["stocks"], ["stock-summary"]);
             }
             await Promise.all(keys.map((queryKey) => client.invalidateQueries({ queryKey })));

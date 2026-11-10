@@ -19,7 +19,7 @@ public class StockServiceImpl implements IStockService {
     @Transactional(readOnly = true)
     public long getAvailableStock(UUID variantId) {
         return inventoryRepository.findByVariantId(variantId)
-                .map(Inventory::getQuantity)
+                .map(Inventory::getAvailableQuantity)
                 .orElse(0L);
     }
 }

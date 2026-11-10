@@ -19,6 +19,14 @@ public class Inventory extends BaseEntity {
     @Column(nullable = false)
     private Long quantity;
 
+    @Builder.Default
+    @Column(name = "reserved_quantity", nullable = false, insertable = false, updatable = false)
+    private Long reservedQuantity = 0L;
+
+    public long getAvailableQuantity() {
+        return quantity - reservedQuantity;
+    }
+
     @Column(name = "variant_id", nullable = false, unique = true)
     private UUID variantId;
 

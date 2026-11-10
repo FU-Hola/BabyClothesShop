@@ -3,7 +3,6 @@ import { Link, useSearchParams } from "react-router-dom";
 import {
   CheckCircle2,
   XCircle,
-  AlertTriangle,
   ShoppingBag,
   RotateCcw,
   Home,
@@ -25,7 +24,7 @@ const OrderResultPage = () => {
   const { user } = useAuth();
   const { lastOrder: checkoutSession } = useCart();
   const result = useQuery({
-    queryKey: ['checkout-result', user.id, orderId],
+    queryKey: ['checkout-result', user?.id, orderId],
     queryFn: () => getMyOrder(orderId),
     enabled: status === 'success' && Boolean(orderId),
     staleTime: 0,
@@ -53,7 +52,7 @@ const OrderResultPage = () => {
   if (status === 'success' && orderId && result.isPending) {
     return <div className={styles.resultPage}><p role="status">Đang xác nhận đơn hàng...</p></div>;
   }
-  if ((status === 'success' && (!orderId || result.isError || !order?.id)) || !['success', 'failed', 'out_of_stock'].includes(status)) {
+  if ((status === 'success' && (!orderId || result.isError || !order?.id)) || !['success', 'failed'].includes(status)) {
     return <div className={styles.resultPage}><h1>Chưa xác nhận được đơn hàng</h1><p>{result.error?.response?.data?.message || 'Vui lòng kiểm tra đơn hàng của bạn.'}</p><Link to="/don-hang">Xem đơn hàng của tôi</Link></div>;
   }
 
@@ -71,63 +70,25 @@ const OrderResultPage = () => {
               Thanh Toán Không Thành Công
             </h1>
             <p className={styles.statusSubtitle}>
-              Giao dịch thanh toán mô phỏng chưa hoàn tất hoặc đã bị hủy. Đơn hàng của bạn{" "}
-              <strong>CHƯA</strong> được tạo và giỏ hàng của bạn vẫn được giữ nguyên vẹn.
+              Thanh toán mô phỏng không thành công. Phiên đặt hàng đã kết thúc,
+              lượng hàng giữ chỗ đã được giải phóng và giỏ hàng vẫn được giữ nguyên.
             </p>
           </div>
 
           <div className="alert alert-light border text-center p-3 mb-4">
             <p className="mb-1 text-muted small">
-              Bạn có thể quét lại mã QR để thanh toán hoặc quay về giỏ hàng để chọn hình thức thanh toán tiền mặt.
+              Quay lại giỏ hàng để tạo phiên đặt hàng và giữ hàng mới. Phiên đã kết thúc không thể thanh toán lại.
             </p>
           </div>
 
           <div className={styles.actionButtonGroup}>
-            <Link to="/checkout/payment" className={styles.btnPrimary}>
+            <Link to="/checkout" className={styles.btnPrimary}>
               <RotateCcw size={16} />
-              <span>Thử lại thanh toán</span>
+              <span>Tạo phiên đặt hàng mới</span>
             </Link>
             <Link to="/cart" className={styles.btnSecondary}>
               <ShoppingBag size={16} />
               <span>Quay lại giỏ hàng</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ----------------------------------------------------
-  // BIẾN THỂ 3: HẾT HÀNG Ở LẦN KIỂM TRA CUỐI (UC12)
-  // ----------------------------------------------------
-  if (status === "out_of_stock") {
-    return (
-      <div className={styles.resultPage}>
-        <Stepper currentStep={3} />
-        <div className={styles.resultCard}>
-          <div className={styles.statusHeader}>
-            <AlertTriangle size={64} strokeWidth={1.5} className={styles.statusIconWarning} />
-            <h1 className={styles.statusTitle} style={{ color: "#d97706" }}>
-              Rất Tiếc, Sản Phẩm Vừa Hết Hàng!
-            </h1>
-            <p className={styles.statusSubtitle}>
-              Trong quá trình bạn hoàn tất thanh toán, sản phẩm{" "}
-              <strong>"{lastOrder?.outOfStockItemName || "Quần áo trẻ em"}"</strong> đã được khách hàng khác đặt mua hết số lượng khả dụng.
-            </p>
-          </div>
-
-          <div className="alert alert-warning p-3 mb-4">
-            <h6 className="fw-bold mb-1">Quy định xử lý hệ thống:</h6>
-            <p className="small mb-0">
-              Hệ thống đã tự động hủy lượt đặt này, <strong>KHÔNG</strong> tạo đơn và{" "}
-              <strong>KHÔNG</strong> trừ tiền của quý khách. Xin quý khách vui lòng quay lại giỏ hàng để chọn sản phẩm/size thay thế.
-            </p>
-          </div>
-
-          <div className={styles.actionButtonGroup}>
-            <Link to="/cart" className={styles.btnPrimary}>
-              <ShoppingBag size={16} />
-              <span>Quay lại giỏ hàng để điều chỉnh</span>
             </Link>
           </div>
         </div>

@@ -27,6 +27,8 @@ public class StockResponse {
     private String categoryName;
 
     private Long quantity;
+    private Long reservedQuantity;
+    private Long availableQuantity;
 
     private StockStatus stockStatus;
 }

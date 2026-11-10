@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@lombok.extern.slf4j.Slf4j
 @RestControllerAdvice(basePackageClasses = {CartController.class, CheckoutController.class})
 public class CartCheckoutExceptionHandler {
 
@@ -56,10 +57,11 @@ public class CartCheckoutExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception exception) {
+        log.error("Checkout request failed", exception);
         return ResponseBuilder.error(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 ErrorCode.INTERNAL_SERVER_ERROR.getCode(),
-                "Đã xảy ra lỗi: " + exception.getMessage(),
+                "Đã xảy ra lỗi. Vui lòng thử lại với cùng yêu cầu.",
                 null
         );
     }

@@ -1,4 +1,4 @@
-package com.fptu.project_group2.warehouse.utils;
+package com.fptu.project_group2.common.security;
 
 import com.fptu.project_group2.authaccount.entity.User;
 import com.fptu.project_group2.authaccount.repository.UserRepository;
@@ -8,10 +8,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Component;
 
-/** Resolves the warehouse actor from the authenticated request. */
+/** Resolves the authenticated actor from the authenticated request. */
 @Component
 @RequiredArgsConstructor
-public class WarehouseActorProvider {
+public class CurrentActorProvider {
     private final UserRepository users;
 
     public User currentActor() {

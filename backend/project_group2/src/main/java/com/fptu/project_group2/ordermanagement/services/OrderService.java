@@ -1,5 +1,7 @@
 package com.fptu.project_group2.ordermanagement.services;
 
+import com.fptu.project_group2.common.security.CurrentActorProvider;
+import com.fptu.project_group2.warehouse.service.InventoryReservationService;
 import com.fptu.project_group2.common.exception.BadRequestException;
 import com.fptu.project_group2.common.exception.BaseBusinessException;
 import com.fptu.project_group2.common.exception.ErrorCode;
@@ -8,20 +10,13 @@ import com.fptu.project_group2.common.http.PageResponse;
 import com.fptu.project_group2.ordermanagement.common.OrderStatus;
 import com.fptu.project_group2.ordermanagement.common.OrderConflictException;
 import com.fptu.project_group2.ordermanagement.common.PaymentStatus;
-import com.fptu.project_group2.ordermanagement.dto.request.ShipOrderRequest;
-import com.fptu.project_group2.ordermanagement.entity.OrderItem;
-import com.fptu.project_group2.warehouse.common.GoodsIssueStatus;
 import com.fptu.project_group2.warehouse.dto.request.GoodsIssue.CreateGoodsIssueRequest;
-import com.fptu.project_group2.warehouse.entity.GoodsIssue;
-import com.fptu.project_group2.warehouse.repository.GoodsIssueRepository;
-import com.fptu.project_group2.warehouse.repository.InventoryRepository;
 import com.fptu.project_group2.ordermanagement.dto.response.OrderDetailResponse;
 import com.fptu.project_group2.ordermanagement.dto.response.OrderSummaryResponse;
 import com.fptu.project_group2.ordermanagement.entity.Order;
 import com.fptu.project_group2.ordermanagement.mapper.OrderResponseMapper;
 import com.fptu.project_group2.ordermanagement.repository.OrderRepository;
 import com.fptu.project_group2.warehouse.service.IGoodsIssue;
-import com.fptu.project_group2.warehouse.utils.TrackingNumberGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -44,10 +39,9 @@ import java.util.UUID;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderResponseMapper orderMapper;
-    private final GoodsIssueRepository goodsIssueRepository;
-    private final InventoryRepository inventoryRepository;
     private final IGoodsIssue goodsIssue;
-    private final TrackingNumberGenerator trackingNumbers;
+    private final InventoryReservationService reservations;
+    private final CurrentActorProvider actors;
 
     public PageResponse<OrderSummaryResponse> getOrders(OrderStatus status, String search,
                                                        int page, int size) {
@@ -133,10 +127,10 @@ public class OrderService {
             throw new OrderConflictException("Đơn hàng chưa thanh toán thành công");
         }
 
+        reservations.requireCommitted(order);
+        order.setConfirmedBy(actors.currentActor());
         order.setStatus(OrderStatus.CONFIRMED);
         order.setConfirmedAt(Instant.now());
-        // TODO: Set confirmedBy from the authenticated staff account after Auth integration.
-        // The demo deducts stock only when shipping, not when confirming.
 
         // Flush now so @Version detects concurrent changes before returning the result.
         orderRepository.saveAndFlush(order);
@@ -154,47 +148,9 @@ public class OrderService {
 
         order.setStatus(OrderStatus.DELIVERED);
         order.setDeliveredAt(Instant.now());
+        order.setDeliveredBy(actors.currentActor());
         orderRepository.saveAndFlush(order);
         return orderMapper.toDetail(order);
     }
 
-    @Transactional
-    public OrderDetailResponse shipOrder(UUID id, ShipOrderRequest request) {
-        Order order = orderRepository.findByIdForUpdate(id)
-                .orElseThrow(() -> new NotFoundException("Order", "id", id));
-        if (order.getStatus() != OrderStatus.PACKED) {
-            throw new OrderConflictException("Chỉ được gửi đơn đã đóng gói");
-        }
-
-        GoodsIssue issue = goodsIssueRepository.findByOrderId(id)
-                .orElseThrow(() -> new OrderConflictException("Đơn hàng chưa có phiếu xuất kho"));
-        if (issue.getStatus() != GoodsIssueStatus.PACKED) {
-            throw new OrderConflictException("Phiếu xuất kho chưa đóng gói hoặc đã xuất kho");
-        }
-        if (order.getItems().isEmpty()) {
-            throw new OrderConflictException("Đơn hàng không có sản phẩm để xuất kho");
-        }
-
-        // Use the same order lock and SKU order as Warehouse export/cancel.
-        Map<UUID, Long> quantities = new java.util.TreeMap<>();
-        for (OrderItem item : order.getItems()) {
-            quantities.merge(item.getVariant().getId(), item.getQuantity().longValue(), Math::addExact);
-        }
-        for (var entry : quantities.entrySet()) {
-            int updatedRows = inventoryRepository.decreaseStockIfAvailable(entry.getKey(), entry.getValue());
-            if (updatedRows != 1) {
-                throw new OrderConflictException("Tồn kho không đủ hoặc không hợp lệ: " + entry.getKey());
-            }
-        }
-
-        issue.setCarrierName(request.getCarrierName().trim());
-        issue.setTrackingNumber(trackingNumbers.next());
-        issue.setStatus(GoodsIssueStatus.EXPORTED);
-        issue.setExportedAt(Instant.now());
-        order.setStatus(OrderStatus.SHIPPING);
-
-        goodsIssueRepository.saveAndFlush(issue);
-        orderRepository.saveAndFlush(order);
-        return orderMapper.toDetail(order);
-    }
 }

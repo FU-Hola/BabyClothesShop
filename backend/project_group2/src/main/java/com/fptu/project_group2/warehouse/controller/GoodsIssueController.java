@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 import org.springframework.web.bind.annotation.RequestHeader;
-import com.fptu.project_group2.warehouse.service.WarehouseIdempotency;
+import com.fptu.project_group2.common.service.RequestIdempotency;
 
 @RestController
 @PreAuthorize("hasRole('WAREHOUSE_STAFF')")
@@ -39,7 +39,7 @@ import com.fptu.project_group2.warehouse.service.WarehouseIdempotency;
 @RequestMapping("/api/v1/warehouse-staff/issues")
 public class GoodsIssueController {
     private final IGoodsIssue service;
-    private final WarehouseIdempotency idempotency;
+    private final RequestIdempotency idempotency;
 
     @PostMapping
     public ResponseEntity<String> create(

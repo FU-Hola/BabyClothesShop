@@ -33,6 +33,15 @@ public class Order extends BaseEntity {
     @Column(name = "checkout_key", nullable = false, length = 100, unique = true)
     private String checkoutKey;
 
+    @Column(name = "cart_id")
+    private java.util.UUID cartId;
+
+    @Column(name = "cart_revision")
+    private Long cartRevision;
+
+    @Column(name = "payment_expires_at")
+    private Instant paymentExpiresAt;
+
     @Column(name = "receiver_name", nullable = false, length = 255)
     private String receiverName;
 

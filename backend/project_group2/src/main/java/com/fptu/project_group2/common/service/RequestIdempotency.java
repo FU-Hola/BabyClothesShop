@@ -1,9 +1,9 @@
-package com.fptu.project_group2.warehouse.service;
+package com.fptu.project_group2.common.service;
 
 import com.fptu.project_group2.common.exception.BadRequestException;
 import com.fptu.project_group2.common.exception.BaseBusinessException;
 import com.fptu.project_group2.common.exception.ErrorCode;
-import com.fptu.project_group2.warehouse.utils.WarehouseActorProvider;
+import com.fptu.project_group2.common.security.CurrentActorProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,10 +20,10 @@ import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
-public class WarehouseIdempotency {
+public class RequestIdempotency {
     private final JdbcTemplate jdbc;
     private final ObjectMapper json;
-    private final WarehouseActorProvider actors;
+    private final CurrentActorProvider actors;
 
     @Transactional
     public ResponseEntity<String> execute(String key, String operation, Object request,
@@ -58,7 +58,7 @@ public class WarehouseIdempotency {
 
         var result = action.get();
         if (!result.getStatusCode().is2xxSuccessful()) {
-            throw new IllegalStateException("Only successful warehouse actions may be cached");
+            throw new IllegalStateException("Only successful actions may be cached");
         }
         String body = json.writeValueAsString(result.getBody());
         jdbc.update("""

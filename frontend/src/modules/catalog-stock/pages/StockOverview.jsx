@@ -59,9 +59,12 @@ const StockOverview = () => {
                 <Card.Body className="d-flex align-items-center gap-3 p-4">
                     <Boxes size={24} className="text-primary" aria-hidden="true"/>
                     <div>
-                        <p className="text-muted small mb-1 fw-medium">Tổng tồn kho</p>
+                        <p className="text-muted small mb-1 fw-medium">Tổng tồn vật lý</p>
                         <p className="h3 fw-bold text-dark mb-0">
                             {totalQuantity == null ? "—" : `${totalQuantity} sp`}
+                        </p>
+                        <p className="small text-muted mb-0">
+                            Đang giữ: {summaryQuery.data?.totalReservedQuantity ?? "—"} · Có thể bán: {summaryQuery.data?.totalAvailableQuantity ?? "—"}
                         </p>
                     </div>
                 </Card.Body>
