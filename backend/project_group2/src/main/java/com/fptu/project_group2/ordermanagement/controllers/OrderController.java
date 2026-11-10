@@ -13,11 +13,13 @@ import com.fptu.project_group2.ordermanagement.dto.response.OrderSummaryResponse
 import com.fptu.project_group2.ordermanagement.services.OrderService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @PreAuthorize("hasRole('STORE_STAFF')")
 @RequiredArgsConstructor
@@ -41,9 +43,23 @@ public class OrderController {
     }
 
     @PatchMapping("/{id}/confirm")
-    public ResponseEntity<String> confirmOrder(@PathVariable UUID id,@RequestHeader("Idempotency-Key") String key) {
-        return idempotency.execute(key,"order:confirm:"+id,id,
-                () -> ResponseBuilder.ok(orderService.confirmOrder(id), "Xác nhận đơn hàng thành công"));
+    public ResponseEntity<String> confirmOrder(@PathVariable UUID id, @RequestHeader("Idempotency-Key") String key) {
+
+        log.info("Confirm order request received - orderId: {}, idempotencyKey: '{}'", id, key);
+
+        var response = idempotency.execute(key, "order:confirm:" + id, id, () -> {
+            log.info("Executing confirmOrder logic for orderId: {}", id);
+
+            var detail = orderService.confirmOrder(id);
+            log.info("Order confirmed successfully - orderId: {}, orderCode: {}, status: {}",
+                    id, detail.getOrderCode(), detail.getStatus());
+
+            return ResponseBuilder.ok(detail, "Xác nhận đơn hàng thành công");
+        });
+
+        log.info("Confirm order finished - orderId: {}, responseStatus: {}", id, response.getStatusCode());
+
+        return response;
     }
 
     @PatchMapping("/{id}/deliver")

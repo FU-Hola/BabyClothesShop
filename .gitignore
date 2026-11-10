@@ -10,7 +10,8 @@ node_modules/
 .yarn/unplugged/
 .yarn/install-state.gz
 .pnp.*
-
+product-images-preview
+.playwright-mcp
 # Frontend build output and tooling caches
 /frontend/dist/
 /frontend/dist-ssr/

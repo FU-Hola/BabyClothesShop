@@ -9,6 +9,7 @@ import com.fptu.project_group2.common.repository.RequestIdempotencyRepository;
 import com.fptu.project_group2.common.security.CurrentActorProvider;
 import com.fptu.project_group2.common.service.RequestIdempotency;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import java.util.HexFormat;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RequestIdempotencyService implements RequestIdempotency {
@@ -90,6 +92,9 @@ public class RequestIdempotencyService implements RequestIdempotency {
         RequestIdempotencyId requestId = new RequestIdempotencyId(actorId, idempotencyKey);
         RequestIdempotencyRecord storedRequest = requestIdempotencyRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalStateException("Claimed idempotency request was not found"));
+
+        log.info("Idempotency cached - operation: {}, status: {}",
+                storedRequest.getOperation(), storedRequest.getResponseStatus());
 
         if (!operation.equals(storedRequest.getOperation())
                 || !requestHash.equals(storedRequest.getRequestHash())) {

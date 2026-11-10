@@ -39,7 +39,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
                            @Param("search") String search,
                            Pageable pageable);
 
-    // Fetch items after paging IDs, not in the paginated query itself.
+
     @Query("select distinct o from Order o left join fetch o.items where o.id in :ids")
     List<Order> findAllWithItemsByIdIn(@Param("ids") List<UUID> ids);
 
