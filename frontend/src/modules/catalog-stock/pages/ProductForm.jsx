@@ -16,7 +16,7 @@ const newVariant = () => ({
     active: true,
 });
 
-function ProductEditor({ productId, onSaved }) {
+function ProductEditor({ productId, onSaved, notice }) {
     const navigate = useNavigate();
     const [product, setProduct] = useState(null);
     const [savedVariants, setSavedVariants] = useState([]);
@@ -119,6 +119,7 @@ function ProductEditor({ productId, onSaved }) {
 
     return (
         <>
+            {notice && !submitError && !saving && <Alert variant="success">{notice}</Alert>}
             <Form noValidate onSubmit={submit} className="bg-white rounded-4 shadow-sm p-4">
                 {submitError && <Alert variant="danger">{submitError}</Alert>}
                 <fieldset disabled={saving}>
@@ -285,9 +286,8 @@ export default function ProductForm() {
         <Container fluid className="py-2 px-0">
             <p className="text-muted small mb-2">Quản trị / Quản lý sản phẩm</p>
             <h1 className="h3 fw-bold mb-4">{productId ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm"}</h1>
-            {notice && <Alert variant="success">{notice}</Alert>}
             <ProductEditor key={`${productId ?? "new"}-${revision}`} productId={productId}
-                           onSaved={() => setRevision((previous) => previous + 1)} />
+                           notice={notice} onSaved={() => setRevision((previous) => previous + 1)} />
         </Container>
     );
 }
