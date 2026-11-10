@@ -17,7 +17,7 @@ import com.fptu.project_group2.ordermanagement.common.*;
 import com.fptu.project_group2.ordermanagement.entity.Order;
 import com.fptu.project_group2.ordermanagement.entity.OrderItem;
 import com.fptu.project_group2.ordermanagement.repository.OrderRepository;
-import com.fptu.project_group2.warehouse.service.InventoryReservationService;
+import com.fptu.project_group2.warehouse.service.IInventoryReservation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -33,7 +33,7 @@ public class CheckoutServiceImpl implements ICheckoutService {
     private final CartItemRepository cartItems;
     private final OrderRepository orders;
     private final CartServiceImpl cartService;
-    private final InventoryReservationService reservations;
+    private final IInventoryReservation reservations;
     private final CheckoutExpiryService expiry;
     private final JdbcTemplate jdbc;
     @Value("${app.checkout.hold-seconds:600}") private long holdSeconds;
@@ -121,8 +121,8 @@ public class CheckoutServiceImpl implements ICheckoutService {
             return result(order,"Thanh toán thất bại; hàng đã được giải phóng, giỏ hàng vẫn giữ nguyên.");
         }
         reservations.commit(order);
-        order.setPaymentStatus(PaymentStatus.PAID);
         order.setPaidAt(reservations.now());
+        order.setPaymentStatus(PaymentStatus.PAID);
         order.setStatus(OrderStatus.PENDING_CONFIRMATION);
         cartItems.deleteAllByCartId(cart.getId());
         cart.getItems().clear();

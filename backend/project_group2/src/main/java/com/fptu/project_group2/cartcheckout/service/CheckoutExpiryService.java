@@ -4,7 +4,7 @@ import com.fptu.project_group2.ordermanagement.common.OrderStatus;
 import com.fptu.project_group2.ordermanagement.common.PaymentStatus;
 import com.fptu.project_group2.ordermanagement.entity.Order;
 import com.fptu.project_group2.ordermanagement.repository.OrderRepository;
-import com.fptu.project_group2.warehouse.service.InventoryReservationService;
+import com.fptu.project_group2.warehouse.service.IInventoryReservation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CheckoutExpiryService {
     private final OrderRepository orders;
-    private final InventoryReservationService reservations;
+    private final IInventoryReservation reservations;
     private final JdbcTemplate jdbc;
 
     @Transactional
