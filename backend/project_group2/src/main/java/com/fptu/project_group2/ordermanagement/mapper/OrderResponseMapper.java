@@ -104,6 +104,9 @@ public class OrderResponseMapper {
                 .confirmedAt(order.getConfirmedAt())
                 .deliveredAt(order.getDeliveredAt())
                 .paidAt(order.getPaidAt())
+                .cancelledBy(order.getCancelledBy() == null ? null : order.getCancelledBy().getId().toString())
+                .cancelledAt(order.getCancelledAt())
+                .cancellationReason(order.getCancellationReason())
                 .build();
     }
 }

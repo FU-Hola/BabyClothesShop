@@ -37,4 +37,7 @@ public class OrderDetailResponse {
     private Instant confirmedAt;
     private Instant deliveredAt;
     private Instant paidAt;
+    private String cancelledBy;
+    private Instant cancelledAt;
+    private String cancellationReason;
 }

@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
+import org.springframework.web.bind.annotation.RequestHeader;
+import com.fptu.project_group2.warehouse.service.WarehouseIdempotency;
 
 @RestController
 @PreAuthorize("hasRole('WAREHOUSE_STAFF')")
@@ -37,12 +39,15 @@ import java.util.UUID;
 @RequestMapping("/api/v1/warehouse-staff/issues")
 public class GoodsIssueController {
     private final IGoodsIssue service;
+    private final WarehouseIdempotency idempotency;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<GoodsIssueDetailResponse>> create(
+    public ResponseEntity<String> create(
+            @RequestHeader("Idempotency-Key") String key,
             @Valid @RequestBody CreateGoodsIssueRequest request
     ) {
-        return ResponseBuilder.ok(service.createGoodsIssue(request), "Phiếu xuất của đơn hàng");
+        return idempotency.execute(key, "issue:create", request,
+                () -> ResponseBuilder.ok(service.createGoodsIssue(request), "Phiếu xuất của đơn hàng"));
     }
 
     @GetMapping
@@ -65,50 +70,53 @@ public class GoodsIssueController {
     }
 
     @PostMapping("/{id}/start-picking")
-    public ResponseEntity<ApiResponse<GoodsIssueDetailResponse>> start(
+    public ResponseEntity<String> start(
+            @RequestHeader("Idempotency-Key") String key,
             @PathVariable UUID id,
             @Valid @RequestBody IssueVersionRequest request
     ) {
-        return ResponseBuilder.ok(service.startPicking(id, request));
+        return idempotency.execute(key, "issue:start:" + id, request,
+                () -> ResponseBuilder.ok(service.startPicking(id, request)));
     }
 
     @PutMapping("/{id}/picking")
-    public ResponseEntity<ApiResponse<GoodsIssueDetailResponse>> picking(
+    public ResponseEntity<String> picking(
+            @RequestHeader("Idempotency-Key") String key,
             @PathVariable UUID id,
             @Valid @RequestBody UpdatePickingRequest request
     ) {
-        return ResponseBuilder.ok(service.updatePicking(id, request));
+        return idempotency.execute(key, "issue:picking:" + id, request,
+                () -> ResponseBuilder.ok(service.updatePicking(id, request)));
     }
 
     @PostMapping("/{id}/pack")
-    public ResponseEntity<ApiResponse<GoodsIssueDetailResponse>> pack(
+    public ResponseEntity<String> pack(
+            @RequestHeader("Idempotency-Key") String key,
             @PathVariable UUID id,
             @Valid @RequestBody PackIssueRequest request
     ) {
-        return ResponseBuilder.ok(service.pack(id, request));
+        return idempotency.execute(key, "issue:pack:" + id, request,
+                () -> ResponseBuilder.ok(service.pack(id, request)));
     }
 
     @PostMapping("/{id}/export")
-    public ResponseEntity<ApiResponse<GoodsIssueDetailResponse>> export(
+    public ResponseEntity<String> export(
+            @RequestHeader("Idempotency-Key") String key,
             @PathVariable UUID id,
             @Valid @RequestBody ExportIssueRequest request
     ) {
-        return ResponseBuilder.ok(service.export(id, request));
+        return idempotency.execute(key, "issue:export:" + id, request,
+                () -> ResponseBuilder.ok(service.export(id, request)));
     }
 
     @PostMapping("/{id}/cancel")
-    public ResponseEntity<ApiResponse<GoodsIssueDetailResponse>> cancel(
+    public ResponseEntity<String> cancel(
+            @RequestHeader("Idempotency-Key") String key,
             @PathVariable UUID id,
             @Valid @RequestBody CancelIssueRequest request
     ) {
-        return ResponseBuilder.ok(service.cancel(id, request));
+        return idempotency.execute(key, "issue:cancel:" + id, request,
+                () -> ResponseBuilder.ok(service.cancel(id, request)));
     }
 
-    @PostMapping("/{id}/recreate")
-    public ResponseEntity<ApiResponse<GoodsIssueDetailResponse>> recreate(
-            @PathVariable UUID id,
-            @Valid @RequestBody IssueVersionRequest request
-    ) {
-        return ResponseBuilder.ok(service.recreate(id, request));
-    }
 }

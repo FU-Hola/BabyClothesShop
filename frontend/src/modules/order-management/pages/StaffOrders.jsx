@@ -267,7 +267,11 @@ export default function StaffOrders() {
                     <div className={styles.detailStack}>
                         <section className={styles.panel}>
                             <div className={styles.panelHeading}><Truck size={19} /><h2>Tiến trình đơn hàng</h2></div>
-                            {order.status === "CANCELLED" && <p className={styles.cancelledNote}>Đơn hàng đã hủy do phiếu xuất kho bị hủy.</p>}
+                            {order.status === "CANCELLED" && <div className={styles.cancelledNote} role="status">
+                                <p>Warehouse đã hủy phiếu xuất và đơn hàng. Không thể tạo lại phiếu.</p>
+                                <p>Lý do hủy: {order.cancellationReason || "Chưa ghi nhận lý do hủy."}</p>
+                                {order.cancelledAt && <p>Thời điểm hủy: {formatDate(order.cancelledAt)}</p>}
+                            </div>}
                             {order.status !== "CANCELLED" && <ol className={styles.timeline}>{steps.map((step, index) =>
                                 <li key={step} className={index <= steps.indexOf(order.status) ? styles.stepDone : ""}>
                                     <span className={styles.stepDot}>{index < steps.indexOf(order.status) && <Check size={12} />}</span>

@@ -5,7 +5,6 @@ import styles from "../pages/StaffOrders.module.css";
 export default function ShipOrderModal({ order, onClose, onShipped }) {
     const dialogRef = useRef(null);
     const [carrierName, setCarrierName] = useState("");
-    const [trackingNumber, setTrackingNumber] = useState("");
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
 
@@ -22,10 +21,9 @@ export default function ShipOrderModal({ order, onClose, onShipped }) {
 
         const data = {
             carrierName: carrierName.trim(),
-            trackingNumber: trackingNumber.trim(),
         };
-        if (!data.carrierName || !data.trackingNumber) {
-            setError("Vui lòng nhập đơn vị vận chuyển và mã vận đơn.");
+        if (!data.carrierName) {
+            setError("Vui lòng nhập đơn vị vận chuyển.");
             return;
         }
 
@@ -58,9 +56,7 @@ export default function ShipOrderModal({ order, onClose, onShipped }) {
                     <input id="ship-carrier" name="carrierName" required maxLength={255}
                         value={carrierName} onChange={(event) => setCarrierName(event.target.value)} />
 
-                    <label htmlFor="ship-tracking">Mã vận đơn</label>
-                    <input id="ship-tracking" name="trackingNumber" required maxLength={100}
-                        value={trackingNumber} onChange={(event) => setTrackingNumber(event.target.value)} />
+                    <p>Mã vận đơn được tự động cấp khi xác nhận gửi hàng.</p>
                 </fieldset>
                 {error && <p className={styles.errorText} role="alert">{error}</p>}
                 <div className={styles.dialogActions}>

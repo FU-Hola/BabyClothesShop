@@ -63,6 +63,16 @@ public class Order extends BaseEntity {
     @Column(name = "paid_at", nullable = true)
     private Instant paidAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cancelled_by")
+    private User cancelledBy;
+
+    @Column(name = "cancelled_at")
+    private Instant cancelledAt;
+
+    @Column(name = "cancellation_reason", length = 1000)
+    private String cancellationReason;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "confirmed_by", nullable = true)
     private User confirmedBy;

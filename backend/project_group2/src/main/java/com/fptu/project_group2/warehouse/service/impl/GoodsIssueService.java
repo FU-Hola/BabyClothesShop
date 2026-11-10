@@ -29,6 +29,7 @@ import com.fptu.project_group2.warehouse.repository.GoodsIssueRepository;
 import com.fptu.project_group2.warehouse.repository.InventoryRepository;
 import com.fptu.project_group2.warehouse.service.IGoodsIssue;
 import com.fptu.project_group2.warehouse.utils.WarehouseActorProvider;
+import com.fptu.project_group2.warehouse.utils.TrackingNumberGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +53,7 @@ public class GoodsIssueService implements IGoodsIssue {
     private final InventoryRepository inventory;
     private final WarehouseActorProvider actors;
     private final GoodsIssueMapper mapper;
+    private final TrackingNumberGenerator trackingNumbers;
 
     @Override
     @Transactional
@@ -194,7 +196,7 @@ public class GoodsIssueService implements IGoodsIssue {
 
         requireFullyPicked(issue);
 
-        Map<UUID, Long> quantities = new HashMap<>();
+        Map<UUID, Long> quantities = new java.util.TreeMap<>();
         for (GoodsIssueItem item : issue.getItems()) {
             OrderItem orderItem = item.getOrderItem();
             UUID variantId = orderItem.getVariant().getId();
@@ -219,7 +221,7 @@ public class GoodsIssueService implements IGoodsIssue {
 
         // Chỉ ghi nhận xuất và chuyển đơn sang SHIPPING sau khi trừ đủ tất cả dòng.
         issue.setCarrierName(request.carrierName().trim());
-        issue.setTrackingNumber(request.trackingNumber().trim());
+        issue.setTrackingNumber(trackingNumbers.next());
         issue.setNote(trimNullable(request.note()));
         issue.setExportedBy(actors.currentActor());
         issue.setExportedAt(Instant.now());
@@ -240,35 +242,23 @@ public class GoodsIssueService implements IGoodsIssue {
             throw conflict("Phiếu đã xuất hoặc đã hủy, không thể hủy tiếp");
         }
         requireOrderOpen(issue.getOrder());
-        issue.setCancelledBy(actors.currentActor());
-        issue.setCancelledAt(Instant.now());
-        issue.setCancellationReason(request.reason().trim());
+        String reason = request.reason() == null ? "" : request.reason().strip();
+        if (reason.isBlank() || reason.length() > 1000) {
+            throw badRequest("Lý do hủy phải có từ 1 đến 1000 ký tự");
+        }
+        var actor = actors.currentActor();
+        Instant cancelledAt = Instant.now();
+        issue.setCancelledBy(actor);
+        issue.setCancelledAt(cancelledAt);
+        issue.setCancellationReason(reason);
         issue.setStatus(GoodsIssueStatus.CANCELLED);
         // Hủy phiếu và đơn trong cùng transaction; chưa xuất nên không đổi tồn kho.
         issue.getOrder().setStatus(OrderStatus.CANCELLED);
+        issue.getOrder().setCancelledBy(actor);
+        issue.getOrder().setCancelledAt(cancelledAt);
+        issue.getOrder().setCancellationReason(reason);
 
         return flushAndMap(issue);
-    }
-
-    @Override
-    @Transactional
-    public GoodsIssueDetailResponse recreate(
-            UUID id,
-            IssueVersionRequest request
-    ) {
-
-        // Giữ lịch sử phiếu hủy; thao tác lặp sẽ trả phiếu đang xử lý thay vì tạo thêm.
-        GoodsIssue previous = lockIssue(id, request.version());
-        requireStatus(previous, GoodsIssueStatus.CANCELLED);
-        requireOrderOpen(previous.getOrder());
-        Optional<GoodsIssue> existing = issues.findFirstByOrderIdAndStatusNot(
-                previous.getOrder().getId(),
-                GoodsIssueStatus.CANCELLED
-        );
-        if (existing.isPresent()) {
-            return mapper.detail(existing.get());
-        }
-        return createForOrder(previous.getOrder());
     }
 
     private GoodsIssueDetailResponse createForOrder(Order order) {

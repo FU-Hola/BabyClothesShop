@@ -89,6 +89,14 @@ const OrderDetail = () => {
                 </span>
             </header>
 
+            {order.status === "CANCELLED" && (
+                <section className={styles.panel} role="status" aria-label="Thông tin hủy đơn">
+                    <h2>Đơn hàng đã bị hủy bởi Warehouse</h2>
+                    <p>Lý do hủy: {order.cancellationReason || "Chưa ghi nhận lý do hủy."}</p>
+                    {order.cancelledAt && <p>Thời điểm hủy: {formatDate(order.cancelledAt)}</p>}
+                </section>
+            )}
+
             <div className={styles.detailLayout}>
                 <div className={styles.detailMain}>
                     <section className={styles.panel} aria-labelledby="order-products-heading">

@@ -83,7 +83,7 @@ function IssueContent({ data, ...actions }) {
             </PageHeading>
             {data.status === "CANCELLED" && data.orderStatus === "CANCELLED" && (
                 <Alert variant="secondary" role="status">
-                    Phiếu xuất và đơn hàng đã hủy. Tồn kho không thay đổi.
+                    Phiếu xuất và đơn hàng đã hủy. Không thể tạo lại phiếu. Tồn kho không thay đổi.
                 </Alert>
             )}
             {data.status !== "CANCELLED" && (
@@ -212,15 +212,13 @@ function IssueContent({ data, ...actions }) {
                     defaultValues={{
                         version: data.version,
                         carrierName: "",
-                        trackingNumber: "",
                         note: "",
                     }}
                     title="Xác nhận xuất kho"
-                    description="Tồn kho được kiểm tra và trừ tại thời điểm xuất. Vui lòng nhập đơn vị vận chuyển và mã vận đơn."
+                    description="Nhập đơn vị vận chuyển. Mã vận đơn được tự động cấp khi xác nhận xuất kho và trừ tồn."
                     confirmText="Xác nhận xuất toàn bộ phiếu, trừ tồn kho và chuyển đơn sang đang giao?"
                 >
                     <InputField name="carrierName" label="Đơn vị vận chuyển *" maxLength={255} />
-                    <InputField name="trackingNumber" label="Mã vận đơn *" maxLength={100} required />
                     <InputField
                         name="note"
                         label="Ghi chú xuất kho"
@@ -238,8 +236,8 @@ function IssueContent({ data, ...actions }) {
                     defaultValues={{ version: data.version, reason: "" }}
                     title="Hủy phiếu xuất"
                     danger
-                    description="Đơn hàng sẽ chuyển sang đã hủy. Tồn kho không thay đổi."
-                    confirmText="Hủy toàn bộ phiếu xuất và chuyển đơn hàng sang đã hủy?"
+                    description="Đơn hàng sẽ chuyển sang đã hủy kèm lý do của Warehouse. Không thể tạo lại phiếu. Tồn kho không thay đổi."
+                    confirmText="Hủy phiếu xuất và đơn hàng vĩnh viễn? Không thể tạo lại phiếu."
                 >
                     <InputField
                         name="reason"

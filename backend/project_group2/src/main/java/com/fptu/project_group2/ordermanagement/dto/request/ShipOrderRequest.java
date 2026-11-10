@@ -11,8 +11,4 @@ public class ShipOrderRequest {
     @NotBlank(message = "Vui lòng nhập đơn vị vận chuyển")
     @Size(max = 255)
     private String carrierName;
-
-    @NotBlank(message = "Vui lòng nhập mã vận đơn")
-    @Size(max = 100)
-    private String trackingNumber;
 }

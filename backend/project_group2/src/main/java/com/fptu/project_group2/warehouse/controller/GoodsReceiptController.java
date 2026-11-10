@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import com.fptu.project_group2.warehouse.service.WarehouseIdempotency;
 
 @RestController
 @PreAuthorize("hasAnyRole('STORE_STAFF', 'WAREHOUSE_STAFF')")
@@ -36,6 +37,7 @@ import java.util.UUID;
 public class GoodsReceiptController {
     private final IGoodsReceipt goodsReceiptService;
     private final WarehouseActorProvider actors;
+    private final WarehouseIdempotency idempotency;
 
     @GetMapping("/receipts")
     public ResponseEntity<ApiResponse<PageResponse<GoodsReceiptResponse>>> receipts(
@@ -57,32 +59,39 @@ public class GoodsReceiptController {
 
     @PreAuthorize("hasRole('STORE_STAFF')")
     @PatchMapping("/cancel/{id}")
-    public ResponseEntity<ApiResponse<Void>> cancel(@PathVariable UUID id,
+    public ResponseEntity<String> cancel(@RequestHeader("Idempotency-Key") String key, @PathVariable UUID id,
             @Valid @RequestBody CancelReceiptRequest request) {
-        goodsReceiptService.cancelReceipt(request, actors.currentActor().getId(), id);
-        return ResponseBuilder.ok(null, "Đã hủy phiếu nhập kho");
+        return idempotency.execute(key, "receipt:cancel:" + id, request, () -> {
+            goodsReceiptService.cancelReceipt(request, actors.currentActor().getId(), id);
+            return ResponseBuilder.ok(null, "Đã hủy phiếu nhập kho");
+        });
     }
 
     @PreAuthorize("hasRole('STORE_STAFF')")
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse<Void>> createGoodsReceipt(
+    public ResponseEntity<String> createGoodsReceipt(
+            @RequestHeader("Idempotency-Key") String key,
             @Valid @RequestBody CreateReceiptRequest request,
             @AuthenticationPrincipal AuthenticatedUser principal
             ){
-        goodsReceiptService.createGoodsReceipt(request, principal.id());
-        return ResponseBuilder.created(null, "Tạo phiếu nhập hàng thành công");
+        return idempotency.execute(key, "receipt:create", request, () -> {
+            goodsReceiptService.createGoodsReceipt(request, principal.id());
+            return ResponseBuilder.created(null, "Tạo phiếu nhập hàng thành công");
+        });
     }
 
     @PreAuthorize("hasRole('WAREHOUSE_STAFF')")
     @PatchMapping("/confirm/{id}")
-    public ResponseEntity<ApiResponse<Void>> confirmGoodsReceipt(
+    public ResponseEntity<String> confirmGoodsReceipt(
+            @RequestHeader("Idempotency-Key") String key,
             @PathVariable UUID id,
             @Valid @RequestBody ConfirmReceiptRequest request,
             @AuthenticationPrincipal AuthenticatedUser principal
             ){
-        goodsReceiptService.confirmReceipt(request, principal.id(), id);
-
-        return ResponseBuilder.ok(null, "Xác nhận phiếu nhập kho thành công");
+        return idempotency.execute(key, "receipt:confirm:" + id, request, () -> {
+            goodsReceiptService.confirmReceipt(request, principal.id(), id);
+            return ResponseBuilder.ok(null, "Xác nhận phiếu nhập kho thành công");
+        });
     }
 
     @GetMapping("/status")

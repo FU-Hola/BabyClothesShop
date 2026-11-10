@@ -22,5 +22,4 @@ public interface IGoodsIssue {
     GoodsIssueDetailResponse pack(UUID id, PackIssueRequest request);
     GoodsIssueDetailResponse export(UUID id,  ExportIssueRequest request);
     GoodsIssueDetailResponse cancel(UUID id, CancelIssueRequest request);
-    GoodsIssueDetailResponse recreate(UUID id,IssueVersionRequest request);
 }

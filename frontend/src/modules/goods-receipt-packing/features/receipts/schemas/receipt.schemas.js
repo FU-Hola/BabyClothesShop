@@ -1,6 +1,6 @@
 import { z } from "zod";
 import {
-    uuidSchema,
+    idSchema,
     versionSchema,
     textSchema,
     quantitySchema,
@@ -36,7 +36,7 @@ export const createReceiptSchema = z
         items: z
             .array(
                 z.object({
-                    variantId: uuidSchema,
+                    variantId: idSchema,
                     expectedQuantity: quantitySchema(1),
                 }),
             )
@@ -69,7 +69,7 @@ export function confirmReceiptSchema(receipt) {
             items: z
                 .array(
                     z.object({
-                        receiptItemId: uuidSchema,
+                        receiptItemId: idSchema,
                         receivedQuantity: quantitySchema(0),
                     }),
                 )

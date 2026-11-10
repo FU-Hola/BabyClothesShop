@@ -21,6 +21,7 @@ import com.fptu.project_group2.ordermanagement.entity.Order;
 import com.fptu.project_group2.ordermanagement.mapper.OrderResponseMapper;
 import com.fptu.project_group2.ordermanagement.repository.OrderRepository;
 import com.fptu.project_group2.warehouse.service.IGoodsIssue;
+import com.fptu.project_group2.warehouse.utils.TrackingNumberGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -46,6 +47,7 @@ public class OrderService {
     private final GoodsIssueRepository goodsIssueRepository;
     private final InventoryRepository inventoryRepository;
     private final IGoodsIssue goodsIssue;
+    private final TrackingNumberGenerator trackingNumbers;
 
     public PageResponse<OrderSummaryResponse> getOrders(OrderStatus status, String search,
                                                        int page, int size) {
@@ -121,7 +123,7 @@ public class OrderService {
 
     @Transactional
     public OrderDetailResponse confirmOrder(UUID id) {
-        Order order = orderRepository.findWithItemsById(id)
+        Order order = orderRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new NotFoundException("Order", "id", id));
 
         if (order.getStatus() != OrderStatus.PENDING_CONFIRMATION) {
@@ -144,7 +146,7 @@ public class OrderService {
 
     @Transactional
     public OrderDetailResponse deliverOrder(UUID id) {
-        Order order = orderRepository.findWithItemsById(id)
+        Order order = orderRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new NotFoundException("Order", "id", id));
         if (order.getStatus() != OrderStatus.SHIPPING) {
             throw new OrderConflictException("Chỉ được xác nhận giao thành công cho đơn đang giao");
@@ -158,7 +160,7 @@ public class OrderService {
 
     @Transactional
     public OrderDetailResponse shipOrder(UUID id, ShipOrderRequest request) {
-        Order order = orderRepository.findWithItemsById(id)
+        Order order = orderRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new NotFoundException("Order", "id", id));
         if (order.getStatus() != OrderStatus.PACKED) {
             throw new OrderConflictException("Chỉ được gửi đơn đã đóng gói");
@@ -173,17 +175,20 @@ public class OrderService {
             throw new OrderConflictException("Đơn hàng không có sản phẩm để xuất kho");
         }
 
+        // Use the same order lock and SKU order as Warehouse export/cancel.
+        Map<UUID, Long> quantities = new java.util.TreeMap<>();
         for (OrderItem item : order.getItems()) {
-            int updatedRows = inventoryRepository.decreaseStock(
-                    item.getVariant().getId(), item.getQuantity().longValue());
+            quantities.merge(item.getVariant().getId(), item.getQuantity().longValue(), Math::addExact);
+        }
+        for (var entry : quantities.entrySet()) {
+            int updatedRows = inventoryRepository.decreaseStockIfAvailable(entry.getKey(), entry.getValue());
             if (updatedRows != 1) {
-                throw new OrderConflictException("Tồn kho không đủ hoặc không hợp lệ: "
-                        + item.getProductNameSnapshot());
+                throw new OrderConflictException("Tồn kho không đủ hoặc không hợp lệ: " + entry.getKey());
             }
         }
 
         issue.setCarrierName(request.getCarrierName().trim());
-        issue.setTrackingNumber(request.getTrackingNumber().trim());
+        issue.setTrackingNumber(trackingNumbers.next());
         issue.setStatus(GoodsIssueStatus.EXPORTED);
         issue.setExportedAt(Instant.now());
         order.setStatus(OrderStatus.SHIPPING);

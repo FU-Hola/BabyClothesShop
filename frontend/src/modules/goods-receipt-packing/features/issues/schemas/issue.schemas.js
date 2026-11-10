@@ -1,6 +1,6 @@
 import { z } from "zod";
 import {
-    uuidSchema,
+    idSchema,
     versionSchema,
     textSchema,
     quantitySchema,
@@ -18,7 +18,7 @@ export function pickingSchema(issue) {
             items: z
                 .array(
                     z.object({
-                        issueItemId: uuidSchema,
+                        issueItemId: idSchema,
                         pickedQuantity: quantitySchema(0),
                     }),
                 )
@@ -54,7 +54,6 @@ export const packIssueSchema = z.object({
 export const exportIssueSchema = z.object({
     version: versionSchema,
     carrierName: textSchema(255, true),
-    trackingNumber: textSchema(100, true),
     note: textSchema(1000),
 });
 
@@ -67,5 +66,5 @@ export const issueFilterSchema = z.object({
     keyword: textSchema(100),
     status: z.enum(["", "PENDING", "PICKING", "PACKED", "EXPORTED", "CANCELLED"]),
 
-    orderId: z.union([z.literal(""), uuidSchema]),
+    orderId: z.union([z.literal(""), idSchema]),
 });

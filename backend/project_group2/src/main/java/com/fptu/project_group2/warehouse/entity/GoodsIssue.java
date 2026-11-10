@@ -30,7 +30,7 @@ public class GoodsIssue extends BaseEntity {
     private String code;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "order_id", nullable = false)
+    @JoinColumn(name = "order_id", nullable = false, unique = true)
     private Order order;
 
     @Enumerated(EnumType.STRING)
@@ -66,7 +66,7 @@ public class GoodsIssue extends BaseEntity {
     @Column(name = "carrier_name", nullable = true, length = 255)
     private String carrierName;
 
-    @Column(name = "tracking_number", nullable = true, length = 100)
+    @Column(name = "tracking_number", nullable = true, length = 100, unique = true)
     private String trackingNumber;
 
     @Column(name = "note", nullable = true, length = 1000)

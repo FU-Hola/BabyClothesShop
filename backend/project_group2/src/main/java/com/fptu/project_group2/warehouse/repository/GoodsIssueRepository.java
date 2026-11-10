@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface GoodsIssueRepository extends JpaRepository<GoodsIssue, UUID> {
-    // A cancelled issue may have a replacement; shipping uses only the active issue.
+    // A cancelled issue is terminal; shipping must never return it as an active issue.
     default Optional<GoodsIssue> findByOrderId(UUID orderId) {
         return findFirstByOrderIdAndStatusNot(orderId, GoodsIssueStatus.CANCELLED);
     }

@@ -3,7 +3,7 @@ import { Alert, Button, Spinner } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { useIsMutating } from "@tanstack/react-query";
 import { useWarehouseDetail } from "../query/warehouse.queries.js";
-import { uuidSchema } from "../../../../shared/schemas/warehouse.schemas.js";
+import { idSchema } from "../../../../shared/schemas/warehouse.schemas.js";
 import { warehouseKeys } from "../../../../shared/query/warehouse.keys.js";
 
 export default function WarehouseDetail({ resource, id, children, listPath }) {
@@ -11,7 +11,7 @@ export default function WarehouseDetail({ resource, id, children, listPath }) {
     const writing = useIsMutating({ mutationKey: warehouseKeys.write(resource, id) }) > 0;
     const [saved, setSaved] = useState(false);
     const list = listPath || `/warehouse-staff/${resource === "receipt" ? "goods-receipts" : "issues"}`;
-    if (!uuidSchema.safeParse(id).success)
+    if (!idSchema.safeParse(id).success)
         return <Alert variant="danger">Đường dẫn phiếu không hợp lệ. <Link to={list}>Về danh sách</Link></Alert>;
     if (query.isPending)
         return <p role="status"><Spinner as="span" size="sm" /> Đang tải phiếu…</p>;

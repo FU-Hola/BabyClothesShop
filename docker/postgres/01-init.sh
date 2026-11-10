@@ -18,16 +18,12 @@ GRANT CONNECT ON DATABASE :"database" TO :"app_user", :"migration_user";
 GRANT TEMPORARY ON DATABASE :"database" TO :"migration_user";
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 CREATE SCHEMA shop AUTHORIZATION :"migration_user";
--- Legacy CREATE grant retained for compatibility; Flyway now owns schema DDL.
-GRANT USAGE, CREATE ON SCHEMA shop TO :"app_user";
+-- The application can use objects but cannot create or alter the schema.
+GRANT USAGE ON SCHEMA shop TO :"app_user";
 ALTER ROLE :"app_user" IN DATABASE :"database" SET search_path TO shop;
 ALTER ROLE :"migration_user" IN DATABASE :"database" SET search_path TO shop;
 ALTER DEFAULT PRIVILEGES FOR ROLE :"migration_user" IN SCHEMA shop
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO :"app_user";
 ALTER DEFAULT PRIVILEGES FOR ROLE :"migration_user" IN SCHEMA shop
     GRANT USAGE, SELECT ON SEQUENCES TO :"app_user";
-ALTER DEFAULT PRIVILEGES FOR ROLE :"app_user" IN SCHEMA shop
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO :"migration_user";
-ALTER DEFAULT PRIVILEGES FOR ROLE :"app_user" IN SCHEMA shop
-    GRANT USAGE, SELECT ON SEQUENCES TO :"migration_user";
 SQL

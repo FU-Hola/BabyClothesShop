@@ -2,7 +2,8 @@ import { z } from "zod";
 
 const JAVA_INTEGER_MAX = 2_147_483_647;
 
-export const uuidSchema = z.string().trim().uuid("ID không đúng định dạng UUID");
+// IDs come from the API; only require a selection, without checking UUID format.
+export const idSchema = z.string().trim().min(1, "Vui lòng chọn dữ liệu");
 
 export const versionSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 

@@ -3,9 +3,9 @@ import { warehouseRequest as request, warehousePage } from "../../../../../share
 export const issueApi = {
     issues: (params, signal) => warehousePage("/issues", params, signal),
     issue: (id, signal) => request({ method: "GET", url: `/issues/${id}`, signal }),
-    startPicking: (id, body) => request({ method: "POST", url: `/issues/${id}/start-picking`, data: body }),
-    updatePicking: (id, body) => request({ method: "PUT", url: `/issues/${id}/picking`, data: body }),
-    packIssue: (id, body) => request({ method: "POST", url: `/issues/${id}/pack`, data: body }),
-    exportIssue: (id, body) => request({ method: "POST", url: `/issues/${id}/export`, data: body }),
-    cancelIssue: (id, body) => request({ method: "POST", url: `/issues/${id}/cancel`, data: body }),
+    startPicking: (id, body, key) => request({ method: "POST", url: `/issues/${id}/start-picking`, data: body, headers: { "Idempotency-Key": key } }),
+    updatePicking: (id, body, key) => request({ method: "PUT", url: `/issues/${id}/picking`, data: body, headers: { "Idempotency-Key": key } }),
+    packIssue: (id, body, key) => request({ method: "POST", url: `/issues/${id}/pack`, data: body, headers: { "Idempotency-Key": key } }),
+    exportIssue: (id, body, key) => request({ method: "POST", url: `/issues/${id}/export`, data: body, headers: { "Idempotency-Key": key } }),
+    cancelIssue: (id, body, key) => request({ method: "POST", url: `/issues/${id}/cancel`, data: body, headers: { "Idempotency-Key": key } }),
 };

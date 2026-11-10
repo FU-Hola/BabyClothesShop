@@ -88,7 +88,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(corsProperties.allowedOrigins());
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Content-Type", "X-XSRF-TOKEN"));
+        configuration.setAllowedHeaders(List.of("Content-Type", "X-XSRF-TOKEN", "Idempotency-Key"));
         // Cho phép trình duyệt gửi cookie khi frontend gọi API khác origin.
         // CORS không thay thế bước kiểm tra CSRF.
         configuration.setAllowCredentials(true);

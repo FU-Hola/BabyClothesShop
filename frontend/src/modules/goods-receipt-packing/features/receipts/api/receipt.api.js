@@ -7,7 +7,7 @@ export const receiptApi = {
     }),
     receipts: (params, signal) => warehousePage("/receipts", params, signal),
     receipt: (id, signal) => request({ method: "GET", url: `/receipts/${id}`, signal }),
-    createReceipt: (body) => request({ method: "POST", url: "/create", data: body }),
-    confirmReceipt: (id, body) => request({ method: "PATCH", url: `/confirm/${id}`, data: body }),
-    cancelReceipt: (id, body) => request({ method: "PATCH", url: `/cancel/${id}`, data: body }),
+    createReceipt: (body, key) => request({ method: "POST", url: "/create", data: body, headers: { "Idempotency-Key": key } }),
+    confirmReceipt: (id, body, key) => request({ method: "PATCH", url: `/confirm/${id}`, data: body, headers: { "Idempotency-Key": key } }),
+    cancelReceipt: (id, body, key) => request({ method: "PATCH", url: `/cancel/${id}`, data: body, headers: { "Idempotency-Key": key } }),
 };
