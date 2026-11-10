@@ -54,8 +54,25 @@ spring:
     multipart:
       max-file-size: ${UPLOAD_MAX_FILE_SIZE:5MB}
       max-request-size: ${UPLOAD_MAX_REQUEST_SIZE:10MB}
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    from: ${MAIL_FROM:no-reply@babyclothesshop.local}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:false}
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+          starttls:
+            enable: ${MAIL_STARTTLS_ENABLE:false}
 
 app:
+  frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
+  password-link-ttl-minutes: ${PASSWORD_LINK_TTL_MINUTES:30}
   auth-cookie:
     # false cho HTTP localhost; dùng true khi triển khai HTTPS.
     secure: ${AUTH_COOKIE_SECURE:false}

@@ -1,7 +1,9 @@
 package com.fptu.project_group2.authaccount.controller;
 
 import com.fptu.project_group2.authaccount.dto.request.LoginRequest;
+import com.fptu.project_group2.authaccount.dto.request.ForgotPasswordRequest;
 import com.fptu.project_group2.authaccount.dto.request.RegisterRequest;
+import com.fptu.project_group2.authaccount.dto.request.SetPasswordRequest;
 import com.fptu.project_group2.authaccount.dto.response.AuthTokensResponse;
 import com.fptu.project_group2.authaccount.dto.response.UserResponse;
 import com.fptu.project_group2.authaccount.security.AuthCookieService;
@@ -45,6 +47,19 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserResponse>> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseBuilder.created(authService.register(request), "Đăng ký tài khoản thành công");
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request);
+        return ResponseBuilder.ok(null,
+                "Nếu email thuộc tài khoản hợp lệ, hướng dẫn đặt lại mật khẩu sẽ được gửi đến bạn");
+    }
+
+    @PostMapping("/set-password")
+    public ResponseEntity<ApiResponse<Void>> setPassword(@Valid @RequestBody SetPasswordRequest request) {
+        authService.setPassword(request);
+        return ResponseBuilder.ok(null, "Thiết lập mật khẩu thành công. Vui lòng đăng nhập");
     }
 
     @PostMapping("/login")

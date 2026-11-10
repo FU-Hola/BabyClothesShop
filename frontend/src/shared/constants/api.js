@@ -4,6 +4,8 @@ export const AUTH_ENDPOINTS = {
     CSRF: '/auth/csrf',
     LOGIN: '/auth/login',
     REGISTER: '/auth/register',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    SET_PASSWORD: '/auth/set-password',
     ME: '/auth/me',
     REFRESH: '/auth/refresh',
     LOGOUT: '/auth/logout',

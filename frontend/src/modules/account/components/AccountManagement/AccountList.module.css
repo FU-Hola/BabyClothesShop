@@ -14,11 +14,12 @@
 .identity strong, .identity small { display: block; }
 .identity strong { margin-bottom: 2px; color: #2b4355; font-size: 0.88rem; }
 .identity small { color: var(--ui-text-muted); font-size: 0.75rem; }
-.active, .blocked, .deleted { padding: 6px 9px !important; border-radius: 7px !important; font-size: 0.7rem !important; font-weight: 600 !important; }
+.active, .blocked, .deleted, .pending { padding: 6px 9px !important; border-radius: 7px !important; font-size: 0.7rem !important; font-weight: 600 !important; }
 .active { background: #e5f5ed !important; color: #287358 !important; }
 .blocked { background: #fff0e8 !important; color: #a75b38 !important; }
 .deleted { background: #eef0f2 !important; color: #68737c !important; }
-.actions { display: flex; justify-content: flex-end; gap: 5px; min-width: 120px; }
+.pending { background: #e8f1ff !important; color: #3569a8 !important; }
+.actions { display: flex; justify-content: flex-end; gap: 5px; min-width: 165px; }
 .actions button { display: inline-grid; width: 34px; height: 34px; padding: 0; place-items: center; border: 1px solid #e3e8ed; color: #5c7181; }
 .actions button:hover:not(:disabled) { border-color: #b9c7d1; background: #f4f7f9; color: var(--ui-primary); }
 .actions .deleteButton:hover:not(:disabled) { border-color: #f1c7c4; background: #fff2f1; color: #b64d46; }

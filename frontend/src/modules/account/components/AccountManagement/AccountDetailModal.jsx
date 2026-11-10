@@ -11,6 +11,7 @@ const roleLabels = {
 
 const AccountStatusBadge = ({ account }) => {
     if (account.deletedAt) return <Badge className={styles.deletedBadge}>Đã xóa</Badge>;
+    if (account.passwordSetupRequired) return <Badge bg="info">Chờ thiết lập mật khẩu</Badge>;
     return account.status === 'active'
         ? <Badge className={styles.activeBadge}>Đang hoạt động</Badge>
         : <Badge className={styles.blockedBadge}>Đã khóa</Badge>;

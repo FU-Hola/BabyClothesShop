@@ -23,8 +23,17 @@ public class User extends BaseEntity {
     private String email;
 
     @com.fasterxml.jackson.annotation.JsonIgnore
-    @Column(name = "password_hash", nullable = false, length = 255)
+    // Staff mới tạo chưa có mật khẩu cho đến khi mở link thiết lập được gửi qua email.
+    @Column(name = "password_hash", length = 255)
     private String passwordHash;
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @Column(name = "password_reset_token_hash", length = 64, unique = true)
+    private String passwordResetTokenHash;
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @Column(name = "password_reset_expires_at")
+    private Instant passwordResetExpiresAt;
 
     // Mỗi user chỉ giữ một hash refresh token hiện tại; login/refresh mới sẽ thay hash cũ.
     // JsonIgnore ngăn lộ trường này nếu entity vô tình được chuyển thành JSON.
