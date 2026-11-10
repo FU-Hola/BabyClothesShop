@@ -340,7 +340,11 @@ Nhóm
 	Không có
 	Lý
 	Customer
-	Trang chủ: danh sách sản phẩm, lọc danh mục, tìm kiếm
+	Trang chủ (Home)
+	Không có
+	Hiếu
+	Customer
+	Danh sách sản phẩm (Product List): phân loại theo danh mục, tìm kiếm
 	Không có
 	Hiếu
 	Customer

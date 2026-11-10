@@ -18,6 +18,7 @@ import com.fptu.project_group2.ordermanagement.mapper.OrderResponseMapper;
 import com.fptu.project_group2.ordermanagement.repository.OrderRepository;
 import com.fptu.project_group2.warehouse.service.IGoodsIssue;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -52,27 +54,33 @@ public class OrderService {
         String keyword = search == null ? "" : search.trim();
         Pageable pageable = PageRequest.of(page - 1, size,
                 Sort.by(Sort.Direction.DESC, "createdAt", "id"));
+        log.info("Querying findPageIds - status: {}, keyword: '{}', pageable: {}", status, keyword, pageable);
+
         Page<UUID> idPage = orderRepository.findPageIds(status, keyword, pageable);
+        log.info("findPageIds result - count: {}, total: {}, pages: {}, ids: {}",
+                idPage.getNumberOfElements(), idPage.getTotalElements(), idPage.getTotalPages(), idPage.getContent());
+
         List<OrderSummaryResponse> items = new ArrayList<>();
 
         if (idPage.hasContent()) {
             List<Order> orders = orderRepository.findAllWithItemsByIdIn(idPage.getContent());
-            Map<UUID, Order> ordersById = new HashMap<>();
+            Map<UUID, Order> orderIdMap = new HashMap<>();
             for (Order order : orders) {
-                ordersById.put(order.getId(), order);
+                orderIdMap.put(order.getId(), order);
             }
 
-            // SQL IN does not preserve the order of the paginated IDs.
             for (UUID id : idPage.getContent()) {
-                Order order = ordersById.get(id);
+                Order order = orderIdMap.get(id);
                 if (order != null) {
                     items.add(orderMapper.toSummary(order));
                 }
             }
         }
 
-        Page<OrderSummaryResponse> result = new PageImpl<>(items, pageable, idPage.getTotalElements());
-        // PageResponse uses zero-based page numbers, like Spring Data.
+        var result = new PageImpl<>(items, pageable, idPage.getTotalElements());
+        log.info("Created OrderSummary PageImpl - page: {}/{}, size: {}, itemsCount: {}, totalElements: {}",
+                result.getNumber() + 1, result.getTotalPages(), result.getSize(), result.getNumberOfElements(), result.getTotalElements());
+
         return PageResponse.of(result);
     }
 
