@@ -22,6 +22,8 @@ public enum ErrorCode {
     EMPLOYEE_CODE_ALREADY_EXISTS(1009, HttpStatus.CONFLICT, "Mã nhân viên đã được sử dụng"),
     ACCOUNT_STATE_CONFLICT(1010, HttpStatus.CONFLICT, "Trạng thái tài khoản không cho phép thao tác này"),
     ACCOUNT_DATA_CONFLICT(1011, HttpStatus.CONFLICT, "Email hoặc mã nhân viên đã được sử dụng"),
+    PASSWORD_LINK_INVALID(1013, HttpStatus.BAD_REQUEST, "Link thiết lập mật khẩu không hợp lệ hoặc đã hết hạn"),
+    EMAIL_SEND_FAILED(1014, HttpStatus.BAD_GATEWAY, "Không thể gửi email. Vui lòng thử lại sau"),
 
     // ─── 2000 - 2999: Tin đăng & Mua bán (Market Posts) ─────────────────────────
     POST_NOT_FOUND(2001, HttpStatus.NOT_FOUND, "Không tìm thấy bài đăng yêu cầu"),

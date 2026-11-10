@@ -6,6 +6,8 @@ const getData = (response) => response.data;
 const authApi = {
     register: async (data) => getData(await axiosClient.post(AUTH_ENDPOINTS.REGISTER, data)),
     login: async (data) => getData(await axiosClient.post(AUTH_ENDPOINTS.LOGIN, data)),
+    forgotPassword: (data) => axiosClient.post(AUTH_ENDPOINTS.FORGOT_PASSWORD, data),
+    setPassword: (data) => axiosClient.post(AUTH_ENDPOINTS.SET_PASSWORD, data),
     getMe: async () => getData(await axiosClient.get(AUTH_ENDPOINTS.ME)),
     logout: () => axiosClient.post(AUTH_ENDPOINTS.LOGOUT),
 };

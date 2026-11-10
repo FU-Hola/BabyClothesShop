@@ -7,6 +7,8 @@ import OrderDetail from "../pages/Orders/OrderDetail.jsx";
 import categories from "../../shared/constants/categories.js";
 import RegisterPage from "../../modules/auth/pages/RegisterPage/RegisterPage.jsx";
 import LoginPage from "../../modules/auth/pages/LoginPage/LoginPage.jsx";
+import ForgotPasswordPage from '../../modules/auth/pages/ForgotPasswordPage/ForgotPasswordPage.jsx';
+import SetPasswordPage from '../../modules/auth/pages/ForgotPasswordPage/SetPasswordPage.jsx';
 import cartCheckoutRoutes from "../../modules/cart-checkout/routes/cartCheckoutRoutes.jsx";
 import RoleRoute from './RoleRoute.jsx';
 import ExceptionPage from "../pages/ExceptionPage/ExceptionPage.jsx";
@@ -19,6 +21,8 @@ const publicRoutes = [
             { path: "/", element: <Home /> },
             { path: "/register", element: <RegisterPage /> },
             { path: "/login", element: <LoginPage /> },
+            { path: "/forgot-password", element: <ForgotPasswordPage /> },
+            { path: "/set-password", element: <SetPasswordPage /> },
             ...categories.map((category) => ({
                 path: category.path,
                 element: <ProductList slug={category.slug} />

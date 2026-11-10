@@ -56,7 +56,6 @@ public class RequestIdempotencyService implements RequestIdempotency {
             return replayResponse(actorId, idempotencyKey, operation, requestHash);
         }
 
-        // The key, business changes and stored response commit or roll back together.
         ResponseEntity<?> actionResponse = action.get();
 
         if (!actionResponse.getStatusCode().is2xxSuccessful()) {

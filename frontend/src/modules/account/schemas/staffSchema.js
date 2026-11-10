@@ -15,7 +15,6 @@ const staffSchema = (isEditing) => z.object({
     position: z.string().trim().min(1, 'Vui lòng nhập chức danh'),
     ...(!isEditing && {
         email: z.string().trim().email('Email không hợp lệ'),
-        password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
         role: z.enum(['STORE_STAFF', 'WAREHOUSE_STAFF'], {
             error: 'Vui lòng chọn quyền nhân viên',
         }),

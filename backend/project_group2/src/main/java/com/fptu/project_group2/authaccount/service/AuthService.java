@@ -2,8 +2,10 @@ package com.fptu.project_group2.authaccount.service;
 
 import com.fptu.project_group2.authaccount.common.UserRole;
 import com.fptu.project_group2.authaccount.common.UserStatus;
+import com.fptu.project_group2.authaccount.dto.request.ForgotPasswordRequest;
 import com.fptu.project_group2.authaccount.dto.request.LoginRequest;
 import com.fptu.project_group2.authaccount.dto.request.RegisterRequest;
+import com.fptu.project_group2.authaccount.dto.request.SetPasswordRequest;
 import com.fptu.project_group2.authaccount.dto.response.AuthTokensResponse;
 import com.fptu.project_group2.authaccount.dto.response.UserResponse;
 import com.fptu.project_group2.authaccount.entity.User;
@@ -18,6 +20,8 @@ import com.fptu.project_group2.config.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.mail.MailException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -36,6 +40,7 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -43,6 +48,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
     private final TokenHashingService tokenHashingService;
+    private final PasswordLinkService passwordLinkService;
 
     // Transaction giúp các thay đổi database trong một thao tác được commit cùng nhau.
     @Transactional
@@ -72,6 +78,49 @@ public class AuthService {
         } catch (DataIntegrityViolationException exception) {
             throw new BaseBusinessException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
+    }
+
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        userRepository.findByEmailIgnoreCase(request.email())
+                .filter(this::canReceivePasswordLink)
+                .ifPresent(user -> {
+                    String rawToken = passwordLinkService.issue(user);
+                    userRepository.saveAndFlush(user);
+                    try {
+                        passwordLinkService.send(user, rawToken);
+                    } catch (MailException exception) {
+                        // Phản hồi vẫn giống email không tồn tại để không làm lộ tài khoản.
+                        log.warn("Không thể gửi email đặt lại mật khẩu cho user {}", user.getId(), exception);
+                    }
+                });
+    }
+
+    @Transactional
+    public void setPassword(SetPasswordRequest request) {
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            throw new BaseBusinessException(
+                    ErrorCode.VALIDATION_FAILED,
+                    "Dữ liệu đầu vào không hợp lệ",
+                    Map.of("confirmPassword", "Mật khẩu xác nhận không khớp")
+            );
+        }
+
+        User user = userRepository.findByPasswordResetTokenHashForUpdate(tokenHashingService.hash(request.token()))
+                .orElseThrow(() -> new BaseBusinessException(ErrorCode.PASSWORD_LINK_INVALID));
+        if (!canReceivePasswordLink(user)
+                || user.getPasswordResetExpiresAt() == null
+                || !user.getPasswordResetExpiresAt().isAfter(Instant.now())) {
+            throw new BaseBusinessException(ErrorCode.PASSWORD_LINK_INVALID);
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        user.setPasswordResetTokenHash(null);
+        user.setPasswordResetExpiresAt(null);
+        // Đặt lại mật khẩu thu hồi refresh token hiện tại và yêu cầu đăng nhập lại.
+        user.setRefreshTokenHash(null);
+        user.setRefreshTokenExpiresAt(null);
+        userRepository.saveAndFlush(user);
     }
 
     @Transactional
@@ -156,5 +205,11 @@ public class AuthService {
                 jwtProperties.accessTtlSeconds(), jwtProperties.refreshTtlSeconds(),
                 UserResponse.from(user)
         );
+    }
+
+    private boolean canReceivePasswordLink(User user) {
+        return user.getStatus() == UserStatus.ACTIVE
+                && user.getDeletedAt() == null
+                && user.getRole() != UserRole.ADMIN;
     }
 }

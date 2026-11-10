@@ -66,8 +66,6 @@ public class CheckoutServiceImpl implements ICheckoutService {
                 .orElse(null);
 
         if (previous != null) {
-            // Lock after cart, just like payment. A different key cannot duplicate this revision.
-
             if (previous.getStatus() == OrderStatus.PENDING_PAYMENT) {
                 if (!Objects.equals(previous.getReceiverName(), request.getReceiverName().strip())
                         || !Objects.equals(previous.getReceiverPhone(), request.getReceiverPhone().strip())

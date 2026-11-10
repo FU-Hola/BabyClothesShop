@@ -12,8 +12,6 @@ function newKey() {
         (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-// Lives with the form: network failures and double submits reuse a key, while
-// a different payload/action/target or a new form gets a new key.
 export function createWarehouseAttemptKeys(generate = newKey) {
     const attempts = new Map();
     return {

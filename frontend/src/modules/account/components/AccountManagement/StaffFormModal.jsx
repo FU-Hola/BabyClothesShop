@@ -16,7 +16,7 @@ const StaffFormModal = ({ staff, onClose, onSaved }) => {
             phone: staff?.phone || '',
             employeeCode: staff?.employeeCode || '',
             position: staff?.position || '',
-            ...(!isEditing && { password: '', role: 'STORE_STAFF' }),
+            ...(!isEditing && { role: 'STORE_STAFF' }),
         },
     });
 
@@ -33,7 +33,6 @@ const StaffFormModal = ({ staff, onClose, onSaved }) => {
                 : await accountApi.createAccount('staff', {
                     ...profileData,
                     email: formData.email,
-                    password: formData.password,
                     role: formData.role,
                 });
             onSaved(response.message);
@@ -233,29 +232,6 @@ const StaffFormModal = ({ staff, onClose, onSaved }) => {
                                     </Form.Group>
                                 </Col>
                             )}
-                            {!isEditing && (
-                                <Col md={6}>
-                                    <Form.Group controlId="staff-password">
-                                        <Form.Label className="fw-semibold small mb-1">
-                                            Mật khẩu ban đầu
-                                            <span className="text-danger ms-1" aria-hidden="true">*</span>
-                                        </Form.Label>
-                                        <Form.Control
-                                            className="bg-light"
-                                            type="password"
-                                            placeholder="Tối thiểu 6 ký tự"
-                                            autoComplete="new-password"
-                                            isInvalid={Boolean(errors.password)}
-                                            disabled={isSubmitting}
-                                            aria-required="true"
-                                            {...register('password')}
-                                        />
-                                        <Form.Control.Feedback type="invalid">
-                                            {errors.password?.message}
-                                        </Form.Control.Feedback>
-                                    </Form.Group>
-                                </Col>
-                            )}
                         </Row>
                     </fieldset>
 
@@ -264,7 +240,7 @@ const StaffFormModal = ({ staff, onClose, onSaved }) => {
                         <span>
                             {isEditing
                                 ? 'Email đăng nhập, vai trò và mật khẩu không được thay đổi tại màn hình này.'
-                                : 'Nhân viên có thể dùng email và mật khẩu ban đầu để đăng nhập.'}
+                                : 'Hệ thống sẽ gửi link thiết lập mật khẩu đến email của nhân viên.'}
                         </span>
                     </Alert>
                 </Modal.Body>
