@@ -32,6 +32,9 @@ public class UpdateProductRequest {
     @NotNull(message = "Vui lòng chọn trạng thái kinh doanh")
     private ProductStatus status;
 
+    @NotNull(message = "Thiếu phiên bản dữ liệu, vui lòng tải lại trang")
+    private Long version;
+
     @NotNull(message = "Danh sách biến thể không được để trống")
     private List<@NotNull(message = "Biến thể không được để trống") @Valid VariantRequest> variants;
 

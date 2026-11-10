@@ -5,7 +5,6 @@ import com.fptu.project_group2.catalogstock.entity.ProductVariant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 import java.util.UUID;
 import java.util.Collection;
 import java.util.List;
@@ -46,7 +45,6 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
     );
 
 
-    // Kiểm tra tất cả SKU bằng một query; số lượng tồn bằng 0 vẫn được phép nhập.
     @Query("""
         select v.id from ProductVariant v
         join v.product p
@@ -56,7 +54,6 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
     List<UUID> findReceivableIds(@Param("ids") Collection<UUID> ids,
                                  @Param("status") ProductStatus status);
 
-    // Chỉ tải variants của product đã chọn, không tải toàn bộ catalog cùng lúc.
     @Query("""
         select new com.fptu.project_group2.warehouse.dto.response.GoodsReceipt.ReceiptVariantOptionResponse(
             v.id, v.sku, v.color, v.size, i.quantity)

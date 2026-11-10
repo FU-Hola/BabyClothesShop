@@ -37,6 +37,10 @@ public class Product extends BaseEntity {
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
+
     @Setter(AccessLevel.NONE)
     @OneToMany(mappedBy = "product", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private List<ProductVariant> variants = new ArrayList<>();
