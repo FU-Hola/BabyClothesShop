@@ -18,7 +18,6 @@ public interface InventoryReservationRepository extends JpaRepository<InventoryR
     @Query(value = "SELECT clock_timestamp()", nativeQuery = true)
     Instant currentDatabaseTime();
 
-    // Scalar projection avoids stale entity state after native status updates.
     @Query(value = """
         SELECT order_item_id AS "orderItemId", variant_id AS "variantId", quantity, status
         FROM shop.inventory_reservations
