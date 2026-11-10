@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Badge, Button, ButtonGroup, Card, Col, Form, InputGroup, Row, Spinner, Table } from 'react-bootstrap';
-import { Eye, LockKeyhole, Pencil, RefreshCw, RotateCcw, Search, Trash2, UnlockKeyhole } from 'lucide-react';
+import { Eye, KeyRound, LockKeyhole, Pencil, RefreshCw, RotateCcw, Search, Trash2, UnlockKeyhole } from 'lucide-react';
 import { formatAccountDate, getAccountInitials } from '../../utils/accountFormatters';
 import styles from './AccountList.module.css';
 
@@ -16,12 +16,13 @@ const AccountIdentity = ({ account }) => (
 
 const AccountStatus = ({ account }) => {
     if (account.deletedAt) return <Badge className={styles.deleted}>Đã xóa</Badge>;
+    if (account.passwordSetupRequired) return <Badge className={styles.pending}>Chờ thiết lập</Badge>;
     return account.status === 'active'
         ? <Badge className={styles.active}>Hoạt động</Badge>
         : <Badge className={styles.blocked}>Đã khóa</Badge>;
 };
 
-const AccountActions = ({ account, allowEdit, loading, onDelete, onEdit, onRestore, onToggleStatus, onView }) => {
+const AccountActions = ({ account, allowEdit, loading, onDelete, onEdit, onRestore, onSendPasswordLink, onToggleStatus, onView }) => {
     if (account.deletedAt) {
         return (
             <div className={styles.actions}>
@@ -44,6 +45,11 @@ const AccountActions = ({ account, allowEdit, loading, onDelete, onEdit, onResto
             {allowEdit && (
                 <Button variant="light" onClick={() => onEdit(account)} aria-label={`Sửa ${account.fullName}`} title="Chỉnh sửa">
                     <Pencil size={16} aria-hidden="true" />
+                </Button>
+            )}
+            {allowEdit && active && (
+                <Button variant="light" onClick={() => onSendPasswordLink(account)} disabled={loading} aria-label={`Gửi link mật khẩu cho ${account.fullName}`} title="Gửi link thiết lập/đặt lại mật khẩu">
+                    <KeyRound size={16} aria-hidden="true" />
                 </Button>
             )}
             <Button variant="light" onClick={() => onToggleStatus(account)} disabled={loading} aria-label={`${active ? 'Khóa' : 'Mở khóa'} ${account.fullName}`} title={active ? 'Khóa' : 'Mở khóa'}>
@@ -71,6 +77,7 @@ const AccountList = ({
     onPageChange,
     onRefresh,
     onRestore,
+    onSendPasswordLink,
     onToggleStatus,
     onView,
 }) => {
@@ -138,6 +145,7 @@ const AccountList = ({
                                         onDelete={onDelete}
                                         onEdit={onEdit}
                                         onRestore={onRestore}
+                                        onSendPasswordLink={onSendPasswordLink}
                                         onToggleStatus={onToggleStatus}
                                         onView={onView}
                                     />

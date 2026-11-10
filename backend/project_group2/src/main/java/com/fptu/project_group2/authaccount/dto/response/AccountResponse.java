@@ -25,7 +25,8 @@ public record AccountResponse(
         Instant createdAt,
         Instant updatedAt,
         Instant lastLoginAt,
-        Instant deletedAt
+        Instant deletedAt,
+        boolean passwordSetupRequired
 ) {
     public static AccountResponse from(User user) {
         return new AccountResponse(
@@ -33,7 +34,8 @@ public record AccountResponse(
                 user.getStatus() == UserStatus.ACTIVE ? "active" : "blocked",
                 user.getEmployeeCode(), user.getPosition(), user.getDateOfBirth(),
                 user.getGender() == null ? null : user.getGender().name().toLowerCase(Locale.ROOT),
-                user.getAddress(), user.getCreatedAt(), user.getUpdatedAt(), user.getLastLoginAt(), user.getDeletedAt()
+                user.getAddress(), user.getCreatedAt(), user.getUpdatedAt(), user.getLastLoginAt(), user.getDeletedAt(),
+                user.getPasswordHash() == null
         );
     }
 }

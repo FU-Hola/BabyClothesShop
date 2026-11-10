@@ -9,12 +9,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.Lock;
 
 public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpecificationExecutor<Product> {
+
+    @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
+    Optional<Product> findWithVersionIncrementById(UUID id);
+
     @Query("""
             select p
             from Product p

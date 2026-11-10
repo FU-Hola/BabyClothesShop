@@ -82,8 +82,13 @@ public class ProductService implements IProduct {
     @Override
     @Transactional
     public void updateProduct(UUID productId, UpdateProductRequest request) {
-        Product product = productRepository.findById(productId)
+        Product product = productRepository.findWithVersionIncrementById(productId)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy sản phẩm"));
+
+        if (!product.getVersion().equals(request.getVersion())) {
+            throw new BaseBusinessException(ErrorCode.CONFLICT,
+                    "Sản phẩm vừa được người khác cập nhật. Vui lòng tải lại trang rồi thử lại");
+        }
 
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy danh mục"));
@@ -198,6 +203,7 @@ public class ProductService implements IProduct {
                 .categoryName(product.getCategory().getName())
                 .status(product.getStatus())
                 .createdAt(product.getCreatedAt())
+                .version(product.getVersion())
                 .variants(variants)
                 .build();
     }

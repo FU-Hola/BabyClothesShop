@@ -2,7 +2,6 @@ package com.fptu.project_group2.authaccount.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fptu.project_group2.authaccount.common.UserRole;
-import com.fptu.project_group2.authaccount.validation.Utf8ByteLength;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,9 +20,6 @@ public record CreateStaffRequest(
         @Size(max = 40, message = "Mã nhân viên không được vượt quá 40 ký tự") String employeeCode,
         @NotBlank(message = "Chức danh không được để trống")
         @Size(max = 100, message = "Chức danh không được vượt quá 100 ký tự") String position,
-        @NotBlank(message = "Mật khẩu không được để trống")
-        @Size(min = 6, message = "Mật khẩu phải có ít nhất 6 ký tự")
-        @Utf8ByteLength(max = 72, message = "Mật khẩu không được vượt quá 72 byte UTF-8") String password,
         @NotNull(message = "Chọn quyền STORE_STAFF hoặc WAREHOUSE_STAFF") UserRole role
 ) {
     public CreateStaffRequest {

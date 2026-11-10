@@ -39,6 +39,7 @@ const accountConfigs = {
             { label: 'Ngày tạo', value: formatAccountDateTime(account.createdAt) },
             { label: 'Cập nhật gần nhất', value: formatAccountDateTime(account.updatedAt) },
             { label: 'Đăng nhập gần nhất', value: formatAccountDateTime(account.lastLoginAt) },
+            { label: 'Thiết lập mật khẩu', value: account.passwordSetupRequired ? 'Chưa thiết lập' : 'Đã thiết lập' },
             { label: 'Ngày xóa mềm', value: account.deletedAt ? formatAccountDateTime(account.deletedAt) : 'Chưa xóa' },
         ],
     },
@@ -171,6 +172,7 @@ const AccountManagementPage = ({ accountType }) => {
                 onPageChange={changePage}
                 onRefresh={() => void loadAccounts()}
                 onRestore={(account) => void runAccountAction(account, () => accountApi.restore(accountType, account.id))}
+                onSendPasswordLink={(account) => void runAccountAction(account, () => accountApi.sendPasswordLink(account.id))}
                 onToggleStatus={(account) => void runAccountAction(account, () => accountApi.updateStatus(accountType, account.id, account.status === 'active' ? 'blocked' : 'active'))}
                 onView={setDetailAccount}
             />

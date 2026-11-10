@@ -81,7 +81,6 @@ public class GoodsIssue extends BaseEntity {
     @Column(length = 1000)
     private String cancellationReason;
 
-    // Cập nhật đầu phiếu để version tăng ngay cả khi chỉ đổi số lượng nhặt ở chi tiết.
     private Instant pickingUpdatedAt;
 
     @Version

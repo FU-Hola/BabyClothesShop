@@ -24,6 +24,9 @@ const accountApi = {
     updateAccount: async (accountType, id, data) => unwrap(
         await axiosClient.put(`${getResource(accountType)}/${id}`, data)
     ),
+    sendPasswordLink: async (id) => unwrap(
+        await axiosClient.post(`${ADMIN_ENDPOINTS.STAFF}/${id}/send-password-link`)
+    ),
     updateStatus: async (accountType, id, status) => unwrap(
         await axiosClient.patch(`${getResource(accountType)}/${id}/status`, { status })
     ),

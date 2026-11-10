@@ -32,4 +32,9 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select u from User u where u.refreshTokenHash = :hash")
     Optional<User> findByRefreshTokenHashForUpdate(@Param("hash") String hash);
+
+    // Mỗi link chỉ dùng được một lần; khóa dòng để hai request không cùng đặt mật khẩu.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.passwordResetTokenHash = :hash")
+    Optional<User> findByPasswordResetTokenHashForUpdate(@Param("hash") String hash);
 }

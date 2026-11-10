@@ -1,6 +1,6 @@
 package com.fptu.project_group2.warehouse.service.impl;
 
-import com.fptu.project_group2.warehouse.service.InventoryReservationService;
+import com.fptu.project_group2.warehouse.service.IInventoryReservation;
 import com.fptu.project_group2.catalogstock.common.ProductStatus;
 import org.springframework.data.domain.Sort;
 import com.fptu.project_group2.warehouse.dto.request.GoodsReceipt.ReceiptSearchRequest;
@@ -43,7 +43,7 @@ public class GoodsReceiptService implements IGoodsReceipt {
 
     private final GoodsReceiptRepository goodsReceiptRepository;
     private final InventoryRepository inventoryRepository;
-    private final InventoryReservationService reservations;
+    private final IInventoryReservation reservations;
     private final GoodsReceiptItemRepository goodsReceiptItemRepository;
     private final ProductVariantRepository productVariantRepository;
 

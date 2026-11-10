@@ -1,7 +1,7 @@
 package com.fptu.project_group2.ordermanagement.services;
 
 import com.fptu.project_group2.common.security.CurrentActorProvider;
-import com.fptu.project_group2.warehouse.service.InventoryReservationService;
+import com.fptu.project_group2.warehouse.service.IInventoryReservation;
 import com.fptu.project_group2.common.exception.BadRequestException;
 import com.fptu.project_group2.common.exception.BaseBusinessException;
 import com.fptu.project_group2.common.exception.ErrorCode;
@@ -40,7 +40,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderResponseMapper orderMapper;
     private final IGoodsIssue goodsIssue;
-    private final InventoryReservationService reservations;
+    private final IInventoryReservation reservations;
     private final CurrentActorProvider actors;
 
     public PageResponse<OrderSummaryResponse> getOrders(OrderStatus status, String search,

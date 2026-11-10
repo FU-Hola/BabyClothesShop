@@ -17,7 +17,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +37,7 @@ public class AccountService {
     private static final List<UserRole> STAFF_ROLES = List.of(UserRole.STORE_STAFF, UserRole.WAREHOUSE_STAFF);
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordLinkService passwordLinkService;
 
     @Transactional(readOnly = true)
     public AccountListResponse list(String accountType, AccountSearchRequest request) {
@@ -88,10 +88,28 @@ public class AccountService {
         user.setPosition(request.position());
         user.setRole(request.role());
         user.setStatus(UserStatus.ACTIVE);
-        user.setPasswordHash(passwordEncoder.encode(request.password()));
+        // Staff tự thiết lập mật khẩu qua link gửi đến email, admin không biết mật khẩu.
+        user.setPasswordHash(null);
         // Người tạo lấy từ principal ADMIN đã xác thực, không nhận createdBy từ client.
         user.setCreatedBy(userRepository.getReferenceById(adminId));
-        return save(user);
+        String rawToken = passwordLinkService.issue(user);
+        AccountResponse response = save(user);
+        sendPasswordEmail(user, rawToken);
+        return response;
+    }
+
+    @Transactional
+    public AccountResponse sendPasswordLink(UUID id) {
+        User user = findForUpdate("staff", id);
+        requireNotDeleted(user);
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new BaseBusinessException(ErrorCode.ACCOUNT_STATE_CONFLICT,
+                    "Hãy mở khóa tài khoản trước khi gửi link thiết lập mật khẩu");
+        }
+        String rawToken = passwordLinkService.issue(user);
+        AccountResponse response = save(user);
+        sendPasswordEmail(user, rawToken);
+        return response;
     }
 
     @Transactional
@@ -118,6 +136,7 @@ public class AccountService {
         user.setStatus("active".equals(status) ? UserStatus.ACTIVE : UserStatus.INACTIVE);
         if (user.getStatus() == UserStatus.INACTIVE) {
             clearRefreshToken(user);
+            clearPasswordLink(user);
         }
         return save(user);
     }
@@ -130,6 +149,7 @@ public class AccountService {
         user.setDeletedAt(Instant.now());
         user.setStatus(UserStatus.INACTIVE);
         clearRefreshToken(user);
+        clearPasswordLink(user);
         return save(user);
     }
 
@@ -143,6 +163,7 @@ public class AccountService {
         user.setStatus(UserStatus.ACTIVE);
         // Khôi phục hồ sơ không khôi phục refresh token cũ; cần đăng nhập lại.
         clearRefreshToken(user);
+        clearPasswordLink(user);
         return save(user);
     }
 
@@ -221,6 +242,19 @@ public class AccountService {
     private void clearRefreshToken(User user) {
         user.setRefreshTokenHash(null);
         user.setRefreshTokenExpiresAt(null);
+    }
+
+    private void clearPasswordLink(User user) {
+        user.setPasswordResetTokenHash(null);
+        user.setPasswordResetExpiresAt(null);
+    }
+
+    private void sendPasswordEmail(User user, String rawToken) {
+        try {
+            passwordLinkService.send(user, rawToken);
+        } catch (MailException exception) {
+            throw new BaseBusinessException(ErrorCode.EMAIL_SEND_FAILED);
+        }
     }
 
     private BaseBusinessException notFound() {

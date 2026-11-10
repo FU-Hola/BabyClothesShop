@@ -1,7 +1,7 @@
 package com.fptu.project_group2.warehouse.service.impl;
 
 import com.fptu.project_group2.ordermanagement.common.PaymentStatus;
-import com.fptu.project_group2.warehouse.service.InventoryReservationService;
+import com.fptu.project_group2.warehouse.service.IInventoryReservation;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import java.util.Optional;
@@ -51,7 +51,7 @@ public class GoodsIssueService implements IGoodsIssue {
 
     private final OrderRepository orders;
     private final GoodsIssueRepository issues;
-    private final InventoryReservationService reservations;
+    private final IInventoryReservation reservations;
     private final CurrentActorProvider actors;
     private final GoodsIssueMapper mapper;
     private final TrackingNumberGenerator trackingNumbers;

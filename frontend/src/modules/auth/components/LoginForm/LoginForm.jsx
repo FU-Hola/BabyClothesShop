@@ -191,6 +191,12 @@ const LoginForm = () => {
                             </InputGroup>
                         </Form.Group>
 
+                        <div className="text-end">
+                            <Link to="/forgot-password" className="small fw-semibold text-primary text-decoration-none">
+                                Quên mật khẩu?
+                            </Link>
+                        </div>
+
                         <Button
                             variant="primary"
                             type="submit"

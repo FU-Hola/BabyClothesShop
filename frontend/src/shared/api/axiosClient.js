@@ -69,6 +69,8 @@ axiosClient.interceptors.response.use(
         const skipRefresh = [
             AUTH_ENDPOINTS.LOGIN,
             AUTH_ENDPOINTS.REGISTER,
+            AUTH_ENDPOINTS.FORGOT_PASSWORD,
+            AUTH_ENDPOINTS.SET_PASSWORD,
             AUTH_ENDPOINTS.REFRESH,
         ].includes(request?.url);
 

@@ -54,7 +54,14 @@ public class AccountController {
     public ResponseEntity<ApiResponse<AccountResponse>> createStaff(
             @Valid @RequestBody CreateStaffRequest request, @AuthenticationPrincipal AuthenticatedUser principal
     ) {
-        return ResponseBuilder.created(accountService.createStaff(request, principal.id()), "Tạo nhân viên thành công");
+        return ResponseBuilder.created(accountService.createStaff(request, principal.id()),
+                "Tạo nhân viên và gửi link thiết lập mật khẩu thành công");
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/staff/{id}/send-password-link")
+    public ResponseEntity<ApiResponse<AccountResponse>> sendPasswordLink(@PathVariable UUID id) {
+        return ResponseBuilder.ok(accountService.sendPasswordLink(id), "Đã gửi link thiết lập mật khẩu cho nhân viên");
     }
 
     @PreAuthorize("hasRole('ADMIN')")

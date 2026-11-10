@@ -28,7 +28,9 @@ public record AuthenticatedUser(
                 user.getEmail(),
                 user.getPasswordHash(),
                 user.getRole(),
-                user.getStatus() == UserStatus.ACTIVE && user.getDeletedAt() == null
+                user.getStatus() == UserStatus.ACTIVE
+                        && user.getDeletedAt() == null
+                        && user.getPasswordHash() != null
         );
     }
 
